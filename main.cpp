@@ -34,3 +34,11 @@ int main(int argc, char *argv[]) {
 
     return EXIT_SUCCESS;
 }
+
+namespace {
+
+void load_assets() {
+    // TODO(bkuolt): load model
+}
+
+}

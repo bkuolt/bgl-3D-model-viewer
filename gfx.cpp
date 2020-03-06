@@ -1,9 +1,17 @@
 // Copyright 2020 Bastian Kuolt
+#include "gfx.hpp"
+
 #include <SDL2/SDL.h>
-#include<SDL2/SDL_video.h>
+#include <SDL2/SDL_video.h>
 #include <SDL2/SDL_image.h>
 
-#include "gfx.hpp"
+#include <filesystem>
+#include <string>
+
+#include <assimp/scene.h>        // Output data structure
+#include <assimp/postprocess.h>  // Post processing flags
+#include <assimp/Importer.hpp>  // Model loader
+
 
 std::shared_ptr<SDL_Window> create_fullscreen_window() {
     SDL_Window * const window = SDL_CreateWindow("BGL Tech Demo",
@@ -26,4 +34,24 @@ std::shared_ptr<SDL_Renderer> create_renderer(const std::shared_ptr<SDL_Window> 
     }
     const auto Deleter = [] (SDL_Renderer *renderer) { SDL_DestroyRenderer(renderer); };
     return std::shared_ptr<SDL_Renderer>(renderer, Deleter);
+}
+
+/* ----------------------- Rendering ----------------------- */
+
+void LoadModel(const std::filesystem::path &path) {
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile(path.string().c_str(),
+                                             aiProcess_CalcTangentSpace       |
+                                             aiProcess_Triangulate            |
+                                             aiProcess_JoinIdenticalVertices  |
+                                             aiProcess_SortByPType);
+    if (scene != nullptr) {
+        throw std::runtime_error(importer.GetErrorString());
+    }
+
+    const auto &mesh = scene->mMeshes[0];
+    // TODO(bkuolt): create vbo
+    // TODO(bkuolt): create ibo
+    // TODO(bkuolt): create vao
+    // TODO(bkuolt): load texture from Assimp and convert it to GL
 }
