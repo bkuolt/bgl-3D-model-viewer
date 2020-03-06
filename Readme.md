@@ -1,11 +1,13 @@
 
 # Installation
 ```shell
+git clone https://github.com/bkuolt/bgl-demo
+cd bgl-demo
 make install
-make all
+make
 ```
 # Run
-`make run` or `./demo`
+Run `./demo <path-to-your model>`
 
 # Dependecies
 - SDL 2.0 (https://www.libsdl.org/download-2.0.php)
