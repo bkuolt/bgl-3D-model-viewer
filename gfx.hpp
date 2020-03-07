@@ -29,6 +29,8 @@ using shared_model = std::shared_ptr<model>;
 
 shared_window create_fullscreen_window();
 shared_context create_GL_context(const shared_window &window);
+
 shared_model load_model(const std::filesystem::path &path);
+void render_model(const shared_model &model);
 
 #endif  // GFX_HPP_

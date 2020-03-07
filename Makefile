@@ -5,7 +5,10 @@
 
 CC = g++
 FLAGS = -std=c++17 -pthread -Wall -O3
-LIBS = -lSDL2 -lSDL2_image -lstdc++fs -lassimp -lGLEW -lGLU -lGL
+LIBS =  -lstdc++fs \
+	-lSDL2 -lSDL2_image \
+	-lassimp \
+	-lGLEW -lGLU -lGL
 
 #--------------------------------------#
 
@@ -25,9 +28,11 @@ demo: main.o gfx.o
 
 install:
 	sudo apt-get install \
-		libsdl2-dev libsdl2-image-dev \
-		libassimp-dev \
-		libglew-dev
+		libsdl2-dev \        # windowing toolkit
+		libsdl2-image-dev \  # image loader
+		libassimp-dev \      # 3D model loader
+		libglew-dev \        # OpenGL support
+		libglm-dev           # math library
 
 all: demo
 

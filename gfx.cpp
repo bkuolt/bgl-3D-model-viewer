@@ -5,6 +5,8 @@
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_image.h>
 
+#include <iostream>
+#include <cassert>
 #include <string>
 #include <stdexcept>
 
@@ -12,6 +14,8 @@
 #include <assimp/scene.h>        // Output data structure
 #include <assimp/postprocess.h>  // Post processing flags
 #include <assimp/Importer.hpp>   // Model loader
+
+#include <type_traits>
 
 namespace {
 
@@ -83,14 +87,48 @@ std::shared_ptr<GLuint> create_buffer() {
 shared_vbo create_vbo(const aiMesh &mesh) {
     auto vbo = create_buffer();
     glBindBuffer(GL_ARRAY_BUFFER, *vbo);
-    // TODO(bkuolt): fill buffer
+
+    // TODO(bkuolt): store texture coordinates
+    // TODO(bkuolt): store normals
+    // TODO(bkuolt): store positions
+
     return vbo;
 }
 
 shared_ibo create_ibo(const aiMesh &mesh) {
     auto ibo = create_buffer();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *ibo);
-    // TODO(bkuolt): fill buffer
+
+    const GLsizei size = sizeof(GLuint) * mesh.mNumFaces * 3;
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_STREAM_DRAW);
+    auto buffer = reinterpret_cast<GLuint*>(glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));
+    if (buffer == nullptr) {
+        throw std::runtime_error { "could not create VBO" };  // TODO(bkuolt)
+    }
+
+    for (auto i = 0u; i < mesh.mNumFaces * 3; ++i) {
+        switch (mesh.mFaces[i].mNumIndices) {
+            case 3:
+                std::copy_n(mesh.mFaces[i].mIndices, 3, buffer);
+                buffer += 3;
+                break;
+            case 4:
+                buffer += 3;  // ignore last vertes as this is a bug -> see https://github.com/assimp/assimp/issues/3019
+                break;
+            default:
+                std::cout << mesh.mFaces[i].mNumIndices << std::endl;
+                //throw std::runtime_error { "unsupported format" };
+        }
+
+
+        buffer += 3;
+    }
+
+    glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+    if (glGetError() != GL_NO_ERROR) {
+        throw std::runtime_error { "could not write data to VBO" };
+    }
+
     return ibo;
 }
 
@@ -129,4 +167,8 @@ std::shared_ptr<model> load_model(const std::filesystem::path &path) {
     // TODO(bkuolt): load texture from Assimp and convert it to GL
 
     return {};
+}
+
+void render_model(const shared_model &model) {
+    // TODO(bkuolt)
 }
