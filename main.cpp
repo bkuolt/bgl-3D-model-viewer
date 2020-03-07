@@ -28,7 +28,9 @@ void signal_handler(int signal) {
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
-        std::cout << "usage: demo <path-to-model>" << std::endl;
+        std::cout << console_colors::red << "usage: "
+                  << console_colors::white << "./demo "
+                  << console_colors::blue << "<path-to-model>" << std::endl;
         return EXIT_FAILURE;
     }
 
