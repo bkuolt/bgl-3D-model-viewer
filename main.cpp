@@ -1,21 +1,30 @@
 // Copyright 2020 Bastian Kuolt
 #include <csignal>
 #include <cstdlib>
+#include <chrono>
 #include <iostream>
 #include <stdexcept>
+#include <thread>
 
 #include "gfx.hpp"
 
 namespace {
 
-bool run = true;
+struct {
+    bool run = true;
+    shared_window window;
+    shared_context context;
+} App;
+
+// forward declarations
+void loop();
 void render(shared_window window) noexcept;
 
 void signal_handler(int signal) {
-    run = false;
+    App.run = false;
 }
 
-}
+}  // namespace
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -27,16 +36,10 @@ int main(int argc, char *argv[]) {
     std::signal(SIGHUP, signal_handler);
 
     try {
-        auto window = create_fullscreen_window();
-        auto context = create_GL_context(window);
+        App.window = create_fullscreen_window();
+        App.context = create_GL_context(App.window);
         load_model(argv[1]);
-
-        while (run) {
-            render(window);
-            // TODO(bkuolt): merge event handling branch here
-        }
-
-        SDL_DestroyWindow(window.get());  // makes sure that the the window is destroyed before the context
+        loop();
     } catch (const std::exception &exception) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", exception.what(), nullptr);
         std:: cout << exception.what() << std::endl;
@@ -52,6 +55,36 @@ void render(shared_window window) noexcept {
     glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     SDL_GL_SwapWindow(window.get());
+}
+
+void handle_event(const SDL_Event &event) {
+    switch (event.type) {
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+            if (event.key.keysym.sym == SDLK_ESCAPE) {
+                App.run = false;
+            }
+            break;
+        case SDL_QUIT:
+        case SDL_WINDOWEVENT_CLOSE:
+            App.run = false;
+            break;
+    }
+}
+
+void loop() {
+    using namespace std::chrono_literals;
+
+    SDL_Event event;
+    while (App.run) {
+        while (SDL_PollEvent(&event)) {
+            handle_event(event);
+            render(App.window);
+        }
+        std::this_thread::sleep_for(100ms);
+    }
+
+    SDL_DestroyWindow(App.window.get());  // make sure that the window is destroyed before the context
 }
 
 }  // namespace
