@@ -1,18 +1,12 @@
- 
-name: C/C++ CI
+#travis configuration for coverage testing
+language: c
 
-on:
-  push:
-    branches: [ master ]
+compiler:
+  - gcc
 
-jobs:
-  build:
-    name: Build Test
-    runs-on: ubuntu-latest
+script: 
+  - make install
+  - make
 
-    steps:
-    - name: Installation
-      run: make install
-
-    - name: Build
-      run: make install
+after_success:
+  - make clean
