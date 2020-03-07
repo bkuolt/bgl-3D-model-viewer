@@ -30,10 +30,13 @@ int main(int argc, char *argv[]) {
         auto window = create_fullscreen_window();
         auto context = create_GL_context(window);
         load_model(argv[1]);
+
         while (run) {
             render(window);
             // TODO(bkuolt): merge event handling branch here
         }
+
+        SDL_DestroyWindow(window.get());  // makes sure that the the window is destroyed before the context
     } catch (const std::exception &exception) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", exception.what(), nullptr);
         std:: cout << exception.what() << std::endl;

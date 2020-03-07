@@ -32,7 +32,7 @@ install:
 all: demo
 
 run: all
-	@./demo
+	@./demo ./assets/Ogros.md2
 
 clean:
 	@rm -f *.o

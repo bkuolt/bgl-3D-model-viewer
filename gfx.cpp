@@ -45,14 +45,16 @@ std::shared_ptr<SDL_Window> create_fullscreen_window() {
 }
 
 shared_context create_GL_context(const shared_window &window) {
-    const auto error = glewInit();
-    if (GLEW_OK != error) {
-        throw std::runtime_error { reinterpret_cast<const char*>(glewGetErrorString(error)) };
-    }
-
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     auto context = SDL_GL_CreateContext(window.get());
     if (context == nullptr) {
         throw std::runtime_error { "could not create OpenGL context" };
+    }
+
+    const auto error = glewInit();
+    if (GLEW_OK != error) {
+        throw std::runtime_error { reinterpret_cast<const char*>(glewGetErrorString(error)) };
     }
 
     const auto Deleter = [] (SDL_GLContext *context) { SDL_GL_DeleteContext(context); };
@@ -70,7 +72,7 @@ std::shared_ptr<GLuint> create_buffer() {
         throw std::runtime_error { "could not create GL buffer" };
     }
 
-    return { new GLuint { buffer  },
+    return { new GLuint { buffer },
         [] (GLuint *buffer) {
             glDeleteBuffers(1, buffer);
             delete buffer;
@@ -78,52 +80,52 @@ std::shared_ptr<GLuint> create_buffer() {
     };
 }
 
-shared_vbo create_vbo(const shared_model &model) {
+shared_vbo create_vbo(const aiMesh &mesh) {
     auto vbo = create_buffer();
     glBindBuffer(GL_ARRAY_BUFFER, *vbo);
     // TODO(bkuolt): fill buffer
     return vbo;
 }
 
-shared_ibo create_ibo(const shared_model &model) {
+shared_ibo create_ibo(const aiMesh &mesh) {
     auto ibo = create_buffer();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *ibo);
     // TODO(bkuolt): fill buffer
     return ibo;
 }
 
-shared_vao create_vao(const shared_model &model) {
+shared_vao create_vao(const shared_vbo vbo, shared_ibo ibo) {
     GLuint vao = 0;
-    __glewGenVertexArrays(1, &vao);
-    return {};  // TODO(bkuolt)
+    glGenVertexArrays(1, &vao);
+    return {};  // TODO(bkuolt): implement
 }
 
 }  // namespace
 
 std::shared_ptr<model> load_model(const std::filesystem::path &path) {
-    Assimp::Importer importer;
-
-
     aiPropertyStore* props = aiCreatePropertyStore();
-    aiSetImportPropertyInteger(props, "PP_PTV_NORMALIZE", 1);
+    if (props == nullptr) {
+        throw std::runtime_error { aiGetErrorString() };
+    }
+
+    aiSetImportPropertyInteger(props, AI_CONFIG_PP_PTV_NORMALIZE, 1);
     auto scene = aiImportFileExWithProperties(path.string().c_str(),
         aiProcess_Triangulate            |
         aiProcess_GenSmoothNormals |
-        aiProcess_GenNormals |
-        aiProcess_Triangulate | aiProcess_GenSmoothNormals |
+        aiProcess_Triangulate |
         aiProcess_JoinIdenticalVertices | aiProcess_PreTransformVertices,
         nullptr,
         props);
     aiReleasePropertyStore(props);
 
     if (scene == nullptr) {
-        throw std::runtime_error(importer.GetErrorString());
+        throw std::runtime_error { aiGetErrorString() };
     }
 
-    [[maybe_unused]] const auto &mesh = scene->mMeshes[0];
-    // TODO(bkuolt): create vbo
-    // TODO(bkuolt): create ibo
-    // TODO(bkuolt): create vao
+    const aiMesh &mesh = *scene->mMeshes[0];
+    auto vbo = create_vbo(mesh);
+    auto ibo = create_ibo(mesh);
+    auto vao = create_vao(vbo, ibo);
     // TODO(bkuolt): load texture from Assimp and convert it to GL
 
     return {};
