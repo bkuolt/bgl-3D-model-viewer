@@ -44,7 +44,8 @@ int main(int argc, char *argv[]) {
         loop();
     } catch (const std::exception &exception) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", exception.what(), nullptr);
-        std:: cout << exception.what() << std::endl;
+        std::cout << console_colors::red << "error: "
+                  << exception.what() << std::endl;
         return EXIT_FAILURE;
     }
 

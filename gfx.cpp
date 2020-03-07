@@ -83,12 +83,31 @@ std::shared_ptr<GLuint> create_buffer() {
 }
 
 shared_vbo create_vbo(const aiMesh &mesh) {
+    struct Vertex {
+        GLfloat position[3];
+        GLfloat normal[3];
+        GLfloat texcoords[2];
+    };
+
     auto vbo = create_buffer();
     glBindBuffer(GL_ARRAY_BUFFER, *vbo);
 
-    // TODO(bkuolt): store texture coordinates
-    // TODO(bkuolt): store normals
-    // TODO(bkuolt): store positions
+    auto size = 0u;  // TODO(bkuolt)
+    void*buffer =glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    if (buffer == nullptr) {
+        // TODO(bkuolt)
+    }
+
+
+
+    for (auto i = 0u; i < mesh.mNumVertices; ++i) {
+        // TODO(bkuolt): store texture coordinates
+        // TODO(bkuolt): store normals
+        // TODO(bkuolt): store positions
+    }
+
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+
 
     return vbo;
 }
@@ -104,7 +123,7 @@ shared_ibo create_ibo(const aiMesh &mesh) {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_STREAM_DRAW);
     auto buffer = reinterpret_cast<GLuint*>(glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));
     if (buffer == nullptr) {
-        throw std::runtime_error { "could not create VBO" };  // TODO(bkuolt)
+        throw std::runtime_error { "could not create VBO" };
     }
 
     for (auto i = 0u; i < mesh.mNumFaces; ++i) {
