@@ -2,19 +2,18 @@
 #include "gfx.hpp"
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_video.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_video.h>
 
-#include <iostream>
 #include <cassert>
+#include <iostream>
 #include <string>
 #include <stdexcept>
 
 #include <assimp/cimport.h>      // aiPropertyStore
-#include <assimp/scene.h>        // Output data structure
 #include <assimp/postprocess.h>  // Post processing flags
 #include <assimp/Importer.hpp>   // Model loader
-
+#include <assimp/scene.h>        // Output data structure
 #include <type_traits>
 
 namespace {
@@ -76,10 +75,9 @@ std::shared_ptr<GLuint> create_buffer() {
         throw std::runtime_error { "could not create GL buffer" };
     }
 
-    return { new GLuint { buffer },
+    return { &buffer,
         [] (GLuint *buffer) {
             glDeleteBuffers(1, buffer);
-            delete buffer;
         }
     };
 }
@@ -98,30 +96,27 @@ shared_vbo create_vbo(const aiMesh &mesh) {
 shared_ibo create_ibo(const aiMesh &mesh) {
     auto ibo = create_buffer();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *ibo);
+    if (glGetError() != GL_NO_ERROR) {
+        throw std::runtime_error { "could not write data to VBO" };
+    }
 
-    const GLsizei size = sizeof(GLuint) * mesh.mNumFaces * 3;
+    const GLsizei size = sizeof(GLuint) * mesh.mNumFaces * 30;
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_STREAM_DRAW);
     auto buffer = reinterpret_cast<GLuint*>(glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));
     if (buffer == nullptr) {
         throw std::runtime_error { "could not create VBO" };  // TODO(bkuolt)
     }
 
-    for (auto i = 0u; i < mesh.mNumFaces * 3; ++i) {
+    for (auto i = 0u; i < mesh.mNumFaces; ++i) {
         switch (mesh.mFaces[i].mNumIndices) {
             case 3:
                 std::copy_n(mesh.mFaces[i].mIndices, 3, buffer);
                 buffer += 3;
                 break;
-            case 4:
-                buffer += 3;  // ignore last vertes as this is a bug -> see https://github.com/assimp/assimp/issues/3019
-                break;
             default:
-                std::cout << mesh.mFaces[i].mNumIndices << std::endl;
-                //throw std::runtime_error { "unsupported format" };
+                glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+                throw std::runtime_error { "unexpected data" };
         }
-
-
-        buffer += 3;
     }
 
     glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
@@ -129,6 +124,7 @@ shared_ibo create_ibo(const aiMesh &mesh) {
         throw std::runtime_error { "could not write data to VBO" };
     }
 
+    std::cout << "created vbo for " << mesh.mNumFaces * 3 << " indices" << std::endl;
     return ibo;
 }
 

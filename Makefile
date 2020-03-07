@@ -13,16 +13,18 @@ LIBS =  -lstdc++fs \
 #--------------------------------------#
 
 main.o: main.cpp gfx.hpp
-	$(CC) $(FLAGS) -c main.cpp
+	@$(CC) \
+		$(FLAGS) -c main.cpp
 
 gfx.o: gfx.cpp gfx.hpp
-	$(CC) $(FLAGS) -c gfx.cpp
+	@$(CC) \
+		$(FLAGS) -c gfx.cpp
 
 demo: main.o gfx.o
-	$(CC) -o demo \
-	$(FLAGS) \
-	main.o gfx.o \
-	$(LIBS)
+	@$(CC) -o demo \
+		$(FLAGS) \
+		main.o gfx.o \
+		$(LIBS)
 
 #--------------------------------------#
 
