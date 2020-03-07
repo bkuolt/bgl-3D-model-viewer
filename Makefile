@@ -5,7 +5,7 @@
 
 CC = g++
 FLAGS = -std=c++17 -pthread -Wall -O3
-LIBS = -lSDL2 -lSDL2_image -lstdc++fs -lassimp
+LIBS = -lSDL2 -lSDL2_image -lstdc++fs -lassimp -lGLEW -lGLU -lGL
 
 #--------------------------------------#
 
@@ -24,7 +24,10 @@ demo: main.o gfx.o
 #--------------------------------------#
 
 install:
-	sudo apt-get install libsdl2-dev libsdl2-image-dev libassimp-dev
+	sudo apt-get install \
+		libsdl2-dev libsdl2-image-dev \
+		libassimp-dev \
+		libassimp-dev
 
 all: demo
 

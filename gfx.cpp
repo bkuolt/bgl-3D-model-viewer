@@ -6,10 +6,12 @@
 #include <SDL2/SDL_image.h>
 
 #include <string>
+#include <stdexcept>
 
+#include <assimp/cimport.h>      // aiPropertyStore
 #include <assimp/scene.h>        // Output data structure
 #include <assimp/postprocess.h>  // Post processing flags
-#include <assimp/Importer.hpp>  // Model loader
+#include <assimp/Importer.hpp>   // Model loader
 
 namespace {
 
@@ -42,31 +44,83 @@ std::shared_ptr<SDL_Window> create_fullscreen_window() {
     return std::shared_ptr<SDL_Window>(window, Deleter);
 }
 
-std::shared_ptr<SDL_Renderer> create_renderer(const std::shared_ptr<SDL_Window> &window) {
-    auto renderer = SDL_CreateRenderer(window.get(),
-                                     -1,
-                                      0 /* TODO(bkuol): set flags */);
-    if (renderer == nullptr) {
-        throw std::runtime_error{ SDL_GetError() };
+shared_context create_GL_context(const shared_window &window) {
+    const auto error = glewInit();
+    if (GLEW_OK != error) {
+        throw std::runtime_error { reinterpret_cast<const char*>(glewGetErrorString(error)) };
     }
-    const auto Deleter = [] (SDL_Renderer *renderer) { SDL_DestroyRenderer(renderer); };
-    return std::shared_ptr<SDL_Renderer>(renderer, Deleter);
+
+    auto context = SDL_GL_CreateContext(window.get());
+    if (context == nullptr) {
+        throw std::runtime_error { "could not create OpenGL context" };
+    }
+
+    const auto Deleter = [] (SDL_GLContext *context) { SDL_GL_DeleteContext(context); };
+    return std::shared_ptr<SDL_GLContext>(new SDL_GLContext { context }, Deleter);
 }
 
 /* ----------------------- Rendering ----------------------- */
 
+namespace {
+
+std::shared_ptr<GLuint> create_buffer() {
+    GLuint buffer = 0;
+    glCreateBuffers(1, &buffer);
+    if (glGetError() != GL_NO_ERROR) {
+        throw std::runtime_error { "could not create GL buffer" };
+    }
+
+    return { new GLuint { buffer  },
+        [] (GLuint *buffer) {
+            glDeleteBuffers(1, buffer);
+            delete buffer;
+        }
+    };
+}
+
+shared_vbo create_vbo(const shared_model &model) {
+    auto vbo = create_buffer();
+    glBindBuffer(GL_ARRAY_BUFFER, *vbo);
+    // TODO(bkuolt): fill buffer
+    return vbo;
+}
+
+shared_ibo create_ibo(const shared_model &model) {
+    auto ibo = create_buffer();
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *ibo);
+    // TODO(bkuolt): fill buffer
+    return ibo;
+}
+
+shared_vao create_vao(const shared_model &model) {
+    GLuint vao = 0;
+    __glewGenVertexArrays(1, &vao);
+    return {};  // TODO(bkuolt)
+}
+
+}  // namespace
+
 std::shared_ptr<model> load_model(const std::filesystem::path &path) {
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(path.string().c_str(),
-                                             aiProcess_CalcTangentSpace       |
-                                             aiProcess_Triangulate            |
-                                             aiProcess_JoinIdenticalVertices  |
-                                             aiProcess_SortByPType);
+
+
+    aiPropertyStore* props = aiCreatePropertyStore();
+    aiSetImportPropertyInteger(props, "PP_PTV_NORMALIZE", 1);
+    auto scene = aiImportFileExWithProperties(path.string().c_str(),
+        aiProcess_Triangulate            |
+        aiProcess_GenSmoothNormals |
+        aiProcess_GenNormals |
+        aiProcess_Triangulate | aiProcess_GenSmoothNormals |
+        aiProcess_JoinIdenticalVertices | aiProcess_PreTransformVertices,
+        nullptr,
+        props);
+    aiReleasePropertyStore(props);
+
     if (scene == nullptr) {
         throw std::runtime_error(importer.GetErrorString());
     }
 
-    const auto &mesh = scene->mMeshes[0];
+    [[maybe_unused]] const auto &mesh = scene->mMeshes[0];
     // TODO(bkuolt): create vbo
     // TODO(bkuolt): create ibo
     // TODO(bkuolt): create vao
