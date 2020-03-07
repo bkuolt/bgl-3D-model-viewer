@@ -4,15 +4,16 @@ name: C/C++ CI
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
 jobs:
   build:
-
+    name: Build Test
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v2
-    - name: make
-      run: make install; make
+    - name: Installation
+      uses: actions/checkout@v2
+      run: make install;
+
+    - name: Build
+      run: make install;
