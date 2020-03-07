@@ -27,7 +27,7 @@ install:
 	sudo apt-get install \
 		libsdl2-dev libsdl2-image-dev \
 		libassimp-dev \
-		libassimp-dev
+		libglew-dev
 
 all: demo
 
