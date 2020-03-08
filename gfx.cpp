@@ -67,6 +67,51 @@ shared_context create_GL_context(const shared_window &window) {
 
 namespace {
 
+using SharedShader = std::shared_ptr<GLuint>;
+using SharedProgram = std::shared_ptr<GLuint>;
+
+void load_shader_source(GLuint handle, const std::filesystem::path &path) {
+    // TODO(bkuolt): implement
+}
+
+SharedShader load_shader(GLenum type, const std::filesystem::path &path) {
+    GLuint handle = glCreateShader(type);
+    if (glGetError() != GL_NO_ERROR) {
+        throw std::runtime_error { "" /* TODO(bkuolt*/ };
+    }
+
+    constexpr auto Deleter = [] (GLuint *pointer) {
+        glDeleteShader(*pointer);
+        delete pointer;
+    };
+    auto shader = std::shared_ptr<GLuint> { new GLuint { handle }, Deleter };
+    load_shader_source(handle, path);
+    glCompileShader(handle);
+    // TODO(bkuolt): check compile status
+    return shader;
+}
+
+SharedProgram load_program(const std::filesystem::path &vs_path, const std::filesystem::path &fs_path) {
+    auto vs = load_shader(GL_VERTEX_SHADER, vs_path);
+    auto fs = load_shader(GL_FRAGMENT_SHADER, fs_path);
+
+    GLuint handle = glCreateProgram();
+    if (glGetError() != GL_NO_ERROR) {
+        throw std::runtime_error { "" /* TODO(bkuolt*/ };
+    }
+
+    glAttachShader(handle, *vs);
+    glAttachShader(handle, *fs);
+    glLinkProgram(handle);
+    // TODO(bkuolt): check for errors
+
+    constexpr auto Deleter = [] (GLuint *pointer) {
+        glDeleteProgram(*pointer);
+        delete pointer;
+    };
+    return { new GLuint { handle }, Deleter };
+}
+
 
 // TODO(bkuolt): Compile()
 // TODO(bkuolt): Link()
@@ -201,6 +246,6 @@ void render_model(const shared_model &model) {
     // TODO(bkuolt): bind vbo
     // TODO(bkuolt): bind vao
     // TODO(bkuolt): set uniforms
-    glUseProgram(model->program.get());
+    glUseProgram(*model->program);
     glDrawElements(GL_TRIANGLES, model->vertex_count * 3, GL_UNSIGNED_INT, nullptr);
 }
