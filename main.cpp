@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <chrono>
 #include <iostream>
+#include <iomanip>
 #include <stdexcept>
 #include <thread>
 
@@ -58,11 +59,13 @@ void on_button(ps4_button, bool pressed) {
 }
 
 void on_motion(const vec2 &lhs, const vec2 &rhs) {
-        std::cout << "dual stick motion ["
-                  << "(" << lhs.x << "|" << lhs.y << ")"
-                  << ","
-                  << "(" << rhs.x << "|" << rhs.y << ")"
-                  << "]" << std::endl;
+    std::cout.precision(2);
+
+    std::cout << "dual stick motion ["
+                << "(" << std::fixed << lhs.x << " | " << std::fixed << lhs.y << ")"
+                << " , "
+                << "(" << std::fixed << rhs.x << " | " << std::fixed << rhs.y << ")"
+                << "]" << std::endl;
     // TODO(bkuolt): implement
 }
 

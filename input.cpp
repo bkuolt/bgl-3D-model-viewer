@@ -15,18 +15,23 @@
 #include <limits>
 #include <memory>
 #include <optional>
+#include <string>
 #include <thread>
 #include <vector>
 
 using namespace std::chrono_literals;
 
+/* ------------------------- Game Controller Support --------------------------- */
 namespace {
 
+/**
+ * @brief The ID of the currently used @p SDL_Joystick.
+ * 
+ */
 std::optional<SDL_JoystickID> current_game_controller;
 
-std::vector<SharedGameController> find_game_controllers() {
-    // TODO(bkuolt): lock SDL game controller handling
-    std::vector<SharedGameController> game_controllers;
+std::vector<SDL_JoystickID> find_game_controllers() {
+    std::vector<SDL_JoystickID> game_controllers;
 
     SDL_GameControllerUpdate();
     const auto num_joysticks = SDL_NumJoysticks();
@@ -40,21 +45,22 @@ std::vector<SharedGameController> find_game_controllers() {
             throw std::runtime_error { SDL_GetError() };
         }
 
-        std::cout << index << ": " << SDL_GameControllerName(game_controller) << std::endl;
-        if (strcmp(SDL_GameControllerName(game_controller), "PS4 Controller") == 0) {
-            game_controllers.emplace_back(game_controller,
-                                          [] (SDL_GameController *pointer) { SDL_GameControllerClose(pointer); });
+        const std::string device_name { SDL_GameControllerNameForIndex(index) };
+        std::cout << index << ": " << device_name << std::endl;
+        if (device_name == "PS4 Controller") {
+            game_controllers.emplace_back(index);
         }
     }
 
-    // TODO(bkuolt): unlock SDL game controller handling
     return game_controllers;
 }
 
 SharedGameController find_game_controller() {
-    SDL_Init(SDL_INIT_GAMECONTROLLER);
+    if (SDL_Init(SDL_INIT_GAMECONTROLLER) == -1) {
+        throw std::runtime_error { SDL_GetError() };
+    }
 
-    std::vector<SharedGameController> game_controllers;
+    std::vector<SDL_JoystickID> game_controllers;
     do {
         game_controllers = find_game_controllers();
         if (game_controllers.empty()) {
@@ -68,30 +74,28 @@ SharedGameController find_game_controller() {
                                  "Found more than one game controller but currently only one is supported!", nullptr);
     }
 
-    auto joystick = SDL_GameControllerGetJoystick(game_controllers[0].get());
-    current_game_controller = SDL_JoystickInstanceID(joystick);  // TODO(bkuolt): remove this hack
-    return game_controllers[0];
+    SDL_GameController *game_controller = SDL_GameControllerOpen(game_controllers[0]);
+    if (game_controller == nullptr) {
+        throw std::runtime_error { SDL_GetError() };
+    }
+
+    current_game_controller = game_controllers[0];  // TODO(bkuolt): remove this hack
+    return { game_controller,
+             [] (SDL_GameController *pointer) {
+                 SDL_GameControllerClose(pointer);
+           }};
 }
-
-}  // namespace
-
-std::future<SharedGameController> get_game_controller() {
-    return std::async(std::launch::async, &find_game_controller);
-}
-
-/* ---------------------------------------------------------------------- */
-
-namespace {
 
 ps4_button map_button_name(Uint8 button) {
     return {};  // TODO(bkuolt)
 }
 
+/* ---------------------------- Input Event Handling --------------------------- */
+
 void handle_input_event(const SDL_Event &event) {
     switch (event.type) {
         case SDL_JOYBUTTONDOWN:
         case SDL_JOYBUTTONUP:
-        std::cout << event.jbutton.which  << current_game_controller.value()<< std::endl;
             if (event.jbutton.which == current_game_controller) {
                 on_button(map_button_name(event.jbutton.button), event.jbutton.state);
             }
@@ -109,15 +113,8 @@ void handle_input_event(const SDL_Event &event) {
                 }
             }
             break;
-        default:
-            std::cout << "did not handle this input event" << std::endl;
     }
 }
-
-}  // namespace
-
-
-/* ---------------------------------------------------------- */
 
 void handle_event(const SDL_Event &event) {
     switch (event.type) {
@@ -139,6 +136,16 @@ void handle_event(const SDL_Event &event) {
     }
 }
 
+}  // namespace
+
+/*-----------------------------------------------------------------------------
+  -------------------------------- Interface ----------------------------------
+  ----------------------------------------------------------------------------- */
+
+std::future<SharedGameController> get_game_controller() {
+    return std::async(std::launch::async, &find_game_controller);
+}
+
 void loop() {
     using namespace std::chrono_literals;
 
@@ -148,7 +155,6 @@ void loop() {
             handle_event(event);
             render(App.window);
         }
-        std::this_thread::sleep_for(100ms);
     }
 
     SDL_DestroyWindow(App.window.get());  // make sure that the window is destroyed before the context

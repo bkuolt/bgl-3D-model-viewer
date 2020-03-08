@@ -19,12 +19,6 @@ using SharedGameController = std::shared_ptr<SDL_GameController>;
 std::future<SharedGameController> get_game_controller();
 
 /**
- * @brief Handles a @p SDL_Event
- * @param event Any @p SDL_Event
- */
-void handle_event(const SDL_Event &event);
-
-/**
  * @brief Performs game loop until windows is closed.
  */
 void loop();
