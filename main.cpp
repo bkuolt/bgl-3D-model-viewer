@@ -71,7 +71,7 @@ void handle_event(const SDL_Event &event) {
             break;
         case SDL_JOYAXISMOTION:
         case SDL_JOYBUTTONDOWN:
-        case SDL_JOYBUTTONUP:std::cout << "handle_event"<<std::endl;
+        case SDL_JOYBUTTONUP:
             handle_input_event(event);
             break;
         case SDL_QUIT:
