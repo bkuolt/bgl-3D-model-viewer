@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
         App.window = create_fullscreen_window();
         App.context = create_GL_context(App.window);
 
-        load_model(argv[1]);
+        LoadModel(argv[1]);
         auto game_controller = get_game_controller();
         if (game_controller.wait_for(std::chrono::milliseconds()) == std::future_status::ready) {
             game_controller.get();

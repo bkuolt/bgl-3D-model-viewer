@@ -31,7 +31,11 @@ using shared_context = std::shared_ptr<SDL_GLContext>;
 using shared_vbo = std::shared_ptr<GLuint>;
 using shared_ibo = std::shared_ptr<GLuint>;
 using shared_vao = std::shared_ptr<GLuint>;
-using shrader_program = std::shared_ptr<GLuint>;
+using shader_program = std::shared_ptr<GLuint>;
+
+
+using SharedShader = std::shared_ptr<GLuint>;
+using SharedProgram = std::shared_ptr<GLuint>;
 
 #ifdef __linux
 namespace console_colors {
@@ -44,19 +48,21 @@ namespace console_colors {
 }
 #endif  // namespace __linux
 
-struct model {
+struct Model {
     shared_vbo vbo;
     shared_ibo ibo;
     shared_vao vao;
-    shrader_program program;
+    std::shared_ptr<GLuint> texture;  // TODO(bkuolt): implement
+    shader_program program;
     GLsizei vertex_count;
 };
-using shared_model = std::shared_ptr<model>;
+
+using SharedModel = std::shared_ptr<Model>;
 
 shared_window create_fullscreen_window();
 shared_context create_GL_context(const shared_window &window);
 
-shared_model load_model(const std::filesystem::path &path);
-void render_model(const shared_model &model);
+SharedModel LoadModel(const std::filesystem::path &path);
+void render_model(const SharedModel &model);
 
 #endif  // GFX_HPP_

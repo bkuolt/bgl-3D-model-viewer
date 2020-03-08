@@ -67,14 +67,11 @@ shared_context create_GL_context(const shared_window &window) {
 
 namespace {
 
-using SharedShader = std::shared_ptr<GLuint>;
-using SharedProgram = std::shared_ptr<GLuint>;
-
 void load_shader_source(GLuint handle, const std::filesystem::path &path) {
     // TODO(bkuolt): implement
 }
 
-SharedShader load_shader(GLenum type, const std::filesystem::path &path) {
+SharedShader LoadShader(GLenum type, const std::filesystem::path &path) {
     GLuint handle = glCreateShader(type);
     if (glGetError() != GL_NO_ERROR) {
         throw std::runtime_error { "" /* TODO(bkuolt*/ };
@@ -91,9 +88,9 @@ SharedShader load_shader(GLenum type, const std::filesystem::path &path) {
     return shader;
 }
 
-SharedProgram load_program(const std::filesystem::path &vs_path, const std::filesystem::path &fs_path) {
-    auto vs = load_shader(GL_VERTEX_SHADER, vs_path);
-    auto fs = load_shader(GL_FRAGMENT_SHADER, fs_path);
+SharedProgram LoadProgram(const std::filesystem::path &vs_path, const std::filesystem::path &fs_path) {
+    auto vs = LoadShader(GL_VERTEX_SHADER, vs_path);
+    auto fs = LoadShader(GL_FRAGMENT_SHADER, fs_path);
 
     GLuint handle = glCreateProgram();
     if (glGetError() != GL_NO_ERROR) {
@@ -211,9 +208,14 @@ shared_vao create_vao(const shared_vbo vbo, shared_ibo ibo) {
     return {};  // TODO(bkuolt): implement
 }
 
+std::shared_ptr<GLuint> create_texture() {
+    return {};  // TODO(bkuolt): implement
+}
+
+
 }  // namespace
 
-std::shared_ptr<model> load_model(const std::filesystem::path &path) {
+SharedModel LoadModel(const std::filesystem::path &path) {
     aiPropertyStore* props = aiCreatePropertyStore();
     if (props == nullptr) {
         throw std::runtime_error { aiGetErrorString() };
@@ -234,15 +236,21 @@ std::shared_ptr<model> load_model(const std::filesystem::path &path) {
     }
 
     const aiMesh &mesh = *scene->mMeshes[0];
-    auto vbo = create_vbo(mesh);
-    auto ibo = create_ibo(mesh);
-    auto vao = create_vao(vbo, ibo);
-    // TODO(bkuolt): load texture from Assimp and convert it to GL
 
-    return {};
+    const auto vbo = create_vbo(mesh);
+    const auto ibo = create_ibo(mesh);
+    Model model;
+
+    return std::make_shared<Model>( Model {
+        .vbo = vbo, .ibo = ibo,
+        .vao = create_vao(vbo, ibo),
+        .texture = create_texture(),
+        .program = LoadProgram("/assets/main.vs", "/assets/main.fs"),
+        .vertex_count = static_cast<GLsizei>(mesh.mNumVertices)
+    });
 }
 
-void render_model(const shared_model &model) {
+void render_model(const SharedModel &model) {
     // TODO(bkuolt): bind vbo
     // TODO(bkuolt): bind vao
     // TODO(bkuolt): set uniforms
