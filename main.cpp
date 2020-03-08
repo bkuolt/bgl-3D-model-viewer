@@ -20,6 +20,7 @@ namespace {
 
 void signal_handler(int signal) {
     App.run = false;
+    std::cout << "requested program termination" << std::endl;
 }
 
 }  // namespace
@@ -59,14 +60,13 @@ void on_button(ps4_button, bool pressed) {
 }
 
 void on_motion(const vec2 &lhs, const vec2 &rhs) {
-    std::cout.precision(2);
+    std::cout << "dual stick motion [" << lhs << " , " << rhs << "]" << std::endl;
+    // TODO(bkuolt): implement game logic
+}
 
-    std::cout << "dual stick motion ["
-                << "(" << std::fixed << lhs.x << " | " << std::fixed << lhs.y << ")"
-                << " , "
-                << "(" << std::fixed << rhs.x << " | " << std::fixed << rhs.y << ")"
-                << "]" << std::endl;
-    // TODO(bkuolt): implement
+void on_trigger(float lhs, float rhs) {
+    std::cout << "trigger [" << lhs << " , " << rhs << "]" << std::endl;
+    // TODO(bkuolt): implement game logic
 }
 
 void render(const shared_window &window) noexcept {

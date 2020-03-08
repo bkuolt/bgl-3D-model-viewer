@@ -104,10 +104,16 @@ void handle_input_event(const SDL_Event &event) {
             if (event.jbutton.which == current_game_controller) {
                 const auto value = static_cast<float>(event.jaxis.value) / std::numeric_limits<decltype(event.jaxis.value)>::max();
                 switch (event.jaxis.axis) {
-                    case SDL_CONTROLLER_AXIS_RIGHTX: on_motion({ value, 0.0f }, {}); break;
+                    case SDL_CONTROLLER_AXIS_TRIGGERLEFT: on_motion({ value, 0.0f }, {}); break;
                     case SDL_CONTROLLER_AXIS_RIGHTY: on_motion({ 0.0f, value }, {}); break;
                     case SDL_CONTROLLER_AXIS_LEFTX:  on_motion({}, { 0.0f, value }); break;
                     case SDL_CONTROLLER_AXIS_LEFTY:  on_motion({}, { 0.0f, value }); break;
+                    case SDL_CONTROLLER_AXIS_RIGHTX:   // @note this a a workaround for a known SDL2 bug
+                        on_trigger(value, 0.0f);
+                        break;
+                    case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
+                        on_trigger(0.0f, value);
+                        break;
                     default:
                         std::cout << "Warning: got event from unsupported axis" << std::endl;
                 }

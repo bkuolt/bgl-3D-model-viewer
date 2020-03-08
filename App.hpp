@@ -13,6 +13,7 @@ extern struct App {
 
 void on_button(ps4_button, bool pressed);
 void on_motion(const vec2 &lhs, const vec2 &rhs);
+void on_trigger(const float lhs, float rhs);
 void render(const shared_window &window);
 
 #endif  // APP_HPP_

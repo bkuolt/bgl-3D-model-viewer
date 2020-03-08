@@ -12,7 +12,17 @@
 
 #include <memory>
 #include <filesystem>
+#include <glm/glm.hpp>
+#include <iomanip>
+#include <iostream>
 
+inline std::ostream& operator << (std::ostream &os, const glm::vec2 &vector) {
+    const auto previous_precision = std::cout.precision(2);
+    os << "(" << std::fixed << vector.x
+       << " | "
+       << std::fixed << vector.y << ")";
+    return os;
+}
 
 using shared_window = std::shared_ptr<SDL_Window>;
 using shared_context = std::shared_ptr<SDL_GLContext>;
