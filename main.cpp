@@ -3,25 +3,24 @@
 #include <cstdlib>
 #include <chrono>
 #include <iostream>
+#include <iomanip>
 #include <stdexcept>
 #include <thread>
 
 #include "gfx.hpp"
+#include "input.hpp"
 
-namespace {
-
-struct {
+struct App {
     bool run = true;
     shared_window window;
     shared_context context;
 } App;
 
-// forward declarations
-void loop();
-void render(shared_window window) noexcept;
+namespace {
 
 void signal_handler(int signal) {
     App.run = false;
+    std::cout << "requested program termination" << std::endl;
 }
 
 }  // namespace
@@ -40,7 +39,13 @@ int main(int argc, char *argv[]) {
     try {
         App.window = create_fullscreen_window();
         App.context = create_GL_context(App.window);
+
         load_model(argv[1]);
+        auto game_controller = get_game_controller();
+        if (game_controller.wait_for(std::chrono::milliseconds()) == std::future_status::ready) {
+            game_controller.get();
+        }
+
         loop();
     } catch (const std::exception &exception) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", exception.what(), nullptr);
@@ -52,42 +57,23 @@ int main(int argc, char *argv[]) {
     return EXIT_SUCCESS;
 }
 
-namespace {
+void on_button(ps4_button, bool pressed) {
+    std::cout << "game controller button " << (pressed ? "pressed" : "released") << std::endl;
+    // TODO(bkuolt): implement
+}
 
-void render(shared_window window) noexcept {
+void on_motion(const vec2 &lhs, const vec2 &rhs) {
+    std::cout << "dual stick motion [" << lhs << " , " << rhs << "]" << std::endl;
+    // TODO(bkuolt): implement game logic
+}
+
+void on_trigger(float lhs, float rhs) {
+    std::cout << "trigger [" << lhs << " , " << rhs << "]" << std::endl;
+    // TODO(bkuolt): implement game logic
+}
+
+void render(const shared_window &window) noexcept {
     glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     SDL_GL_SwapWindow(window.get());
 }
-
-void handle_event(const SDL_Event &event) {
-    switch (event.type) {
-        case SDL_KEYDOWN:
-        case SDL_KEYUP:
-            if (event.key.keysym.sym == SDLK_ESCAPE) {
-                App.run = false;
-            }
-            break;
-        case SDL_QUIT:
-        case SDL_WINDOWEVENT_CLOSE:
-            App.run = false;
-            break;
-    }
-}
-
-void loop() {
-    using namespace std::chrono_literals;
-
-    SDL_Event event;
-    while (App.run) {
-        while (SDL_PollEvent(&event)) {
-            handle_event(event);
-            render(App.window);
-        }
-        std::this_thread::sleep_for(100ms);
-    }
-
-    SDL_DestroyWindow(App.window.get());  // make sure that the window is destroyed before the context
-}
-
-}  // namespace
