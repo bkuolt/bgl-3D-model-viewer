@@ -7,6 +7,7 @@
 #include <thread>
 
 #include "gfx.hpp"
+#include "input.hpp"
 
 namespace {
 
@@ -16,9 +17,8 @@ struct {
     shared_context context;
 } App;
 
-// forward declarations
+// forward declaration
 void loop();
-void render(shared_window window) noexcept;
 
 void signal_handler(int signal) {
     App.run = false;
@@ -38,7 +38,11 @@ int main(int argc, char *argv[]) {
     try {
         App.window = create_fullscreen_window();
         App.context = create_GL_context(App.window);
+
         load_model(argv[1]);
+        auto game_controller = get_game_controller();
+        game_controller.get();
+
         loop();
     } catch (const std::exception &exception) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", exception.what(), nullptr);

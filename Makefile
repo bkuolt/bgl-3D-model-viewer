@@ -22,7 +22,7 @@ input.o: input.cpp input.hpp
 demo: main.o gfx.o input.o
 	$(CC) -o demo \
 	$(FLAGS) \
-	main.o gfx.o \
+	main.o gfx.o input.o \
 	$(LIBS)
 
 install:
