@@ -5,19 +5,10 @@
 
 CC = g++
 FLAGS = -std=c++17 -pthread -Wall -O3
-<<<<<<< HEAD
-LIBS =  -lstdc++fs \
-	-lSDL2 -lSDL2_image \
-	-lassimp \
-	-lGLEW -lGLU -lGL
-
-#--------------------------------------#
-=======
 LIBS = -lstdc++fs \
 	-lSDL2 -lSDL2_image \
 	-lassimp  \
 	-lGLEW -lGLU -lGL
->>>>>>> master
 
 main.o: main.cpp gfx.hpp
 	@$(CC) \

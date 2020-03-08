@@ -16,11 +16,13 @@
 #include <iomanip>
 #include <iostream>
 
+using vec2 = glm::vec2;
+using vec3 = glm::vec3;
+
 inline std::ostream& operator << (std::ostream &os, const glm::vec2 &vector) {
-    const auto previous_precision = std::cout.precision(2);
-    os << "(" << std::fixed << vector.x
+    os << "(" << std::fixed << std::setprecision(2) << vector.x
        << " | "
-       << std::fixed << vector.y << ")";
+       << std::fixed << std::setprecision(2) << vector.y << ")";
     return os;
 }
 

@@ -8,7 +8,6 @@
 
 #include <SDL2/SDL_gamecontroller.h>
 
-using vec2 = glm::vec2;
 enum class ps4_button { Triangle, Cross, Square, Circle, L1, L2, R1, R2 };
 
 using SharedGameController = std::shared_ptr<SDL_GameController>;

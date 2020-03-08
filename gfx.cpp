@@ -33,7 +33,6 @@ void initialize_SDL() {
 
 }  // namespace
 
-
 std::shared_ptr<SDL_Window> create_fullscreen_window() {
     initialize_SDL();
     SDL_Window * const window = SDL_CreateWindow("BGL Tech Demo",
@@ -84,30 +83,32 @@ std::shared_ptr<GLuint> create_buffer() {
 
 shared_vbo create_vbo(const aiMesh &mesh) {
     struct Vertex {
-        GLfloat position[3];
-        GLfloat normal[3];
-        GLfloat texcoords[2];
+        vec3 position;
+        vec3 normal;
+        vec2 texcoords;
     };
 
     auto vbo = create_buffer();
     glBindBuffer(GL_ARRAY_BUFFER, *vbo);
 
-    auto size = 0u;  // TODO(bkuolt)
-    void*buffer =glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    const GLsizei size = sizeof(Vertex) * mesh.mNumVertices;
+    glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_STREAM_DRAW);
+    Vertex *buffer = reinterpret_cast<Vertex*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
     if (buffer == nullptr) {
-        // TODO(bkuolt)
+        throw std::runtime_error { "could not create vbo" };
     }
 
-
-
+    static_assert(std::is_same<ai_real, float>::value);
     for (auto i = 0u; i < mesh.mNumVertices; ++i) {
-        // TODO(bkuolt): store texture coordinates
-        // TODO(bkuolt): store normals
-        // TODO(bkuolt): store positions
+        buffer[i].normal = vec3 { mesh.mNormals[i].x, mesh.mNormals[i].y, mesh.mNormals[i].z };
+        buffer[i].position = vec3 { mesh.mVertices[i].x, mesh.mVertices[i].y, mesh.mVertices[i].z };
+        buffer[i].texcoords = vec2 { mesh.mTextureCoords[0][i].x, mesh.mTextureCoords[0][i].y };
     }
 
     glUnmapBuffer(GL_ARRAY_BUFFER);
-
+    if (glGetError() != GL_NO_ERROR) {
+        throw std::runtime_error { "could not unmap vbo" };
+    }
 
     return vbo;
 }
