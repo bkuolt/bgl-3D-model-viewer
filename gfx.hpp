@@ -31,6 +31,7 @@ using shared_context = std::shared_ptr<SDL_GLContext>;
 using shared_vbo = std::shared_ptr<GLuint>;
 using shared_ibo = std::shared_ptr<GLuint>;
 using shared_vao = std::shared_ptr<GLuint>;
+using shrader_program = std::shared_ptr<GLuint>;
 
 #ifdef __linux
 namespace console_colors {
@@ -47,6 +48,8 @@ struct model {
     shared_vbo vbo;
     shared_ibo ibo;
     shared_vao vao;
+    shrader_program program;
+    GLsizei vertex_count;
 };
 using shared_model = std::shared_ptr<model>;
 

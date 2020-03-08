@@ -63,7 +63,19 @@ shared_context create_GL_context(const shared_window &window) {
     return std::shared_ptr<SDL_GLContext>(new SDL_GLContext { context }, Deleter);
 }
 
-/* ----------------------- Rendering ----------------------- */
+/* ----------------------- Shader Support  ----------------------- */
+
+namespace {
+
+
+// TODO(bkuolt): Compile()
+// TODO(bkuolt): Link()
+// TODO(bkuolt): LoadShaderSource()
+// TODO(bkuolt): LoadShader()
+
+}  // namespace
+
+/* ------------------------- Rendering --------------------------- */
 
 namespace {
 
@@ -186,5 +198,9 @@ std::shared_ptr<model> load_model(const std::filesystem::path &path) {
 }
 
 void render_model(const shared_model &model) {
-    // TODO(bkuolt)
+    // TODO(bkuolt): bind vbo
+    // TODO(bkuolt): bind vao
+    // TODO(bkuolt): set uniforms
+    glUseProgram(model->program.get());
+    glDrawElements(GL_TRIANGLES, model->vertex_count * 3, GL_UNSIGNED_INT, nullptr);
 }
