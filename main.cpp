@@ -9,16 +9,13 @@
 #include "gfx.hpp"
 #include "input.hpp"
 
-namespace {
-
-struct {
+struct App {
     bool run = true;
     shared_window window;
     shared_context context;
 } App;
 
-// forward declaration
-void loop();
+namespace {
 
 void signal_handler(int signal) {
     App.run = false;
@@ -41,7 +38,9 @@ int main(int argc, char *argv[]) {
 
         load_model(argv[1]);
         auto game_controller = get_game_controller();
-        game_controller.get();
+        if (game_controller.wait_for(std::chrono::milliseconds()) == std::future_status::ready) {
+            game_controller.get();
+        }
 
         loop();
     } catch (const std::exception &exception) {
@@ -53,47 +52,22 @@ int main(int argc, char *argv[]) {
     return EXIT_SUCCESS;
 }
 
-namespace {
+void on_button(ps4_button, bool pressed) {
+    std::cout << "game controller button " << (pressed ? "pressed" : "released") << std::endl;
+    // TODO(bkuolt): implement
+}
 
-void render(shared_window window) noexcept {
+void on_motion(const vec2 &lhs, const vec2 &rhs) {
+        std::cout << "dual stick motion ["
+                  << "(" << lhs.x << "|" << lhs.y << ")"
+                  << ","
+                  << "(" << rhs.x << "|" << rhs.y << ")"
+                  << "]" << std::endl;
+    // TODO(bkuolt): implement
+}
+
+void render(const shared_window &window) noexcept {
     glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     SDL_GL_SwapWindow(window.get());
 }
-
-void handle_event(const SDL_Event &event) {
-    switch (event.type) {
-        case SDL_KEYDOWN:
-        case SDL_KEYUP:
-            if (event.key.keysym.sym == SDLK_ESCAPE) {
-                App.run = false;
-            }
-            break;
-        case SDL_JOYAXISMOTION:
-        case SDL_JOYBUTTONDOWN:
-        case SDL_JOYBUTTONUP:
-            handle_input_event(event);
-            break;
-        case SDL_QUIT:
-        case SDL_WINDOWEVENT_CLOSE:
-            App.run = false;
-            break;
-    }
-}
-
-void loop() {
-    using namespace std::chrono_literals;
-
-    SDL_Event event;
-    while (App.run) {
-        while (SDL_PollEvent(&event)) {
-            handle_event(event);
-            render(App.window);
-        }
-        std::this_thread::sleep_for(100ms);
-    }
-
-    SDL_DestroyWindow(App.window.get());  // make sure that the window is destroyed before the context
-}
-
-}  // namespace

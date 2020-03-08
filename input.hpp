@@ -22,6 +22,11 @@ std::future<SharedGameController> get_game_controller();
  * @brief Handles a @p SDL_Event
  * @param event Any @p SDL_Event
  */
-void handle_input_event(const SDL_Event &event);
+void handle_event(const SDL_Event &event);
+
+/**
+ * @brief Performs game loop until windows is closed.
+ */
+void loop();
 
 #endif  // INPUT_HPP_

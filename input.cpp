@@ -6,6 +6,7 @@
 #include <SDL2/SDL_joystick.h>
 
 #include "input.hpp"
+#include "App.hpp"
 
 #include <chrono>
 #include <future>
@@ -59,7 +60,7 @@ SharedGameController find_game_controller() {
         if (game_controllers.empty()) {
             std::this_thread::sleep_for(1s);  // wait before another try
         }
-    } while (game_controllers.empty());
+    } while (App.run && game_controllers.empty());
 
     std::cout << "found " << game_controllers.size() << " game controllers" << std::endl;
     if (game_controllers.size() > 1) {
@@ -67,7 +68,8 @@ SharedGameController find_game_controller() {
                                  "Found more than one game controller but currently only one is supported!", nullptr);
     }
 
-    current_game_controller = game_controllers[0];  // TODO(bkuolt): remove this hack
+    auto joystick = SDL_GameControllerGetJoystick(game_controllers[0].get());
+    current_game_controller = SDL_JoystickInstanceID(joystick);  // TODO(bkuolt): remove this hack
     return game_controllers[0];
 }
 
@@ -77,22 +79,13 @@ std::future<SharedGameController> get_game_controller() {
     return std::async(std::launch::async, &find_game_controller);
 }
 
+/* ---------------------------------------------------------------------- */
+
 namespace {
-
-void on_button(ps4_button, bool pressed) {
-    std::cout << "game controller button" << pressed ? "pressed" : "released";
-    // TODO(bkuolt): implement
-}
-
-void on_motion(const vec2 &lhs, const vec2 &rhs) {
-    // TODO(bkuolt): implement
-}
 
 ps4_button map_button_name(Uint8 button) {
     return {};  // TODO(bkuolt)
 }
-
-}  // namespace
 
 void handle_input_event(const SDL_Event &event) {
     switch (event.type) {
@@ -112,11 +105,51 @@ void handle_input_event(const SDL_Event &event) {
                     case SDL_CONTROLLER_AXIS_LEFTX:  on_motion({}, { 0.0f, value }); break;
                     case SDL_CONTROLLER_AXIS_LEFTY:  on_motion({}, { 0.0f, value }); break;
                     default:
-                        throw std::runtime_error { "unsupported axis" };
+                        std::cout << "Warning: got event from unsupported axis" << std::endl;
                 }
             }
             break;
         default:
             std::cout << "did not handle this input event" << std::endl;
     }
+}
+
+}  // namespace
+
+
+/* ---------------------------------------------------------- */
+
+void handle_event(const SDL_Event &event) {
+    switch (event.type) {
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+            if (event.key.keysym.sym == SDLK_ESCAPE) {
+                App.run = false;
+            }
+            break;
+        case SDL_JOYAXISMOTION:
+        case SDL_JOYBUTTONDOWN:
+        case SDL_JOYBUTTONUP:
+            handle_input_event(event);
+            break;
+        case SDL_QUIT:
+        case SDL_WINDOWEVENT_CLOSE:
+            App.run = false;
+            break;
+    }
+}
+
+void loop() {
+    using namespace std::chrono_literals;
+
+    SDL_Event event;
+    while (App.run) {
+        while (SDL_PollEvent(&event)) {
+            handle_event(event);
+            render(App.window);
+        }
+        std::this_thread::sleep_for(100ms);
+    }
+
+    SDL_DestroyWindow(App.window.get());  // make sure that the window is destroyed before the context
 }
