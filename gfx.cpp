@@ -53,12 +53,12 @@ std::shared_ptr<SDL_Window> createFullScreenWindow() {
     initialize_SDL();
     SDL_Window * const window = SDL_CreateWindow("BGL Tech Demo",
                                                  SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                                 800, 600,
-                                                 SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN 
-                                                 /*| SDL_WINDOW_FULLSCREEN_DESKTOP */);
+                                                 1280, 720,
+                                                 SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN /* | SDL_WINDOW_FULLSCREEN_DESKTOP */);
     if (window == nullptr) {
         throw std::runtime_error{ SDL_GetError() };
     }
+
     const auto Deleter = [] (SDL_Window *window) { SDL_DestroyWindow(window); };
     return std::shared_ptr<SDL_Window>(window, Deleter);
 }
@@ -88,6 +88,7 @@ SharedContext createGLContext(const SharedWindow &window) {
 }
 
 /* ----------------------- Shader Support  ----------------------- */
+
 namespace {
 
 void LoadShaderSource(GLuint shader, const std::filesystem::path &path) {

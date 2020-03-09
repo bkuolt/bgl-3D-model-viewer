@@ -37,7 +37,7 @@ install:
 all: demo
 
 run: all
-	@./demo  ./assets/stanford_dragon/dragon_vrip.ply 
+	@./demo  ./assets/dragon.ply
 	#./assets/Ogros.md2
 
 clean:
