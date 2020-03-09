@@ -9,6 +9,7 @@ extern struct App {
     bool run = true;
     SharedWindow window;
     SharedContext context;
+    SharedModel model;
 } App;
 
 void on_button(ps4_button, bool pressed);

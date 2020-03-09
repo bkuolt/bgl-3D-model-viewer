@@ -324,15 +324,18 @@ SharedModel LoadModel(const std::filesystem::path &path) {
 }
 
 void RenderModel(const SharedModel &model, const mat4 &MVP) {
+#if defined(USE_SHADER)
     constexpr GLuint texture_unit = 0;
     glActiveTexture(GL_TEXTURE0 + texture_unit);
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, model->texture ? *model->texture : 0);
+#endif
 
     glBindVertexArray(*model->vao);
+#if defined(USE_SHADER)
     glUniform3fv(5, 1, glm::value_ptr(MVP));
     glUniform1ui(AttributLocations::Texture, texture_unit);
     glUseProgram(*model->program);
-
+#endif
     glDrawElements(GL_TRIANGLES, model->vertex_count * 3, GL_UNSIGNED_INT, nullptr);
 }

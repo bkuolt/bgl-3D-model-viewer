@@ -1,11 +1,10 @@
 // Copyright 2020 Bastian Kuolt
 #include <csignal>
 #include <cstdlib>
-#include <chrono>
 #include <iostream>
-#include <iomanip>
 #include <stdexcept>
-#include <thread>
+
+#include <glm/gtc/matrix_transform.hpp>  // glm::lookAt()
 
 #include "gfx.hpp"
 #include "input.hpp"
@@ -14,6 +13,7 @@ struct App {
     bool run = true;
     SharedWindow window;
     SharedContext context;
+    SharedModel model;
 } App;
 
 namespace {
@@ -39,8 +39,8 @@ int main(int argc, char *argv[]) {
     try {
         App.window = createFullScreenWindow();
         App.context = createGLContext(App.window);
+        App.model = LoadModel(argv[1]);
 
-        LoadModel(argv[1]);
         auto game_controller = get_game_controller();
         if (game_controller.wait_for(std::chrono::milliseconds()) == std::future_status::ready) {
             game_controller.get();
@@ -76,9 +76,11 @@ void on_render(const SharedWindow &window) noexcept {
     glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-#if 1
-    // TODO(bkuolt): RenderModel()
-#endif  // 1
+    const vec3 position { 0.0f, 0.0f, -2.0f };
+    const mat4 P = glm::ortho(-2.0f, 2.0f, -2.0f, 2.0f, -2.0f, 2.0f);
+    const mat4 MV = glm::lookAt(position, vec3{}, vec3 { 0.0f, 1.0f, 0.0f });
+    const mat4 MVP = MV * P;
+    RenderModel(App.model, MVP);
 
     SDL_GL_SwapWindow(window.get());
 }
