@@ -216,7 +216,7 @@ SharedVBO createVBO(const aiScene *scene) {
 
     const bool is_textured { scene->mNumTextures > 1 };
     for (auto i = 0u; i < mesh.mNumVertices; ++i) {
-        buffer[i].normal = vec3 { mesh.mNormals[i].x, mesh.mNormals[i].y, mesh.mNormals[i].z };
+        buffer[i].normal = -vec3 { mesh.mNormals[i].x, mesh.mNormals[i].y, mesh.mNormals[i].z };
         buffer[i].position = vec3 { mesh.mVertices[i].x, mesh.mVertices[i].y, mesh.mVertices[i].z };
         if (is_textured) {
             buffer[i].texcoords = vec2 { mesh.mTextureCoords[0][i].x, mesh.mTextureCoords[0][i].y };
