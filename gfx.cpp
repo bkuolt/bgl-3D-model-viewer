@@ -352,8 +352,6 @@ SharedModel LoadModel(const std::filesystem::path &path) {
 }
 
 void RenderModel(const SharedModel &model, const mat4 &MVP) {
-    glGetError();
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glUseProgram(*model->program);
 
     if (model->texture) {
@@ -366,6 +364,5 @@ void RenderModel(const SharedModel &model, const mat4 &MVP) {
 
     glBindVertexArray(*model->vao);
     glUniformMatrix4fv(AttributLocations::MVP, 1, GL_FALSE, glm::value_ptr(MVP));
-
     glDrawElements(GL_TRIANGLES, model->vertex_count * 3, GL_UNSIGNED_INT, nullptr);
 }

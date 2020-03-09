@@ -8,7 +8,7 @@ FLAGS = -std=c++17 -pthread -Wall -O3
 LIBS = -lstdc++fs \
 	-lSDL2 -lSDL2_image \
 	-lassimp  \
-	-lGLEW -lGLU -lGL
+	-lGLEW -lGLU -lGL -lGLU
 
 main.o: main.cpp gfx.hpp
 	@$(CC) \
@@ -28,6 +28,10 @@ demo: main.o gfx.o input.o
 	$(LIBS)
 
 install:
+	sudo add-apt-repository main
+	sudo add-apt-repository universe
+	sudo add-apt-repository restricted
+	sudo add-apt-repository multiverse
 	sudo apt-get install \
 		libsdl2-dev libsdl2-image-dev \
 		libassimp-dev \

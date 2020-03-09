@@ -1,4 +1,6 @@
+// Copyright 2020 Bastian Kuolt
 #version 450 core
+
 layout (location = 0) uniform mat4 MVP;
 
 layout (location = 1) in vec3 position;
