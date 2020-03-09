@@ -15,5 +15,5 @@ out Pixel pixel;  /* not used yet */
 
 void main() {
     gl_Position = MVP * vec4(position, 1.0);
-    pixel.normal = normalize(normal);
+    pixel.normal = normalize(mat3(MVP) * normal);
 }

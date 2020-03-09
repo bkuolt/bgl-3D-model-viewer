@@ -65,9 +65,7 @@ void load(const std::filesystem::path &path) {
     // TODO(bkuolt): invegistigate "auto game_controller = get_game_controller();""
 
     // set up camera
-    Scene.P = glm::ortho(-1.0f, 1.0f,
-                         -1.0f, 1.0f,
-                         10.0f, -10.0f);
+    Scene.P = glm::ortho(-1.25, 1.25, -1.25, 1.25, -1.0, 100.0);
 
     // initialize OpenGL
     SDL_GL_SetSwapInterval(0);  // disable vsync
@@ -75,10 +73,12 @@ void load(const std::filesystem::path &path) {
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+#if 0  // TODO(bkuolt): revalidate
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    glFrontFace(GL_CW);   // TODO(bkuolt): revalidate
+    glFrontFace(GL_CW);
+#endif
 }
 
 }  // namespace
@@ -92,7 +92,8 @@ void on_render(const SharedWindow &window, float delta) noexcept {
     angle += delta * glm::radians(rotation_speed);
 
     // update camera position
-    const vec3 position { glm::cos(angle), 0.0f, sin(angle) };
+    const float radius = 10;
+    const vec3 position { radius * glm::cos(angle), 0.0f, radius * sin(angle) };
     const mat4 MV = glm::lookAt(position, vec3{}, vec3 { 0.0f, 1.0f, 0.0f });
 
     // render model

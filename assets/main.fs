@@ -14,7 +14,7 @@ float calculateLightIntensity() {
 }
 
 void main() {
-    const vec4 ambient = vec4(0.2f, 0.2f, 0.2f, 1.0f);
-    const vec4 lightColor = vec4(1.0, 1.0, 0.0, 1.0);
+    const vec4 ambient = vec4(0.3f, 0.3f, 0.3f, 1.0f);
+    const vec4 lightColor = vec4(0.5, 0.5, 0.0, 1.0);
     gl_FragColor = ambient + (lightColor * calculateLightIntensity());
 }

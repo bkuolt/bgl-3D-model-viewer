@@ -126,7 +126,7 @@ void CompileShader(GLuint handle) {
         glGetShaderInfoLog(handle, maxLength, nullptr, errorLog.data());
         throw std::runtime_error { "shader compile log: " + errorLog };
     }
-    std::cout << "compiled shader " << handle << std::endl;
+    std::cout << "compiled shader handle=" << handle << std::endl;
 }
 
 SharedShader LoadShader(GLenum type, const std::filesystem::path &path) {
