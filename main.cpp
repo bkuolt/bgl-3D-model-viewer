@@ -4,7 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#include <glm/gtc/matrix_transform.hpp>  // glm::lookAt()
+#include <glm/gtc/matrix_transform.hpp>  // glm::lookAt(), glm::ortho()
 
 #include "gfx.hpp"
 #include "input.hpp"
@@ -20,7 +20,7 @@ namespace {
 
 void signal_handler(int signal) {
     App.run = false;
-    std::cout << console_color::red << "requested program termination" << std::endl;
+    std::cout << console_color::red << "\rrequested program termination" << std::flush;
 }
 
 }  // namespace
@@ -42,6 +42,8 @@ int main(int argc, char *argv[]) {
         App.model = LoadModel(argv[1]);
 
         auto game_controller = get_game_controller();
+        SDL_ShowWindow(App.window.get());
+
         if (game_controller.wait_for(std::chrono::milliseconds()) == std::future_status::ready) {
             game_controller.get();
         }

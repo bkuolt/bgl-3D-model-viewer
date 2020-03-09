@@ -12,6 +12,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
 #include <stdexcept>
 #include <type_traits>
 #include <vector>
@@ -53,7 +54,7 @@ std::shared_ptr<SDL_Window> createFullScreenWindow() {
     SDL_Window * const window = SDL_CreateWindow("BGL Tech Demo",
                                                  SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                                  800, 600,
-                                                 SDL_WINDOW_OPENGL);
+                                                 SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
     if (window == nullptr) {
         throw std::runtime_error{ SDL_GetError() };
     }
@@ -287,6 +288,12 @@ std::shared_ptr<GLuint> create_texture() {
 }  // namespace
 
 SharedModel LoadModel(const std::filesystem::path &path) {
+    if (!std::filesystem::exists(path)) {
+        std::ostringstream oss;
+        oss << "The file " << std::quoted(path.string()) << " does not exist";
+        throw std::runtime_error { oss.str() };
+    }
+
     aiPropertyStore* props = aiCreatePropertyStore();
     if (props == nullptr) {
         throw std::runtime_error { aiGetErrorString() };
