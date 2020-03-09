@@ -191,10 +191,12 @@ std::shared_ptr<GLuint> createBuffer() {
     };
 }
 
-SharedVBO createVBO(const aiMesh &mesh) {
+SharedVBO createVBO(const aiScene *scene) {
+    static_assert(std::is_same<ai_real, float>::value);
+    const aiMesh &mesh = *scene->mMeshes[0];
+
     auto vbo = createBuffer();
     glBindBuffer(GL_ARRAY_BUFFER, *vbo);
-
     const GLsizei size = sizeof(Vertex) * mesh.mNumVertices;
     glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_STREAM_DRAW);
     Vertex *buffer = reinterpret_cast<Vertex*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
@@ -202,11 +204,13 @@ SharedVBO createVBO(const aiMesh &mesh) {
         throw std::runtime_error { "could not create vbo" };
     }
 
-    static_assert(std::is_same<ai_real, float>::value);
+    const bool is_textured { scene->mNumTextures > 1 };
     for (auto i = 0u; i < mesh.mNumVertices; ++i) {
         buffer[i].normal = vec3 { mesh.mNormals[i].x, mesh.mNormals[i].y, mesh.mNormals[i].z };
         buffer[i].position = vec3 { mesh.mVertices[i].x, mesh.mVertices[i].y, mesh.mVertices[i].z };
-        buffer[i].texcoords = vec2 { mesh.mTextureCoords[0][i].x, mesh.mTextureCoords[0][i].y };
+        if (is_textured) {
+            buffer[i].texcoords = vec2 { mesh.mTextureCoords[0][i].x, mesh.mTextureCoords[0][i].y };
+        }
     }
 
     glUnmapBuffer(GL_ARRAY_BUFFER);
@@ -214,6 +218,7 @@ SharedVBO createVBO(const aiMesh &mesh) {
         throw std::runtime_error { "could not unmap vbo" };
     }
 
+    std::cout << "created vbo for " << mesh.mNumVertices << " vertices" << std::endl;
     return vbo;
 }
 
@@ -248,7 +253,7 @@ SharedIBO createIBO(const aiMesh &mesh) {
         throw std::runtime_error { "could not write data to VBO" };
     }
 
-    std::cout << "created vbo for " << mesh.mNumFaces * 3 << " indices" << std::endl;
+    std::cout << "created ibo for " << mesh.mNumFaces * 3 << " indices" << std::endl;
     return ibo;
 }
 
@@ -281,7 +286,8 @@ SharedVAO createVAO(const SharedVBO &vbo, const SharedIBO &ibo) {
                                                            }};
 }
 
-std::shared_ptr<GLuint> create_texture() {
+std::shared_ptr<GLuint> create_texture(const aiTexture *texture) {
+    std::cout << "loaded texture" << std::endl;
     return {};  // TODO(bkuolt): implement
 }
 
@@ -314,9 +320,17 @@ SharedModel LoadModel(const std::filesystem::path &path) {
     }
 
     const aiMesh &mesh = *scene->mMeshes[0];
-    const auto vbo = createVBO(mesh);
+    const auto vbo = createVBO(scene);
     const auto ibo = createIBO(mesh);
     const auto vao = createVAO(vbo, ibo);
+
+    const auto texture { (scene->mNumTextures > 1) ? create_texture(scene->mTextures[0]) : SharedTexture {} };
+    if (scene->mNumTextures > 1) {
+        std::cout << console_color::yellow << "warning: "
+                  << "uses " << scene->mNumTextures << " textures, but only one is supported"
+                  << console_color::white << std::endl;
+    }
+
 #if defined(USE_SHADER)
     const auto program = LoadProgram("./assets/main.vs", "./assets/main.fs");
 #else
@@ -325,7 +339,7 @@ SharedModel LoadModel(const std::filesystem::path &path) {
 
     const Model model { .vbo = vbo, .ibo = ibo, .vao = vao,
                         .vertex_count = static_cast<GLsizei>(mesh.mNumVertices),
-                        .texture = create_texture(),
+                        .texture = texture,
                         .program = program };
     return std::make_shared<Model>(model);
 }

@@ -43,11 +43,6 @@ int main(int argc, char *argv[]) {
 
         auto game_controller = get_game_controller();
         SDL_ShowWindow(App.window.get());
-
-        if (game_controller.wait_for(std::chrono::milliseconds()) == std::future_status::ready) {
-            game_controller.get();
-        }
-
         loop();
     } catch (const std::exception &exception) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", exception.what(), nullptr);

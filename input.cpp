@@ -46,7 +46,7 @@ std::vector<SDL_JoystickID> find_game_controllers() {
         }
 
         const std::string device_name { SDL_GameControllerNameForIndex(index) };
-        std::cout << index << ": " << device_name << std::endl;
+        std::cout << "\t" << index << ": " << device_name << std::endl;
         if (device_name == "PS4 Controller") {
             game_controllers.emplace_back(index);
         }
@@ -62,13 +62,14 @@ SharedGameController find_game_controller() {
 
     std::vector<SDL_JoystickID> game_controllers;
     do {
+        std::cout << "looking for game controllers..." << std::endl;
         game_controllers = find_game_controllers();
         if (game_controllers.empty()) {
             std::this_thread::sleep_for(1s);  // wait before another try
         }
     } while (App.run && game_controllers.empty());
 
-    std::cout << "found " << game_controllers.size() << " game controllers" << std::endl;
+    std::cout << "found " << game_controllers.size() << " game controller(s)" << std::endl;
     if (game_controllers.size() > 1) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Warning",
                                  "Found more than one game controller but currently only one is supported!", nullptr);
