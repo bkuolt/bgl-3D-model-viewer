@@ -21,6 +21,15 @@
 #include <assimp/Importer.hpp>   // Model loader
 #include <assimp/scene.h>        // Output data structure
 
+#include <iomanip>#include <iostream>
+
+std::ostream& operator<<(std::ostream &os, const vec2 &vector) {
+    os << "(" << std::fixed << std::setprecision(2) << vector.x
+       << " | "
+       << std::fixed << std::setprecision(2) << vector.y << ")";
+    return os;
+}
+
 namespace {
 
 void initialize_SDL() {
@@ -84,7 +93,7 @@ void LoadShaderSource(GLuint shader, const std::filesystem::path &path) {
         }
 
         GLchar *line = strdup(string.c_str());
-        lines.push_back(line);std::cout << line << std::endl;
+        lines.push_back(line);
         std::getline(file, string);
     }
 
@@ -180,12 +189,6 @@ std::shared_ptr<GLuint> create_buffer() {
 }
 
 shared_vbo create_vbo(const aiMesh &mesh) {
-    struct Vertex {
-        vec3 position;
-        vec3 normal;
-        vec2 texcoords;
-    };
-
     auto vbo = create_buffer();
     glBindBuffer(GL_ARRAY_BUFFER, *vbo);
 
@@ -215,7 +218,7 @@ shared_ibo create_ibo(const aiMesh &mesh) {
     auto ibo = create_buffer();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *ibo);
     if (glGetError() != GL_NO_ERROR) {
-        throw std::runtime_error { "could not write data to VBO" };
+        throw std::runtime_error { "could not write data to IBO" };
     }
 
     const GLsizei size = sizeof(GLuint) * mesh.mNumFaces * 30;
@@ -249,13 +252,33 @@ shared_ibo create_ibo(const aiMesh &mesh) {
 shared_vao create_vao(const shared_vbo vbo, shared_ibo ibo) {
     GLuint vao = 0;
     glGenVertexArrays(1, &vao);
-    return {};  // TODO(bkuolt): implement
+    if (vao == 0) {
+        throw std::runtime_error { "could not create VAO" };
+    }
+
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, *vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *ibo);
+
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+
+    const auto stride = sizeof(Vertex);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offsetof(Vertex, position)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offsetof(Vertex, normal)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offsetof(Vertex, texcoords)));
+
+    glBindVertexArray(0);
+    return std::shared_ptr<GLuint> { new GLuint { vao }, [] (GLuint *pointer) {
+                                                               glDeleteVertexArrays(1, pointer);
+                                                               delete pointer;
+                                                           }};
 }
 
 std::shared_ptr<GLuint> create_texture() {
     return {};  // TODO(bkuolt): implement
 }
-
 
 }  // namespace
 
@@ -283,17 +306,18 @@ SharedModel LoadModel(const std::filesystem::path &path) {
 
     const auto vbo = create_vbo(mesh);
     const auto ibo = create_ibo(mesh);
-    Model model;
-
-    return std::make_shared<Model>( Model {
-        .vbo = vbo, .ibo = ibo,
-        .vao = create_vao(vbo, ibo),
-        .texture = create_texture(),
-#if 0
-        .program = LoadProgram("./assets/main.vs", "./assets/main.fs"),
+    const auto vao = create_vao(vbo, ibo);
+#if 0  // it is still bugy
+    const auto program = LoadProgram("./assets/main.vs", "./assets/main.fs");
+#else
+    SharedProgram program;
 #endif
-        .vertex_count = static_cast<GLsizei>(mesh.mNumVertices)
-    });
+
+    const Model model { .vbo = vbo, .ibo = ibo, .vao = vao,
+                        .vertex_count = static_cast<GLsizei>(mesh.mNumVertices),
+                        .texture = create_texture(),
+                        .program = program };
+    return std::make_shared<Model>(model);
 }
 
 void render_model(const SharedModel &model) {

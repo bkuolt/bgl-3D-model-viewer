@@ -10,35 +10,37 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
 
+#include <ostream>
 #include <memory>
 #include <filesystem>
+
 #include <glm/glm.hpp>
-#include <iomanip>
-#include <iostream>
+
+/* ---------------------------- Basic Types ---------------------------- */
 
 using vec2 = glm::vec2;
 using vec3 = glm::vec3;
 
-inline std::ostream& operator << (std::ostream &os, const glm::vec2 &vector) {
-    os << "(" << std::fixed << std::setprecision(2) << vector.x
-       << " | "
-       << std::fixed << std::setprecision(2) << vector.y << ")";
-    return os;
-}
+struct Vertex {
+    vec3 position;
+    vec3 normal;
+    vec2 texcoords;
+};
 
-using shared_window = std::shared_ptr<SDL_Window>;
-using shared_context = std::shared_ptr<SDL_GLContext>;
-using shared_vbo = std::shared_ptr<GLuint>;
-using shared_ibo = std::shared_ptr<GLuint>;
-using shared_vao = std::shared_ptr<GLuint>;
-using shader_program = std::shared_ptr<GLuint>;
+using shared_window = std::shared_ptr<SDL_Window>;      // TODO(bkuolt): rename
+using shared_context = std::shared_ptr<SDL_GLContext>;  // TODO(bkuolt): rename
 
+/* --------------------------------------------------------------------- */
 
-using SharedShader = std::shared_ptr<GLuint>;
-using SharedProgram = std::shared_ptr<GLuint>;
+shared_window create_fullscreen_window();
+shared_context create_GL_context(const shared_window &window);
+
+/* --------------------------------------------------------------------- */
+
+std::ostream& operator<<(std::ostream &os, const vec2 &vector);
 
 #ifdef __linux
-namespace console_colors {
+namespace console_colors {  // TODO(bkuolt): rename to "console color"
     constexpr char blue[] = "\x1B[34m";
     constexpr char red[] = "\x1B[31m";
     constexpr char white[] = "\x1B[37m";
@@ -48,21 +50,29 @@ namespace console_colors {
 }
 #endif  // namespace __linux
 
+/* --------------------------------------------------------------------- */
+
+using shared_vbo = std::shared_ptr<GLuint>;      // TODO(bkuolt): rename
+using shared_ibo = std::shared_ptr<GLuint>;      // TODO(bkuolt): rename
+using shared_vao = std::shared_ptr<GLuint>;      // TODO(bkuolt): rename
+using shader_program = std::shared_ptr<GLuint>;  // TODO(bkuolt): rename
+
+using SharedShader = std::shared_ptr<GLuint>;
+using SharedProgram = std::shared_ptr<GLuint>;
+
 struct Model {
-    shared_vbo vbo;
-    shared_ibo ibo;
-    shared_vao vao;
-    std::shared_ptr<GLuint> texture;  // TODO(bkuolt): implement
-    shader_program program;
-    GLsizei vertex_count;
+    const shared_vbo vbo;
+    const shared_ibo ibo;
+    const shared_vao vao;
+    const GLsizei vertex_count;
+
+    const std::shared_ptr<GLuint> texture;
+    const shader_program program;
 };
 
 using SharedModel = std::shared_ptr<Model>;
-
-shared_window create_fullscreen_window();
-shared_context create_GL_context(const shared_window &window);
-
 SharedModel LoadModel(const std::filesystem::path &path);
+
 void render_model(const SharedModel &model);
 
 #endif  // GFX_HPP_
