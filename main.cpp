@@ -12,24 +12,24 @@
 
 struct App {
     bool run = true;
-    shared_window window;
-    shared_context context;
+    SharedWindow window;
+    SharedContext context;
 } App;
 
 namespace {
 
 void signal_handler(int signal) {
     App.run = false;
-    std::cout << "requested program termination" << std::endl;
+    std::cout << console_color::red << "requested program termination" << std::endl;
 }
 
 }  // namespace
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
-        std::cout << console_colors::red << "usage: "
-                  << console_colors::white << "./demo "
-                  << console_colors::blue << "<path-to-model>" << std::endl;
+        std::cout << console_color::red << "usage: "
+                  << console_color::white << "./demo "
+                  << console_color::blue << "<path-to-model>" << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -37,8 +37,8 @@ int main(int argc, char *argv[]) {
     std::signal(SIGHUP, signal_handler);
 
     try {
-        App.window = create_fullscreen_window();
-        App.context = create_GL_context(App.window);
+        App.window = createFullScreenWindow();
+        App.context = createGLContext(App.window);
 
         LoadModel(argv[1]);
         auto game_controller = get_game_controller();
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
         loop();
     } catch (const std::exception &exception) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", exception.what(), nullptr);
-        std::cout << console_colors::red << "error: "
+        std::cout << console_color::red << "error: "
                   << exception.what() << std::endl;
         return EXIT_FAILURE;
     }
@@ -72,7 +72,7 @@ void on_trigger(float lhs, float rhs) {
     // TODO(bkuolt): implement game logic
 }
 
-void render(const shared_window &window) noexcept {
+void on_render(const SharedWindow &window) noexcept {
     glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     SDL_GL_SwapWindow(window.get());

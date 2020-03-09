@@ -7,8 +7,7 @@
 #include <GL/gl.h>
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_video.h>
+#include <SDL2/SDL_video.h>  // SDL_GLContext, SDL_Window
 
 #include <ostream>
 #include <memory>
@@ -27,52 +26,53 @@ struct Vertex {
     vec2 texcoords;
 };
 
-using shared_window = std::shared_ptr<SDL_Window>;      // TODO(bkuolt): rename
-using shared_context = std::shared_ptr<SDL_GLContext>;  // TODO(bkuolt): rename
+using SharedWindow = std::shared_ptr<SDL_Window>;      // TODO(bkuolt): rename
+using SharedContext = std::shared_ptr<SDL_GLContext>;  // TODO(bkuolt): rename
 
 /* --------------------------------------------------------------------- */
 
-shared_window create_fullscreen_window();
-shared_context create_GL_context(const shared_window &window);
+SharedWindow createFullScreenWindow();
+SharedContext createGLContext(const SharedWindow &window);
 
 /* --------------------------------------------------------------------- */
 
 std::ostream& operator<<(std::ostream &os, const vec2 &vector);
 
 #ifdef __linux
-namespace console_colors {  // TODO(bkuolt): rename to "console color"
+namespace console_color {
     constexpr char blue[] = "\x1B[34m";
     constexpr char red[] = "\x1B[31m";
     constexpr char white[] = "\x1B[37m";
     constexpr char magenta[] = "\x1B[35m";
     constexpr char yellow[] = "\x1B[33m";
     constexpr char green[] =  "\x1B[32m";
-}
+}  // namespace console_color
+
 #endif  // namespace __linux
 
 /* --------------------------------------------------------------------- */
 
-using shared_vbo = std::shared_ptr<GLuint>;      // TODO(bkuolt): rename
-using shared_ibo = std::shared_ptr<GLuint>;      // TODO(bkuolt): rename
-using shared_vao = std::shared_ptr<GLuint>;      // TODO(bkuolt): rename
-using shader_program = std::shared_ptr<GLuint>;  // TODO(bkuolt): rename
+using SharedVBO = std::shared_ptr<GLuint>;
+using SharedIBO = std::shared_ptr<GLuint>;
+using SharedVAO = std::shared_ptr<GLuint>;
+using SharedTexture = std::shared_ptr<GLuint>;  // TODO(bkuolt): implement
 
 using SharedShader = std::shared_ptr<GLuint>;
 using SharedProgram = std::shared_ptr<GLuint>;
 
 struct Model {
-    const shared_vbo vbo;
-    const shared_ibo ibo;
-    const shared_vao vao;
+    const SharedVBO vbo;
+    const SharedIBO ibo;
+    const SharedVAO vao;
     const GLsizei vertex_count;
 
     const std::shared_ptr<GLuint> texture;
-    const shader_program program;
+    const SharedShader program;
 };
+
+/* ----------------------------- Interface  -----------------------------*/
 
 using SharedModel = std::shared_ptr<Model>;
 SharedModel LoadModel(const std::filesystem::path &path);
-
-void render_model(const SharedModel &model);
 
 #endif  // GFX_HPP_

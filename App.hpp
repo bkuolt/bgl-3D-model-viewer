@@ -7,14 +7,14 @@
 
 extern struct App {
     bool run = true;
-    shared_window window;
-    shared_context context;
+    SharedWindow window;
+    SharedContext context;
 } App;
 
 void on_button(ps4_button, bool pressed);
 void on_motion(const vec2 &lhs, const vec2 &rhs);
 void on_trigger(const float lhs, float rhs);
-void render(const shared_window &window);
+void on_render(const SharedWindow &window);
 
 #endif  // APP_HPP_
 

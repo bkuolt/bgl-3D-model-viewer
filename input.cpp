@@ -159,7 +159,7 @@ void loop() {
     while (App.run) {
         while (SDL_PollEvent(&event)) {
             handle_event(event);
-            render(App.window);
+            on_render(App.window);
         }
     }
 

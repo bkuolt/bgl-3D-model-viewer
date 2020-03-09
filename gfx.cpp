@@ -8,7 +8,7 @@
 #include <SDL2/SDL_video.h>
 
 #include <algorithm>  // std::for_each
-#include <cassert>
+#include <iomanip>  // std::setprecision, std::fixed
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -21,7 +21,7 @@
 #include <assimp/Importer.hpp>   // Model loader
 #include <assimp/scene.h>        // Output data structure
 
-#include <iomanip>#include <iostream>
+// #define  USE_SHADER
 
 std::ostream& operator<<(std::ostream &os, const vec2 &vector) {
     os << "(" << std::fixed << std::setprecision(2) << vector.x
@@ -47,7 +47,7 @@ void initialize_SDL() {
 
 }  // namespace
 
-std::shared_ptr<SDL_Window> create_fullscreen_window() {
+std::shared_ptr<SDL_Window> createFullScreenWindow() {
     initialize_SDL();
     SDL_Window * const window = SDL_CreateWindow("BGL Tech Demo",
                                                  SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -60,7 +60,7 @@ std::shared_ptr<SDL_Window> create_fullscreen_window() {
     return std::shared_ptr<SDL_Window>(window, Deleter);
 }
 
-shared_context create_GL_context(const shared_window &window) {
+SharedContext createGLContext(const SharedWindow &window) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     auto context = SDL_GL_CreateContext(window.get());
@@ -78,7 +78,7 @@ shared_context create_GL_context(const shared_window &window) {
 }
 
 /* ----------------------- Shader Support  ----------------------- */
-
+#if defined(USE_SHADER)
 namespace {
 
 void LoadShaderSource(GLuint shader, const std::filesystem::path &path) {
@@ -169,12 +169,13 @@ SharedProgram LoadProgram(const std::filesystem::path &vs_path, const std::files
 }
 
 }  // namespace
+#endif  // defined(USE_SHADER)
 
 /* ------------------------- Rendering --------------------------- */
 
 namespace {
 
-std::shared_ptr<GLuint> create_buffer() {
+std::shared_ptr<GLuint> createBuffer() {
     GLuint buffer = 0;
     glCreateBuffers(1, &buffer);
     if (glGetError() != GL_NO_ERROR) {
@@ -188,8 +189,8 @@ std::shared_ptr<GLuint> create_buffer() {
     };
 }
 
-shared_vbo create_vbo(const aiMesh &mesh) {
-    auto vbo = create_buffer();
+SharedVBO createVBO(const aiMesh &mesh) {
+    auto vbo = createBuffer();
     glBindBuffer(GL_ARRAY_BUFFER, *vbo);
 
     const GLsizei size = sizeof(Vertex) * mesh.mNumVertices;
@@ -214,8 +215,8 @@ shared_vbo create_vbo(const aiMesh &mesh) {
     return vbo;
 }
 
-shared_ibo create_ibo(const aiMesh &mesh) {
-    auto ibo = create_buffer();
+SharedIBO createIBO(const aiMesh &mesh) {
+    auto ibo = createBuffer();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *ibo);
     if (glGetError() != GL_NO_ERROR) {
         throw std::runtime_error { "could not write data to IBO" };
@@ -249,7 +250,7 @@ shared_ibo create_ibo(const aiMesh &mesh) {
     return ibo;
 }
 
-shared_vao create_vao(const shared_vbo vbo, shared_ibo ibo) {
+SharedVAO createVAO(const SharedVBO &vbo, const SharedIBO &ibo) {
     GLuint vao = 0;
     glGenVertexArrays(1, &vao);
     if (vao == 0) {
@@ -303,11 +304,10 @@ SharedModel LoadModel(const std::filesystem::path &path) {
     }
 
     const aiMesh &mesh = *scene->mMeshes[0];
-
-    const auto vbo = create_vbo(mesh);
-    const auto ibo = create_ibo(mesh);
-    const auto vao = create_vao(vbo, ibo);
-#if 0  // it is still bugy
+    const auto vbo = createVBO(mesh);
+    const auto ibo = createIBO(mesh);
+    const auto vao = createVAO(vbo, ibo);
+#if defined(USE_SHADER)
     const auto program = LoadProgram("./assets/main.vs", "./assets/main.fs");
 #else
     SharedProgram program;
