@@ -1,20 +1,25 @@
 // Copyright 2020 Bastian Kuolt
 #include "gfx.hpp"
 
+#include <GL/glu.h>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_video.h>
 
+#include <algorithm>  // std::for_each
 #include <cassert>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <stdexcept>
+#include <type_traits>
+#include <vector>
 
 #include <assimp/cimport.h>      // aiPropertyStore
 #include <assimp/postprocess.h>  // Post processing flags
 #include <assimp/Importer.hpp>   // Model loader
 #include <assimp/scene.h>        // Output data structure
-#include <type_traits>
 
 namespace {
 
@@ -67,25 +72,71 @@ shared_context create_GL_context(const shared_window &window) {
 
 namespace {
 
-void load_shader_source(GLuint handle, const std::filesystem::path &path) {
-    // TODO(bkuolt): implement
+void LoadShaderSource(GLuint shader, const std::filesystem::path &path) {
+    std::vector<GLchar*> lines;
+
+    std::ifstream file { path.string() };
+    std::string string;
+    std::getline(file, string);
+    while (!file.eof()) {
+        if (file.fail()) {
+            throw std::runtime_error { "could not read shader source file " };
+        }
+
+        GLchar *line = strdup(string.c_str());
+        lines.push_back(line);std::cout << line << std::endl;
+        std::getline(file, string);
+    }
+
+    glShaderSource(shader, lines.size(), lines.data(), nullptr);
+    std::for_each(lines.begin(), lines.end(),  [] (GLchar *line) { free(line); });
+    std::cout << "loaded shader source " << path << std::endl;
+}
+
+void CompileShader(GLuint handle) {
+    glCompileShader(handle);
+
+    GLint isCompiled = 0;
+    glGetShaderiv(handle, GL_COMPILE_STATUS, &isCompiled);
+    if (!isCompiled) {
+        GLint maxLength = 0;
+        glGetShaderiv(handle, GL_INFO_LOG_LENGTH, &maxLength);
+        std::basic_string<GLchar> errorLog;
+        errorLog.resize(maxLength);
+        glGetShaderInfoLog(handle, maxLength, nullptr, errorLog.data());
+        throw std::runtime_error { "shader compile log: " + errorLog };
+    }
+    std::cout << "compiled shader " << handle << std::endl;
 }
 
 SharedShader LoadShader(GLenum type, const std::filesystem::path &path) {
     GLuint handle = glCreateShader(type);
     if (glGetError() != GL_NO_ERROR) {
-        throw std::runtime_error { "" /* TODO(bkuolt*/ };
+        throw std::runtime_error { "could not create shader object"};
     }
+    LoadShaderSource(handle, path);
+    CompileShader(handle);
 
     constexpr auto Deleter = [] (GLuint *pointer) {
         glDeleteShader(*pointer);
         delete pointer;
     };
-    auto shader = std::shared_ptr<GLuint> { new GLuint { handle }, Deleter };
-    load_shader_source(handle, path);
-    glCompileShader(handle);
-    // TODO(bkuolt): check compile status
-    return shader;
+    return std::shared_ptr<GLuint> { new GLuint { handle }, Deleter };
+}
+
+void LinkProgram(GLuint handle) {
+    glLinkProgram(handle);
+
+    GLint isLinked = 0;
+    glGetProgramiv(handle, GL_LINK_STATUS, &isLinked);
+    if (isLinked == GL_FALSE) {
+        GLint maxLength = 0;
+        glGetProgramiv(handle, GL_INFO_LOG_LENGTH, &maxLength);
+        std::basic_string<GLchar> errorLog;
+        errorLog.resize(maxLength);
+        glGetProgramInfoLog(handle, maxLength, &maxLength, errorLog.data());
+        return throw std::runtime_error { "shader link log: " + errorLog };
+    }
 }
 
 SharedProgram LoadProgram(const std::filesystem::path &vs_path, const std::filesystem::path &fs_path) {
@@ -94,13 +145,12 @@ SharedProgram LoadProgram(const std::filesystem::path &vs_path, const std::files
 
     GLuint handle = glCreateProgram();
     if (glGetError() != GL_NO_ERROR) {
-        throw std::runtime_error { "" /* TODO(bkuolt*/ };
+        throw std::runtime_error { "could not create shader program" };
     }
 
     glAttachShader(handle, *vs);
     glAttachShader(handle, *fs);
-    glLinkProgram(handle);
-    // TODO(bkuolt): check for errors
+    LinkProgram(handle);
 
     constexpr auto Deleter = [] (GLuint *pointer) {
         glDeleteProgram(*pointer);
@@ -108,12 +158,6 @@ SharedProgram LoadProgram(const std::filesystem::path &vs_path, const std::files
     };
     return { new GLuint { handle }, Deleter };
 }
-
-
-// TODO(bkuolt): Compile()
-// TODO(bkuolt): Link()
-// TODO(bkuolt): LoadShaderSource()
-// TODO(bkuolt): LoadShader()
 
 }  // namespace
 
@@ -245,7 +289,9 @@ SharedModel LoadModel(const std::filesystem::path &path) {
         .vbo = vbo, .ibo = ibo,
         .vao = create_vao(vbo, ibo),
         .texture = create_texture(),
-        .program = LoadProgram("/assets/main.vs", "/assets/main.fs"),
+#if 0
+        .program = LoadProgram("./assets/main.vs", "./assets/main.fs"),
+#endif
         .vertex_count = static_cast<GLsizei>(mesh.mNumVertices)
     });
 }
