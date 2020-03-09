@@ -75,5 +75,10 @@ void on_trigger(float lhs, float rhs) {
 void on_render(const SharedWindow &window) noexcept {
     glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+#if 1
+    // TODO(bkuolt): RenderModel()
+#endif  // 1
+
     SDL_GL_SwapWindow(window.get());
 }

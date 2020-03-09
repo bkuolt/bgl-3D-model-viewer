@@ -8,7 +8,7 @@
 #include <SDL2/SDL_video.h>
 
 #include <algorithm>  // std::for_each
-#include <iomanip>  // std::setprecision, std::fixed
+#include <iomanip>    // std::setprecision, std::fixed
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -21,6 +21,7 @@
 #include <assimp/Importer.hpp>   // Model loader
 #include <assimp/scene.h>        // Output data structure
 
+#include <glm/gtc/type_ptr.hpp>
 // #define  USE_SHADER
 
 std::ostream& operator<<(std::ostream &os, const vec2 &vector) {
@@ -250,6 +251,8 @@ SharedIBO createIBO(const aiMesh &mesh) {
     return ibo;
 }
 
+enum AttributLocations { Position = 1, Normal, TexCoord, Texture };
+
 SharedVAO createVAO(const SharedVBO &vbo, const SharedIBO &ibo) {
     GLuint vao = 0;
     glGenVertexArrays(1, &vao);
@@ -266,9 +269,9 @@ SharedVAO createVAO(const SharedVBO &vbo, const SharedIBO &ibo) {
     glEnableVertexAttribArray(2);
 
     const auto stride = sizeof(Vertex);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offsetof(Vertex, position)));
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offsetof(Vertex, normal)));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offsetof(Vertex, texcoords)));
+    glVertexAttribPointer(AttributLocations::Position, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offsetof(Vertex, position)));
+    glVertexAttribPointer(AttributLocations::Normal, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offsetof(Vertex, normal)));
+    glVertexAttribPointer(AttributLocations::TexCoord, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offsetof(Vertex, texcoords)));
 
     glBindVertexArray(0);
     return std::shared_ptr<GLuint> { new GLuint { vao }, [] (GLuint *pointer) {
@@ -320,10 +323,16 @@ SharedModel LoadModel(const std::filesystem::path &path) {
     return std::make_shared<Model>(model);
 }
 
-void render_model(const SharedModel &model) {
-    // TODO(bkuolt): bind vbo
-    // TODO(bkuolt): bind vao
-    // TODO(bkuolt): set uniforms
+void RenderModel(const SharedModel &model, const mat4 &MVP) {
+    constexpr GLuint texture_unit = 0;
+    glActiveTexture(GL_TEXTURE0 + texture_unit);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, model->texture ? *model->texture : 0);
+
+    glBindVertexArray(*model->vao);
+    glUniform3fv(5, 1, glm::value_ptr(MVP));
+    glUniform1ui(AttributLocations::Texture, texture_unit);
     glUseProgram(*model->program);
+
     glDrawElements(GL_TRIANGLES, model->vertex_count * 3, GL_UNSIGNED_INT, nullptr);
 }
