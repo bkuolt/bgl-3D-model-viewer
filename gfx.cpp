@@ -23,7 +23,7 @@
 #include <assimp/scene.h>        // Output data structure
 
 #include <glm/gtc/type_ptr.hpp>
-// #define  USE_SHADER
+#define  USE_SHADER
 
 std::ostream& operator<<(std::ostream &os, const vec2 &vector) {
     os << "(" << std::fixed << std::setprecision(2) << vector.x
@@ -64,7 +64,11 @@ std::shared_ptr<SDL_Window> createFullScreenWindow() {
 
 SharedContext createGLContext(const SharedWindow &window) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
     auto context = SDL_GL_CreateContext(window.get());
     if (context == nullptr) {
         throw std::runtime_error { "could not create OpenGL context" };
@@ -75,12 +79,14 @@ SharedContext createGLContext(const SharedWindow &window) {
         throw std::runtime_error { reinterpret_cast<const char*>(glewGetErrorString(error)) };
     }
 
+    std::cout << "GL: "<< glGetString(GL_VERSION)
+              << "GLSL: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+
     const auto Deleter = [] (SDL_GLContext *context) { SDL_GL_DeleteContext(context); };
     return std::shared_ptr<SDL_GLContext>(new SDL_GLContext { context }, Deleter);
 }
 
 /* ----------------------- Shader Support  ----------------------- */
-#if defined(USE_SHADER)
 namespace {
 
 void LoadShaderSource(GLuint shader, const std::filesystem::path &path) {
@@ -94,8 +100,9 @@ void LoadShaderSource(GLuint shader, const std::filesystem::path &path) {
             throw std::runtime_error { "could not read shader source file " };
         }
 
-        GLchar *line = strdup(string.c_str());
+        GLchar *line = strdup((std::string(string.c_str()) + "\n").c_str());
         lines.push_back(line);
+        // std::cout << std::quoted(line) << std::endl;
         std::getline(file, string);
     }
 
@@ -122,7 +129,7 @@ void CompileShader(GLuint handle) {
 
 SharedShader LoadShader(GLenum type, const std::filesystem::path &path) {
     GLuint handle = glCreateShader(type);
-    if (glGetError() != GL_NO_ERROR) {
+    if (handle == 0) {
         throw std::runtime_error { "could not create shader object"};
     }
     LoadShaderSource(handle, path);
@@ -146,16 +153,18 @@ void LinkProgram(GLuint handle) {
         std::basic_string<GLchar> errorLog;
         errorLog.resize(maxLength);
         glGetProgramInfoLog(handle, maxLength, &maxLength, errorLog.data());
-        return throw std::runtime_error { "shader link log: " + errorLog };
+        throw std::runtime_error { "shader link log: " + errorLog };
     }
+
+    std::cout << "linked shader program" << std::endl;
 }
 
 SharedProgram LoadProgram(const std::filesystem::path &vs_path, const std::filesystem::path &fs_path) {
     auto vs = LoadShader(GL_VERTEX_SHADER, vs_path);
     auto fs = LoadShader(GL_FRAGMENT_SHADER, fs_path);
 
-    GLuint handle = glCreateProgram();
-    if (glGetError() != GL_NO_ERROR) {
+    const GLuint handle = glCreateProgram();
+    if (handle == 0) {
         throw std::runtime_error { "could not create shader program" };
     }
 
@@ -171,7 +180,6 @@ SharedProgram LoadProgram(const std::filesystem::path &vs_path, const std::files
 }
 
 }  // namespace
-#endif  // defined(USE_SHADER)
 
 /* ------------------------- Rendering --------------------------- */
 
@@ -208,6 +216,8 @@ SharedVBO createVBO(const aiScene *scene) {
     for (auto i = 0u; i < mesh.mNumVertices; ++i) {
         buffer[i].normal = vec3 { mesh.mNormals[i].x, mesh.mNormals[i].y, mesh.mNormals[i].z };
         buffer[i].position = vec3 { mesh.mVertices[i].x, mesh.mVertices[i].y, mesh.mVertices[i].z };
+
+    std::cout <<      buffer[i].position.x<<    buffer[i].position.y <<    buffer[i].position.z << std::endl;    
         if (is_textured) {
             buffer[i].texcoords = vec2 { mesh.mTextureCoords[0][i].x, mesh.mTextureCoords[0][i].y };
         }
@@ -233,13 +243,15 @@ SharedIBO createIBO(const aiMesh &mesh) {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_STREAM_DRAW);
     auto buffer = reinterpret_cast<GLuint*>(glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));
     if (buffer == nullptr) {
-        throw std::runtime_error { "could not create VBO" };
+        throw std::runtime_error { "could not create IBO" };
     }
 
     for (auto i = 0u; i < mesh.mNumFaces; ++i) {
         switch (mesh.mFaces[i].mNumIndices) {
             case 3:
                 std::copy_n(mesh.mFaces[i].mIndices, 3, buffer);
+
+    std::cout <<      buffer[0] << "," << buffer[1] << "," << buffer[2] << std::endl; 
                 buffer += 3;
                 break;
             default:
@@ -250,14 +262,14 @@ SharedIBO createIBO(const aiMesh &mesh) {
 
     glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
     if (glGetError() != GL_NO_ERROR) {
-        throw std::runtime_error { "could not write data to VBO" };
+        throw std::runtime_error { "could not write data to IBO" };
     }
 
     std::cout << "created ibo for " << mesh.mNumFaces * 3 << " indices" << std::endl;
     return ibo;
 }
 
-enum AttributLocations { Position = 1, Normal, TexCoord, Texture };
+enum AttributLocations { MVP = 0, Position = 1, Normal, TexCoord, Texture };
 
 SharedVAO createVAO(const SharedVBO &vbo, const SharedIBO &ibo) {
     GLuint vao = 0;
@@ -267,17 +279,18 @@ SharedVAO createVAO(const SharedVBO &vbo, const SharedIBO &ibo) {
     }
 
     glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, *vbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *ibo);
 
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(AttributLocations::Position);
+    glEnableVertexAttribArray(AttributLocations::Normal);
+    glEnableVertexAttribArray(AttributLocations::TexCoord);
 
     const auto stride = sizeof(Vertex);
+    glBindBuffer(GL_ARRAY_BUFFER, *vbo);
     glVertexAttribPointer(AttributLocations::Position, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offsetof(Vertex, position)));
-    glVertexAttribPointer(AttributLocations::Normal, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offsetof(Vertex, normal)));
+    glVertexAttribPointer(AttributLocations::Normal, 3, GL_FLOAT, GL_TRUE, stride, reinterpret_cast<void*>(offsetof(Vertex, normal)));
     glVertexAttribPointer(AttributLocations::TexCoord, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offsetof(Vertex, texcoords)));
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *ibo);
 
     glBindVertexArray(0);
     return std::shared_ptr<GLuint> { new GLuint { vao }, [] (GLuint *pointer) {
@@ -331,11 +344,7 @@ SharedModel LoadModel(const std::filesystem::path &path) {
                   << console_color::white << std::endl;
     }
 
-#if defined(USE_SHADER)
     const auto program = LoadProgram("./assets/main.vs", "./assets/main.fs");
-#else
-    SharedProgram program;
-#endif
 
     const Model model { .vbo = vbo, .ibo = ibo, .vao = vao,
                         .vertex_count = static_cast<GLsizei>(mesh.mNumVertices),
@@ -345,18 +354,38 @@ SharedModel LoadModel(const std::filesystem::path &path) {
 }
 
 void RenderModel(const SharedModel &model, const mat4 &MVP) {
-#if defined(USE_SHADER)
+    glGetError();
+    glPolygonMode(GL_FRONT_AND_BACK, /*GL_LINE*/ GL_FILL);
+    glUseProgram(*model->program);
+
+    int rs;
+    if ((rs = glGetError()) != GL_NO_ERROR) {
+        std::cout <<"sss" <<gluErrorString(rs) << std::endl;
+    }
+
+#if 1
     constexpr GLuint texture_unit = 0;
     glActiveTexture(GL_TEXTURE0 + texture_unit);
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, model->texture ? *model->texture : 0);
 #endif
-
+glGetError();    
     glBindVertexArray(*model->vao);
-#if defined(USE_SHADER)
-    glUniform3fv(5, 1, glm::value_ptr(MVP));
+    glUniformMatrix4fv(AttributLocations::MVP, 1, GL_FALSE, glm::value_ptr(MVP));
+
+    if ((rs = glGetError()) != GL_NO_ERROR) {
+        std::cout <<"s" <<gluErrorString(rs) << std::endl;
+    }
+
+#if 1
     glUniform1ui(AttributLocations::Texture, texture_unit);
-    glUseProgram(*model->program);
 #endif
+
+glGetError();
     glDrawElements(GL_TRIANGLES, model->vertex_count * 3, GL_UNSIGNED_INT, nullptr);
+
+    int r;
+    if ((r = glGetError()) != GL_NO_ERROR) {
+        std::cout << gluErrorString(r) << std::endl;
+    }
 }

@@ -70,13 +70,15 @@ void on_trigger(float lhs, float rhs) {
 }
 
 void on_render(const SharedWindow &window) noexcept {
-    glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+
+//glEnable(GL_DEPTH_TEST);
+    glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    const vec3 position { 0.0f, 0.0f, -2.0f };
-    const mat4 P = glm::ortho(-2.0f, 2.0f, -2.0f, 2.0f, -2.0f, 2.0f);
+    const vec3 position { 0.0f, 0.0f, -6.0f };
+    const mat4 P = glm::ortho(-2.0f, 2.0f, -2.0f, 2.0f, 300.0f, -300.0f);
     const mat4 MV = glm::lookAt(position, vec3{}, vec3 { 0.0f, 1.0f, 0.0f });
-    const mat4 MVP = MV * P;
+    const mat4 MVP = P * MV;
     RenderModel(App.model, MVP);
 
     SDL_GL_SwapWindow(window.get());
