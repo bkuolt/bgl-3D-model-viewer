@@ -11,5 +11,5 @@ out float intensity;
 void main() {
     gl_Position = MVP * vec4(position, 1.0);
     const vec3 lightDirection = vec3(-1,-1,-1);
-    intensity = dot(lightDirection, mat3(MVP) * normal);
+    intensity = dot(lightDirection,  normal);
 }

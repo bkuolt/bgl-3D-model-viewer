@@ -86,25 +86,26 @@ void on_render(const SharedWindow &window) noexcept {
         fps = 0;
     }
 
-
-
-
-    static auto last_rendering_timepoint = std::chrono::steady_clock::now();
-
-    const float delta = 
-        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - last_rendering_timepoint).count() / 1000.0;
-    last_rendering_timepoint = std::chrono::steady_clock::now();
-
-
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
+glEnable(GL_CULL_FACE);
+glCullFace(GL_BACK);
+glFrontFace(GL_CW);  // bringt das noch was
+
     const mat4 P = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 300.0f, -300.0f);
 
-    static float angle = 0;
-    angle += delta * 10 /* 10° per second */;
+    static double angle = 0;
+    static auto delta_time_stamp = SDL_GetTicks();
+
+
+
+    const double delta = (SDL_GetTicks() - delta_time_stamp) / 1000.0;
+    delta_time_stamp = SDL_GetTicks();
+    angle += delta * 30.0 /* 10° per second */;
+
     const vec3 position {
         glm::cos(glm::radians(angle)),
         0.0f,

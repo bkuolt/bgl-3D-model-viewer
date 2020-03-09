@@ -362,7 +362,7 @@ void RenderModel(const SharedModel &model, const mat4 &MVP) {
         glBindTexture(GL_TEXTURE_2D, *model->texture);
         glUniform1ui(AttributLocations::Texture, texture_unit);
     }
- 
+
     glBindVertexArray(*model->vao);
     glUniformMatrix4fv(AttributLocations::MVP, 1, GL_FALSE, glm::value_ptr(MVP));
 
