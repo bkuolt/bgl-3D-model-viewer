@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
         App.context = createGLContext(App.window);
         App.model = LoadModel(argv[1]);
 
-        auto game_controller = get_game_controller();
+        //auto game_controller = get_game_controller();
         SDL_ShowWindow(App.window.get());
         loop();
     } catch (const std::exception &exception) {
@@ -71,15 +71,50 @@ void on_trigger(float lhs, float rhs) {
 
 void on_render(const SharedWindow &window) noexcept {
 
-//glEnable(GL_DEPTH_TEST);
-    glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+    static Uint32 timestamp = SDL_GetTicks();
+    static int fps = 0;
+
+    ++fps;
+
+    auto duration = SDL_GetTicks() - timestamp;
+    if (duration >= 1000) {
+        timestamp = SDL_GetTicks();
+
+        std::cout << console_color::blue
+                  << "\r" << fps << " fps"
+                  << console_color::white << std::flush;
+        fps = 0;
+    }
+
+
+
+
+    static auto last_rendering_timepoint = std::chrono::steady_clock::now();
+
+    const float delta = 
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - last_rendering_timepoint).count() / 1000.0;
+    last_rendering_timepoint = std::chrono::steady_clock::now();
+
+
+    glEnable(GL_DEPTH_TEST);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    const vec3 position { 0.0f, 0.0f, -6.0f };
-    const mat4 P = glm::ortho(-2.0f, 2.0f, -2.0f, 2.0f, 300.0f, -300.0f);
+
+    const mat4 P = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 300.0f, -300.0f);
+
+    static float angle = 0;
+    angle += delta * 10 /* 10° per second */;
+    const vec3 position {
+        glm::cos(glm::radians(angle)),
+        0.0f,
+        -glm::sin(glm::radians(180 + angle))
+    };
+
     const mat4 MV = glm::lookAt(position, vec3{}, vec3 { 0.0f, 1.0f, 0.0f });
     const mat4 MVP = P * MV;
     RenderModel(App.model, MVP);
 
     SDL_GL_SwapWindow(window.get());
+    SDL_GL_SetSwapInterval(0 /* no vsync */);
 }

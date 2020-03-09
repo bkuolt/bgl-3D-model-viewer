@@ -160,8 +160,8 @@ void loop() {
     while (App.run) {
         while (SDL_PollEvent(&event)) {
             handle_event(event);
-            on_render(App.window);
         }
+        on_render(App.window);
     }
 
     SDL_DestroyWindow(App.window.get());  // make sure that the window is destroyed before the context

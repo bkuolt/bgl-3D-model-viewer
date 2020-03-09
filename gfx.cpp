@@ -54,7 +54,8 @@ std::shared_ptr<SDL_Window> createFullScreenWindow() {
     SDL_Window * const window = SDL_CreateWindow("BGL Tech Demo",
                                                  SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                                  800, 600,
-                                                 SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
+                                                 SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN 
+                                                 /*| SDL_WINDOW_FULLSCREEN_DESKTOP */);
     if (window == nullptr) {
         throw std::runtime_error{ SDL_GetError() };
     }
@@ -188,11 +189,11 @@ namespace {
 std::shared_ptr<GLuint> createBuffer() {
     GLuint buffer = 0;
     glCreateBuffers(1, &buffer);
-    if (glGetError() != GL_NO_ERROR) {
+    if (glGetError() != GL_NO_ERROR || buffer == 0) {
         throw std::runtime_error { "could not create GL buffer" };
     }
 
-    return { &buffer,
+    return { new GLuint { buffer },
         [] (GLuint *buffer) {
             glDeleteBuffers(1, buffer);
         }
@@ -216,8 +217,6 @@ SharedVBO createVBO(const aiScene *scene) {
     for (auto i = 0u; i < mesh.mNumVertices; ++i) {
         buffer[i].normal = vec3 { mesh.mNormals[i].x, mesh.mNormals[i].y, mesh.mNormals[i].z };
         buffer[i].position = vec3 { mesh.mVertices[i].x, mesh.mVertices[i].y, mesh.mVertices[i].z };
-
-    std::cout <<      buffer[i].position.x<<    buffer[i].position.y <<    buffer[i].position.z << std::endl;    
         if (is_textured) {
             buffer[i].texcoords = vec2 { mesh.mTextureCoords[0][i].x, mesh.mTextureCoords[0][i].y };
         }
@@ -250,8 +249,6 @@ SharedIBO createIBO(const aiMesh &mesh) {
         switch (mesh.mFaces[i].mNumIndices) {
             case 3:
                 std::copy_n(mesh.mFaces[i].mIndices, 3, buffer);
-
-    std::cout <<      buffer[0] << "," << buffer[1] << "," << buffer[2] << std::endl; 
                 buffer += 3;
                 break;
             default:
@@ -355,37 +352,19 @@ SharedModel LoadModel(const std::filesystem::path &path) {
 
 void RenderModel(const SharedModel &model, const mat4 &MVP) {
     glGetError();
-    glPolygonMode(GL_FRONT_AND_BACK, /*GL_LINE*/ GL_FILL);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glUseProgram(*model->program);
 
-    int rs;
-    if ((rs = glGetError()) != GL_NO_ERROR) {
-        std::cout <<"sss" <<gluErrorString(rs) << std::endl;
+    if (model->texture) {
+        constexpr GLuint texture_unit = 0;
+        glActiveTexture(GL_TEXTURE0 + texture_unit);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, *model->texture);
+        glUniform1ui(AttributLocations::Texture, texture_unit);
     }
-
-#if 1
-    constexpr GLuint texture_unit = 0;
-    glActiveTexture(GL_TEXTURE0 + texture_unit);
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, model->texture ? *model->texture : 0);
-#endif
-glGetError();    
+ 
     glBindVertexArray(*model->vao);
     glUniformMatrix4fv(AttributLocations::MVP, 1, GL_FALSE, glm::value_ptr(MVP));
 
-    if ((rs = glGetError()) != GL_NO_ERROR) {
-        std::cout <<"s" <<gluErrorString(rs) << std::endl;
-    }
-
-#if 1
-    glUniform1ui(AttributLocations::Texture, texture_unit);
-#endif
-
-glGetError();
     glDrawElements(GL_TRIANGLES, model->vertex_count * 3, GL_UNSIGNED_INT, nullptr);
-
-    int r;
-    if ((r = glGetError()) != GL_NO_ERROR) {
-        std::cout << gluErrorString(r) << std::endl;
-    }
 }
