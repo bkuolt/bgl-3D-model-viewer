@@ -3,7 +3,7 @@
          demo \
 		 all run clean
 
-CC = g++
+CC = g++-8
 FLAGS = -std=c++17 -pthread -Wall -O3
 LIBS = -lstdc++fs \
 	-lSDL2 -lSDL2_image \
@@ -28,6 +28,7 @@ demo: main.o gfx.o input.o
 	$(LIBS)
 
 install:
+	sudo apt-get install g++-8
 	sudo add-apt-repository main
 	sudo add-apt-repository universe
 	sudo add-apt-repository restricted
@@ -36,7 +37,7 @@ install:
 		libsdl2-dev libsdl2-image-dev \
 		libassimp-dev \
 		libglew-dev libglm-dev \
-		libsdl2-2.0-0 libsdl2-image-2.0-0 libglew2.1 libassimp4
+		libsdl2-2.0-0 libsdl2-image-2.0-0 libassimp4
 
 all: demo
 
