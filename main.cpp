@@ -65,7 +65,7 @@ void load(const std::filesystem::path &path) {
     // TODO(bkuolt): invegistigate "auto game_controller = get_game_controller();""
 
     // set up camera
-    Scene.P = glm::ortho(-1.25, 1.25, -1.25, 1.25, -1.0, 100.0);
+    Scene.P = glm::ortho(-1.0, 1.0, -1.0, 1.0, 1.0, 100.0);
 
     // initialize OpenGL
     SDL_GL_SetSwapInterval(0);  // disable vsync

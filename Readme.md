@@ -1,4 +1,4 @@
-![C/C++ CI](https://github.com/bkuolt/bgl-demo/workflows/C/C++%20CI/badge.svg)
+![C/C++ CI](https://github.com/bkuolt/bgl-demo/workflows/C/C++%20CI/badge.svg?branch=controller_support)
 
 # Installation
 ```bash

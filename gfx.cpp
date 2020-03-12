@@ -22,6 +22,8 @@
 #include <assimp/Importer.hpp>   // Model loader
 #include <assimp/scene.h>        // Output data structure
 
+
+#include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #define  USE_SHADER
 
@@ -201,6 +203,55 @@ std::shared_ptr<GLuint> createBuffer() {
     };
 }
 
+struct bounding_box {
+    float min;
+    float max;
+};
+
+glm::tvec3<bounding_box> get_bounds(const aiMesh &mesh) noexcept {
+    glm::tvec3<bounding_box> bounds;
+
+    for (auto i = 0u; i < 3; ++i) {
+        bounds[i].min = 0;
+        bounds[i].max = 0;
+    }
+
+    for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
+        for (auto i = 0u; i < 3; ++i) {
+            bounds[i].min = std::min(bounds[i].min, mesh.mVertices[vertex_index][i]);
+            bounds[i].max = std::max(bounds[i].max, mesh.mVertices[vertex_index][i]);
+        }
+    }
+    return bounds;
+}
+
+void normalize_vertex_positions(const aiMesh &mesh, Vertex *buffer) {
+    const glm::tvec3<bounding_box> bounds = get_bounds(mesh);
+    const vec3 dimensions {
+        bounds.x.max - bounds.x.min,
+        bounds.y.max - bounds.y.min,
+        bounds.z.max - bounds.z.min,
+    };
+    const vec3 center {
+        bounds.x.max - (dimensions.x / 2),
+        bounds.y.max - (dimensions.y / 2),
+        bounds.z.max - (dimensions.z / 2)
+    };
+
+    std::cout << "dimensions:"
+              << " w=" << dimensions.x
+              << " h=" << dimensions.y
+              << " d=" << dimensions.z
+              << std::endl;
+
+   for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
+        for (auto i = 0u; i < 3; ++i) {
+            buffer[vertex_index].position[i] -= center[i];      // recenter
+            buffer[vertex_index].position[i] /= dimensions[i];  // normalize
+        }
+    }
+}
+
 SharedVBO createVBO(const aiScene *scene) {
     static_assert(std::is_same<ai_real, float>::value);
     const aiMesh &mesh = *scene->mMeshes[0];
@@ -215,13 +266,16 @@ SharedVBO createVBO(const aiScene *scene) {
     }
 
     const bool is_textured { scene->mNumTextures > 1 };
-    for (auto i = 0u; i < mesh.mNumVertices; ++i) {
-        buffer[i].normal = -vec3 { mesh.mNormals[i].x, mesh.mNormals[i].y, mesh.mNormals[i].z };
-        buffer[i].position = vec3 { mesh.mVertices[i].x, mesh.mVertices[i].y, mesh.mVertices[i].z };
+    for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
+        buffer[vertex_index].normal = -vec3 { mesh.mNormals[vertex_index].x, mesh.mNormals[vertex_index].y, mesh.mNormals[vertex_index].z };
+        buffer[vertex_index].position = vec3 { mesh.mVertices[vertex_index].x, mesh.mVertices[vertex_index].y, mesh.mVertices[vertex_index].z };
         if (is_textured) {
-            buffer[i].texcoords = vec2 { mesh.mTextureCoords[0][i].x, mesh.mTextureCoords[0][i].y };
+            buffer[vertex_index].texcoords = vec2 { mesh.mTextureCoords[0][vertex_index].x,
+                                                    mesh.mTextureCoords[0][vertex_index].y };
         }
     }
+
+    normalize_vertex_positions(mesh, buffer);
 
     glUnmapBuffer(GL_ARRAY_BUFFER);
     if (glGetError() != GL_NO_ERROR) {
@@ -239,7 +293,7 @@ SharedIBO createIBO(const aiMesh &mesh) {
         throw std::runtime_error { "could not write data to IBO" };
     }
 
-    const GLsizei size = sizeof(GLuint) * mesh.mNumFaces * 30;
+    const GLsizei size = sizeof(GLuint) * (mesh.mNumFaces * 3);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_STREAM_DRAW);
     auto buffer = reinterpret_cast<GLuint*>(glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));
     if (buffer == nullptr) {
@@ -345,7 +399,7 @@ SharedModel LoadModel(const std::filesystem::path &path) {
     const auto program = LoadProgram("./assets/main.vs", "./assets/main.fs");
 
     const Model model { .vbo = vbo, .ibo = ibo, .vao = vao,
-                        .vertex_count = static_cast<GLsizei>(mesh.mNumVertices),
+                        .triangle_count = static_cast<GLsizei>(mesh.mNumFaces),
                         .texture = texture,
                         .program = program };
     return std::make_shared<Model>(model);
@@ -364,5 +418,5 @@ void RenderModel(const SharedModel &model, const mat4 &MVP) {
 
     glBindVertexArray(*model->vao);
     glUniformMatrix4fv(AttributLocations::MVP, 1, GL_FALSE, glm::value_ptr(MVP));
-    glDrawElements(GL_TRIANGLES, model->vertex_count * 3, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, model->triangle_count * 3, GL_UNSIGNED_INT, nullptr);
 }

@@ -65,7 +65,7 @@ struct Model {
     const SharedVBO vbo;
     const SharedIBO ibo;
     const SharedVAO vao;
-    const GLsizei vertex_count;
+    const GLsizei triangle_count;
 
     const std::shared_ptr<GLuint> texture;
     const SharedShader program;
