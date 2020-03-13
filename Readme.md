@@ -2,7 +2,7 @@
 
 
 
-![alt text](./assets/screenshot.png "BGL Tech Demo")
+![alt text](/assets/screenshot.png "BGL Tech Demo")
 
 # Installation
 ```bash
