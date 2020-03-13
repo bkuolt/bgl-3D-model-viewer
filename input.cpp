@@ -19,6 +19,8 @@
 #include <thread>
 #include <vector>
 
+namespace bgl {
+
 using namespace std::chrono_literals;
 
 /* ------------------------- Game Controller Support --------------------------- */
@@ -98,7 +100,7 @@ void handle_input_event(const SDL_Event &event) {
         case SDL_JOYBUTTONDOWN:
         case SDL_JOYBUTTONUP:
             if (event.jbutton.which == current_game_controller) {
-                on_button(map_button_name(event.jbutton.button), event.jbutton.state);
+                // on_button(map_button_name(event.jbutton.button), event.jbutton.state);  // TODO(bkuolt): fix
             }
             break;
         case SDL_JOYAXISMOTION:
@@ -169,7 +171,7 @@ void loop() {
         const Uint32 duration = SDL_GetTicks() - timestamp_render;
         const float delta = duration / 1000.0f;
         timestamp_render = SDL_GetTicks();
-        on_render(App.window, delta);
+        on_render(::App.window, delta);
         ++fps;
 
         // track fps
@@ -181,5 +183,7 @@ void loop() {
     }
 
     std::cout << "\r" << console_color::white << std::endl;
-    SDL_DestroyWindow(App.window.get());  // make sure that the window is destroyed before the context
+    SDL_DestroyWindow(::App.window.get());  // make sure that the window is destroyed before the context
 }
+
+}  // namespace bgl

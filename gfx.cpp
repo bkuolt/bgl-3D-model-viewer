@@ -11,8 +11,9 @@
 #include <iomanip>    // std::setprecision, std::fixed
 #include <iostream>
 #include <fstream>
-#include <string>
+
 #include <sstream>
+#include <string>
 #include <stdexcept>
 #include <type_traits>
 #include <vector>
@@ -22,10 +23,11 @@
 #include <assimp/Importer.hpp>   // Model loader
 #include <assimp/scene.h>        // Output data structure
 
-
 #include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#define  USE_SHADER
+#include <glm/gtc/type_ptr.hpp>  // glm::value_ptr()
+
+
+namespace bgl {
 
 std::ostream& operator<<(std::ostream &os, const vec2 &vector) {
     os << "(" << std::fixed << std::setprecision(2) << vector.x
@@ -91,9 +93,20 @@ SharedContext createGLContext(const SharedWindow &window) {
 
 /* ----------------------- Shader Support  ----------------------- */
 
-namespace {
+Shader::Shader(GLenum type, const std::filesystem::path & path)
+    : _handle { glCreateShader(type) }, _type { type } {
+    if (_handle == 0) {
+        throw std::runtime_error { "could not create shader object"};
+    }
+    load(path);
+    compile();
+}
 
-void LoadShaderSource(GLuint shader, const std::filesystem::path &path) {
+Shader::~Shader() noexcept {
+    glDeleteShader(_handle);
+}
+
+void Shader::load(const std::filesystem::path &path) {
     std::vector<GLchar*> lines;
 
     std::ifstream file { path.string() };
@@ -110,77 +123,64 @@ void LoadShaderSource(GLuint shader, const std::filesystem::path &path) {
         std::getline(file, string);
     }
 
-    glShaderSource(shader, lines.size(), lines.data(), nullptr);
+    glShaderSource(_handle, lines.size(), lines.data(), nullptr);
     std::for_each(lines.begin(), lines.end(),  [] (GLchar *line) { free(line); });
     std::cout << "loaded shader source " << path << std::endl;
 }
 
-void CompileShader(GLuint handle) {
-    glCompileShader(handle);
+void Shader::compile() {
+    glCompileShader(_handle);
 
     GLint isCompiled = 0;
-    glGetShaderiv(handle, GL_COMPILE_STATUS, &isCompiled);
+    glGetShaderiv(_handle, GL_COMPILE_STATUS, &isCompiled);
     if (!isCompiled) {
         GLint maxLength = 0;
-        glGetShaderiv(handle, GL_INFO_LOG_LENGTH, &maxLength);
+        glGetShaderiv(_handle, GL_INFO_LOG_LENGTH, &maxLength);
         std::basic_string<GLchar> errorLog;
         errorLog.resize(maxLength);
-        glGetShaderInfoLog(handle, maxLength, nullptr, errorLog.data());
+        glGetShaderInfoLog(_handle, maxLength, nullptr, errorLog.data());
         throw std::runtime_error { "shader compile log: " + errorLog };
     }
-    std::cout << "compiled shader handle=" << handle << std::endl;
+    std::cout << "successfully compiled shader handle=" << _handle << std::endl;
 }
 
-SharedShader LoadShader(GLenum type, const std::filesystem::path &path) {
-    GLuint handle = glCreateShader(type);
-    if (handle == 0) {
-        throw std::runtime_error { "could not create shader object"};
-    }
-    LoadShaderSource(handle, path);
-    CompileShader(handle);
 
-    constexpr auto Deleter = [] (GLuint *pointer) {
-        glDeleteShader(*pointer);
-        delete pointer;
-    };
-    return std::shared_ptr<GLuint> { new GLuint { handle }, Deleter };
-}
-
-void LinkProgram(GLuint handle) {
-    glLinkProgram(handle);
-
-    GLint isLinked = 0;
-    glGetProgramiv(handle, GL_LINK_STATUS, &isLinked);
-    if (isLinked == GL_FALSE) {
-        GLint maxLength = 0;
-        glGetProgramiv(handle, GL_INFO_LOG_LENGTH, &maxLength);
-        std::basic_string<GLchar> errorLog;
-        errorLog.resize(maxLength);
-        glGetProgramInfoLog(handle, maxLength, &maxLength, errorLog.data());
-        throw std::runtime_error { "shader link log: " + errorLog };
-    }
-
-    std::cout << "linked shader program" << std::endl;
-}
-
-SharedProgram LoadProgram(const std::filesystem::path &vs_path, const std::filesystem::path &fs_path) {
-    auto vs = LoadShader(GL_VERTEX_SHADER, vs_path);
-    auto fs = LoadShader(GL_FRAGMENT_SHADER, fs_path);
-
-    const GLuint handle = glCreateProgram();
-    if (handle == 0) {
+Program::Program(const SharedShader &vs, const SharedShader &fs)
+    : _handle { glCreateProgram() },
+      _vs { vs }, _fs { fs } {
+    if (_handle == 0) {
         throw std::runtime_error { "could not create shader program" };
     }
 
-    glAttachShader(handle, *vs);
-    glAttachShader(handle, *fs);
-    LinkProgram(handle);
+    glAttachShader(_handle, _vs->_handle);
+    glAttachShader(_handle, _fs->_handle);
+    link();
+}
 
-    constexpr auto Deleter = [] (GLuint *pointer) {
-        glDeleteProgram(*pointer);
-        delete pointer;
-    };
-    return { new GLuint { handle }, Deleter };
+Program::~Program() noexcept {
+    glDeleteProgram(_handle);
+}
+
+void Program::link() {
+    glLinkProgram(_handle);
+
+    GLint isLinked = 0;
+    glGetProgramiv(_handle, GL_LINK_STATUS, &isLinked);
+    if (isLinked == GL_FALSE) {
+        GLint maxLength = 0;
+        glGetProgramiv(_handle, GL_INFO_LOG_LENGTH, &maxLength);
+        std::basic_string<GLchar> errorLog;
+        errorLog.resize(maxLength);
+        glGetProgramInfoLog(_handle, maxLength, &maxLength, errorLog.data());
+        throw std::runtime_error { "shader link log: " + errorLog };
+    }
+    std::cout << "linked shader program" << std::endl;
+}
+
+namespace {
+
+inline SharedShader LoadShader(GLenum type, const std::filesystem::path &path) {
+    return std::make_shared<Shader>(type, path);
 }
 
 }  // namespace
@@ -244,7 +244,7 @@ void normalize_vertex_positions(const aiMesh &mesh, Vertex *buffer) {
               << " d=" << dimensions.z
               << std::endl;
 
-   for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
+    for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
         for (auto i = 0u; i < 3; ++i) {
             buffer[vertex_index].position[i] -= center[i];      // recenter
             buffer[vertex_index].position[i] /= dimensions[i];  // normalize
@@ -396,17 +396,19 @@ SharedModel LoadModel(const std::filesystem::path &path) {
                   << console_color::white << std::endl;
     }
 
-    const auto program = LoadProgram("./assets/main.vs", "./assets/main.fs");
+    const auto vs = LoadShader(GL_VERTEX_SHADER, "./assets/main.vs");
+    const auto fs = LoadShader(GL_FRAGMENT_SHADER, "./assets/main.fs");
+    const auto program = std::make_shared<Program>(vs, fs);
 
     const Model model { .vbo = vbo, .ibo = ibo, .vao = vao,
-                        .triangle_count = static_cast<GLsizei>(mesh.mNumFaces),
+                        .num_triangles = static_cast<GLsizei>(mesh.mNumFaces),
                         .texture = texture,
                         .program = program };
     return std::make_shared<Model>(model);
 }
 
 void RenderModel(const SharedModel &model, const mat4 &MVP) {
-    glUseProgram(*model->program);
+    glUseProgram(model->program->_handle);
 
     if (model->texture) {
         constexpr GLuint texture_unit = 0;
@@ -418,5 +420,7 @@ void RenderModel(const SharedModel &model, const mat4 &MVP) {
 
     glBindVertexArray(*model->vao);
     glUniformMatrix4fv(AttributLocations::MVP, 1, GL_FALSE, glm::value_ptr(MVP));
-    glDrawElements(GL_TRIANGLES, model->triangle_count * 3, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, model->num_triangles * 3, GL_UNSIGNED_INT, nullptr);
 }
+
+}  // namespace bgl

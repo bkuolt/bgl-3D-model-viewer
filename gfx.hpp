@@ -15,6 +15,8 @@
 
 #include <glm/glm.hpp>
 
+namespace bgl {
+
 /* ---------------------------- Basic Types ---------------------------- */
 
 using vec2 = glm::vec2;
@@ -53,22 +55,58 @@ namespace console_color {
 
 /* --------------------------------------------------------------------- */
 
+class Shader {
+ public:
+    const GLuint _handle;
+    const GLuint _type;
+
+    explicit Shader(GLenum type, const std::filesystem::path & path);
+    Shader(const Shader&) = delete;
+    virtual ~Shader() noexcept;
+
+    Shader& operator=(const Shader&) = delete;
+
+ private:
+    void load(const std::filesystem::path & path);
+    void compile();
+};
+
+using SharedShader = std::shared_ptr<Shader>;
+
+
+class Program {
+ public:
+    Program(const SharedShader &vs, const SharedShader &fs_shader);
+    Program(const Program&) = delete;
+    virtual ~Program() noexcept;
+
+    Program& operator=(const Program&) = delete;
+
+    const GLuint _handle;
+ private:
+    void link();
+
+    SharedShader _vs;
+    SharedShader _fs;
+};
+
+using SharedProgram = std::shared_ptr<Program>;
+
+
 using SharedVBO = std::shared_ptr<GLuint>;
 using SharedIBO = std::shared_ptr<GLuint>;
 using SharedVAO = std::shared_ptr<GLuint>;
 using SharedTexture = std::shared_ptr<GLuint>;  // TODO(bkuolt): implement
 
-using SharedShader = std::shared_ptr<GLuint>;
-using SharedProgram = std::shared_ptr<GLuint>;
 
 struct Model {
     const SharedVBO vbo;
     const SharedIBO ibo;
     const SharedVAO vao;
-    const GLsizei triangle_count;
+    const GLsizei num_triangles;
 
-    const std::shared_ptr<GLuint> texture;
-    const SharedShader program;
+    const SharedTexture texture;
+    const SharedProgram program;
 };
 
 /* ----------------------------- Interface  -----------------------------*/
@@ -76,5 +114,7 @@ struct Model {
 using SharedModel = std::shared_ptr<Model>;
 SharedModel LoadModel(const std::filesystem::path &path);
 void RenderModel(const SharedModel &model, const mat4 &MVP);
+
+}  // namespace bgl
 
 #endif  // GFX_HPP_

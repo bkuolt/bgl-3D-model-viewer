@@ -9,6 +9,9 @@
 #include "gfx.hpp"
 #include "input.hpp"
 
+using namespace bgl;
+
+
 struct App {
     bool run = true;
     SharedWindow window;
@@ -17,7 +20,7 @@ struct App {
 
 namespace {
 
-void load(const std::filesystem::path &path);  // forward declaration
+void set_up_scene(const std::filesystem::path &path);  // forward declaration
 
 void signal_handler(int signal) {
     App.run = false;
@@ -36,10 +39,11 @@ int main(int argc, char *argv[]) {
 
     std::signal(SIGINT, signal_handler);
     std::signal(SIGHUP, signal_handler);
+
     try {
         App.window = createFullScreenWindow();
         App.context = createGLContext(App.window);
-        load(argv[1]);
+        set_up_scene(argv[1]);
         SDL_ShowWindow(App.window.get());
         loop();
     } catch (const std::exception &exception) {
@@ -60,25 +64,36 @@ struct {
     mat4 P;
 } Scene;
 
-void load(const std::filesystem::path &path) {
+void set_up_scene(const std::filesystem::path &path) {
     Scene.model = LoadModel(path);
-    // TODO(bkuolt): invegistigate "auto game_controller = get_game_controller();""
-
-    // set up camera
     Scene.P = glm::ortho(-1.0, 1.0, -1.0, 1.0, 1.0, 100.0);
 
     // initialize OpenGL
-    SDL_GL_SetSwapInterval(0);  // disable vsync
+    if (SDL_GL_SetSwapInterval(0) == -1) {  // disable vsync for benchmarking
+        std::cout << "SDL_GL_SetSwapInterval() failed" << std::endl;
+    }
 
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-#if 0  // TODO(bkuolt): revalidate
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    glFrontFace(GL_CW);
-#endif
+    glFrontFace(GL_CCW);
+}
+
+double update_angle(double delta) {
+    constexpr double rotation_speed = 30.0f;  // [°/s]
+    static double angle = glm::radians(180.0f);
+    angle += delta * rotation_speed;
+    return angle;
+}
+
+mat4 calculate_view_matrix(double delta, double radius) noexcept {
+    const double angle { glm::radians(update_angle(delta)) };
+    const vec3 position { radius * glm::cos(angle), 0.0f, radius * sin(angle) };
+    return glm::lookAt(position, { 0.0, 0.0, 0.0}, vec3 { 0.0f, 1.0f, 0.0f });
 }
 
 }  // namespace
@@ -86,18 +101,7 @@ void load(const std::filesystem::path &path) {
 void on_render(const SharedWindow &window, float delta) noexcept {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // calculate new camera position
-    constexpr float rotation_speed = 30.0f;  // [°/s]
-    static float angle = glm::radians(180.0f);
-    angle += delta * glm::radians(rotation_speed);
-
-    // update camera position
-    const float radius = 10;
-    const vec3 position { radius * glm::cos(angle), 0.0f, radius * sin(angle) };
-    const mat4 MV = glm::lookAt(position, vec3{}, vec3 { 0.0f, 1.0f, 0.0f });
-
-    // render model
-    const mat4 MVP = Scene.P * MV;
+    const mat4 MVP = Scene.P * calculate_view_matrix(delta, 10);
     RenderModel(Scene.model, MVP);
 
     SDL_GL_SwapWindow(window.get());
