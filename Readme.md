@@ -1,5 +1,9 @@
 ![C/C++ CI](https://github.com/bkuolt/bgl-demo/workflows/C/C++%20CI/badge.svg?branch=controller_support)
 
+
+
+![alt text](./assets/screenshot.png "BGL Tech Demo")
+
 # Installation
 ```bash
 git clone https://github.com/bkuolt/bgl-demo
