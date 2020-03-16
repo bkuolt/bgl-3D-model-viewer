@@ -4,7 +4,7 @@
 
 #include <chrono>  // const std::chrono::milliseconds
 
-#include "gfx.hpp"
+#include "gfx/gfx.hpp"
 #include "input.hpp"
 
 

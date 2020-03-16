@@ -10,21 +10,25 @@ LIBS = -lstdc++fs \
 	-lassimp  \
 	-lGLEW -lGLU -lGL -lGLU
 
-main.o: main.cpp gfx.hpp
+main.o: main.cpp
 	@$(CC) \
 		$(FLAGS) -c main.cpp
 
-gfx.o: gfx.cpp gfx.hpp
+gfx.o: gfx/gfx.cpp gfx/gfx.hpp
 	@$(CC) \
-		$(FLAGS) -c gfx.cpp
+		$(FLAGS) -c gfx/gfx.cpp
+
+shader.o: gfx/shader.cpp gfx/shader.hpp
+	@$(CC) \
+		$(FLAGS) -c gfx/shader.cpp
 
 input.o: input.cpp input.hpp
 	$(CC) $(FLAGS) -c input.cpp
 
-demo: main.o gfx.o input.o
+demo: main.o gfx.o input.o shader.o
 	$(CC) -o demo \
 	$(FLAGS) \
-	main.o gfx.o input.o \
+	main.o gfx.o input.o shader.o \
 	$(LIBS)
 
 install:

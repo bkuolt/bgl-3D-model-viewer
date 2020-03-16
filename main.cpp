@@ -6,7 +6,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>  // glm::lookAt(), glm::ortho()
 
-#include "gfx.hpp"
+#include "gfx/gfx.hpp"
 #include "input.hpp"
 
 using namespace bgl;
