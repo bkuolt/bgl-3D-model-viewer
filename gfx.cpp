@@ -189,19 +189,7 @@ inline SharedShader LoadShader(GLenum type, const std::filesystem::path &path) {
 
 namespace {
 
-std::shared_ptr<GLuint> createBuffer() {
-    GLuint buffer = 0;
-    glCreateBuffers(1, &buffer);
-    if (glGetError() != GL_NO_ERROR || buffer == 0) {
-        throw std::runtime_error { "could not create GL buffer" };
-    }
 
-    return { new GLuint { buffer },
-        [] (GLuint *buffer) {
-            glDeleteBuffers(1, buffer);
-        }
-    };
-}
 
 struct bounding_box {
     float min;
@@ -256,15 +244,8 @@ SharedVBO createVBO(const aiScene *scene) {
     static_assert(std::is_same<ai_real, float>::value);
     const aiMesh &mesh = *scene->mMeshes[0];
 
-    auto vbo = createBuffer();
-    glBindBuffer(GL_ARRAY_BUFFER, *vbo);
-    const GLsizei size = sizeof(Vertex) * mesh.mNumVertices;
-    glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_STREAM_DRAW);
-    Vertex *buffer = reinterpret_cast<Vertex*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-    if (buffer == nullptr) {
-        throw std::runtime_error { "could not create vbo" };
-    }
-
+    auto vbo = std::make_shared<VertexBuffer>(mesh.mNumVertices);
+    Vertex *buffer = vbo->map();
     const bool is_textured { scene->mNumTextures > 1 };
     for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
         buffer[vertex_index].normal = -vec3 { mesh.mNormals[vertex_index].x, mesh.mNormals[vertex_index].y, mesh.mNormals[vertex_index].z };
@@ -276,30 +257,17 @@ SharedVBO createVBO(const aiScene *scene) {
     }
 
     normalize_vertex_positions(mesh, buffer);
+    vbo->unmap();
 
-    glUnmapBuffer(GL_ARRAY_BUFFER);
-    if (glGetError() != GL_NO_ERROR) {
-        throw std::runtime_error { "could not unmap vbo" };
-    }
-
-    std::cout << "created vbo for " << mesh.mNumVertices << " vertices" << std::endl;
+    std::cout << "created a vbo with " << vbo->size() << " vertices" << std::endl;
     return vbo;
 }
 
 SharedIBO createIBO(const aiMesh &mesh) {
-    auto ibo = createBuffer();
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *ibo);
-    if (glGetError() != GL_NO_ERROR) {
-        throw std::runtime_error { "could not write data to IBO" };
-    }
+    const GLsizei size = mesh.mNumFaces * 3;
+    auto ibo = std::make_shared<IndexBuffer>(size);
 
-    const GLsizei size = sizeof(GLuint) * (mesh.mNumFaces * 3);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_STREAM_DRAW);
-    auto buffer = reinterpret_cast<GLuint*>(glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));
-    if (buffer == nullptr) {
-        throw std::runtime_error { "could not create IBO" };
-    }
-
+    auto buffer = ibo->map();
     for (auto i = 0u; i < mesh.mNumFaces; ++i) {
         switch (mesh.mFaces[i].mNumIndices) {
             case 3:
@@ -307,17 +275,12 @@ SharedIBO createIBO(const aiMesh &mesh) {
                 buffer += 3;
                 break;
             default:
-                glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
                 throw std::runtime_error { "unexpected data" };
         }
     }
+    ibo->unmap();
 
-    glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
-    if (glGetError() != GL_NO_ERROR) {
-        throw std::runtime_error { "could not write data to IBO" };
-    }
-
-    std::cout << "created ibo for " << mesh.mNumFaces * 3 << " indices" << std::endl;
+    std::cout << "created an ibo with " << ibo->size() << " indices" << std::endl;
     return ibo;
 }
 
@@ -337,12 +300,12 @@ SharedVAO createVAO(const SharedVBO &vbo, const SharedIBO &ibo) {
     glEnableVertexAttribArray(AttributLocations::TexCoord);
 
     const auto stride = sizeof(Vertex);
-    glBindBuffer(GL_ARRAY_BUFFER, *vbo);
+    vbo->bind();
     glVertexAttribPointer(AttributLocations::Position, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offsetof(Vertex, position)));
     glVertexAttribPointer(AttributLocations::Normal, 3, GL_FLOAT, GL_TRUE, stride, reinterpret_cast<void*>(offsetof(Vertex, normal)));
     glVertexAttribPointer(AttributLocations::TexCoord, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offsetof(Vertex, texcoords)));
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *ibo);
+    ibo->bind();
 
     glBindVertexArray(0);
     return std::shared_ptr<GLuint> { new GLuint { vao }, [] (GLuint *pointer) {
