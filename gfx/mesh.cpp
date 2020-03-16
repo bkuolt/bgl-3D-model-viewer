@@ -70,7 +70,7 @@ SharedVBO createVBO(const aiScene *scene) {
     Vertex *buffer = vbo->map();
     const bool is_textured { scene->mNumTextures > 1 };
     for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
-        buffer[vertex_index].normal = -vec3 { mesh.mNormals[vertex_index].x, mesh.mNormals[vertex_index].y, mesh.mNormals[vertex_index].z };
+        buffer[vertex_index].normal = vec3 { mesh.mNormals[vertex_index].x, mesh.mNormals[vertex_index].y, mesh.mNormals[vertex_index].z };
         buffer[vertex_index].position = vec3 { mesh.mVertices[vertex_index].x, mesh.mVertices[vertex_index].y, mesh.mVertices[vertex_index].z };
         if (is_textured) {
             buffer[vertex_index].texcoords = vec2 { mesh.mTextureCoords[0][vertex_index].x,
