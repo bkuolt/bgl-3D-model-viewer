@@ -189,8 +189,6 @@ inline SharedShader LoadShader(GLenum type, const std::filesystem::path &path) {
 
 namespace {
 
-
-
 struct bounding_box {
     float min;
     float max;
@@ -284,6 +282,7 @@ SharedIBO createIBO(const aiMesh &mesh) {
     return ibo;
 }
 
+
 enum AttributLocations { MVP = 0, Position = 1, Normal, TexCoord, Texture };
 
 SharedVAO createVAO(const SharedVBO &vbo, const SharedIBO &ibo) {
@@ -319,15 +318,7 @@ std::shared_ptr<GLuint> create_texture(const aiTexture *texture) {
     return {};  // TODO(bkuolt): implement
 }
 
-}  // namespace
-
-SharedModel LoadModel(const std::filesystem::path &path) {
-    if (!std::filesystem::exists(path)) {
-        std::ostringstream oss;
-        oss << "The file " << std::quoted(path.string()) << " does not exist";
-        throw std::runtime_error { oss.str() };
-    }
-
+const aiScene* importScene(const std::filesystem::path &path) {
     aiPropertyStore* props = aiCreatePropertyStore();
     if (props == nullptr) {
         throw std::runtime_error { aiGetErrorString() };
@@ -346,11 +337,23 @@ SharedModel LoadModel(const std::filesystem::path &path) {
     if (scene == nullptr) {
         throw std::runtime_error { aiGetErrorString() };
     }
+    return scene;
+}
 
-    const aiMesh &mesh = *scene->mMeshes[0];
-    const auto vbo = createVBO(scene);
-    const auto ibo = createIBO(mesh);
-    const auto vao = createVAO(vbo, ibo);
+}  // namespace
+
+Mesh::Mesh(const std::filesystem::path &path) {
+    if (!std::filesystem::exists(path)) {
+        std::ostringstream oss;
+        oss << "The file " << std::quoted(path.string()) << " does not exist";
+        throw std::runtime_error { oss.str() };
+    }
+
+    const auto scene = importScene(path);
+    const aiMesh &mesh = *scene->mMeshes[0];  /// @note currently there is only support for one mesh
+    _vbo = createVBO(scene);
+    _ibo = createIBO(mesh);
+    _vao = createVAO(_vbo, _ibo);
 
     const auto texture { (scene->mNumTextures > 1) ? create_texture(scene->mTextures[0]) : SharedTexture {} };
     if (scene->mNumTextures > 1) {
@@ -361,29 +364,23 @@ SharedModel LoadModel(const std::filesystem::path &path) {
 
     const auto vs = LoadShader(GL_VERTEX_SHADER, "./assets/main.vs");
     const auto fs = LoadShader(GL_FRAGMENT_SHADER, "./assets/main.fs");
-    const auto program = std::make_shared<Program>(vs, fs);
-
-    const Model model { .vbo = vbo, .ibo = ibo, .vao = vao,
-                        .num_triangles = static_cast<GLsizei>(mesh.mNumFaces),
-                        .texture = texture,
-                        .program = program };
-    return std::make_shared<Model>(model);
+    _program = std::make_shared<Program>(vs, fs);
 }
 
-void RenderModel(const SharedModel &model, const mat4 &MVP) {
-    glUseProgram(model->program->_handle);
+void Mesh::render(const mat4 &MVP) {
+    glUseProgram(_program->_handle);
 
-    if (model->texture) {
+    if (_texture) {
         constexpr GLuint texture_unit = 0;
         glActiveTexture(GL_TEXTURE0 + texture_unit);
         glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, *model->texture);
+        glBindTexture(GL_TEXTURE_2D, *_texture);
         glUniform1ui(AttributLocations::Texture, texture_unit);
     }
 
-    glBindVertexArray(*model->vao);
+    glBindVertexArray(*_vao);
     glUniformMatrix4fv(AttributLocations::MVP, 1, GL_FALSE, glm::value_ptr(MVP));
-    glDrawElements(GL_TRIANGLES, model->num_triangles * 3, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, _ibo->size(), GL_UNSIGNED_INT, nullptr);
 }
 
 }  // namespace bgl

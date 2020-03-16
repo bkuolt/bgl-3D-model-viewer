@@ -60,12 +60,12 @@ int main(int argc, char *argv[]) {
 namespace {
 
 struct {
-    SharedModel model;
+    SharedMesh mesh;
     mat4 P;
 } Scene;
 
 void set_up_scene(const std::filesystem::path &path) {
-    Scene.model = LoadModel(path);
+    Scene.mesh = LoadMesh(path);
     Scene.P = glm::ortho(-1.0, 1.0, -1.0, 1.0, 1.0, 100.0);
 
     // initialize OpenGL
@@ -100,10 +100,8 @@ mat4 calculate_view_matrix(double delta, double radius) noexcept {
 
 void on_render(const SharedWindow &window, float delta) noexcept {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     const mat4 MVP = Scene.P * calculate_view_matrix(delta, 10);
-    RenderModel(Scene.model, MVP);
-
+    Scene.mesh->render(MVP);
     SDL_GL_SwapWindow(window.get());
 }
 

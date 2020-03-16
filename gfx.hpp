@@ -179,22 +179,27 @@ using SharedVBO = std::shared_ptr<VertexBuffer>;
 using SharedIBO = std::shared_ptr<IndexBuffer>;
 using SharedVAO = std::shared_ptr<GLuint>;
 
-/* ------------------------------ Model  -------------------------------- */
-struct Model {
-    const SharedVBO vbo;
-    const SharedIBO ibo;
-    const SharedVAO vao;
-    const GLsizei num_triangles;
-
-    const SharedTexture texture;
-    const SharedProgram program;
-};
-
 /* ----------------------------- Interface  ----------------------------- */
 
-using SharedModel = std::shared_ptr<Model>;
-SharedModel LoadModel(const std::filesystem::path &path);
-void RenderModel(const SharedModel &model, const mat4 &MVP);
+class Mesh {
+ public:
+    explicit Mesh(const std::filesystem::path &path);
+    virtual ~Mesh() = default;
+    void render(const mat4 &MVP);
+
+ private:
+    SharedVBO _vbo;
+    SharedIBO _ibo;
+    SharedVAO _vao;
+    SharedTexture _texture;
+    SharedProgram _program;
+};
+
+using SharedMesh = std::shared_ptr<Mesh>;
+
+inline SharedMesh LoadMesh(const std::filesystem::path &path) {
+    return std::make_shared<Mesh>(path);
+}
 
 }  // namespace bgl
 
