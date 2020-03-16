@@ -18,6 +18,10 @@ gfx.o: gfx/gfx.cpp gfx/gfx.hpp
 	@$(CC) \
 		$(FLAGS) -c gfx/gfx.cpp
 
+mesh.o: gfx/mesh.cpp gfx/mesh.hpp
+	@$(CC) \
+		$(FLAGS) -c gfx/mesh.cpp
+
 shader.o: gfx/shader.cpp gfx/shader.hpp
 	@$(CC) \
 		$(FLAGS) -c gfx/shader.cpp
@@ -25,10 +29,10 @@ shader.o: gfx/shader.cpp gfx/shader.hpp
 input.o: input.cpp input.hpp
 	$(CC) $(FLAGS) -c input.cpp
 
-demo: main.o gfx.o input.o shader.o
+demo: main.o gfx.o input.o shader.o mesh.o
 	$(CC) -o demo \
 	$(FLAGS) \
-	main.o gfx.o input.o shader.o \
+	main.o gfx.o input.o shader.o mesh.o \
 	$(LIBS)
 
 install:
