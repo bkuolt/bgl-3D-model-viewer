@@ -8,15 +8,16 @@
 
 #include "gfx/gfx.hpp"
 #include "input.hpp"
+#include "App.hpp"
 
 using namespace bgl;
 
-
 struct App {
     bool run = true;
-    SharedWindow window;
-    SharedContext context;
-} App;
+    bgl::SharedWindow window;
+    bgl::SharedContext context;
+    Camera camera;
+} App;  // declared in App.hpp
 
 namespace {
 
@@ -87,29 +88,45 @@ void set_up_scene(const std::filesystem::path &path) {
     glFrontFace(GL_CCW);
 }
 
+#if 0
 double update_angle(double delta) {
     constexpr double rotation_speed = 30.0f;  // [°/s]
     static double angle = glm::radians(180.0f);
     angle += delta * rotation_speed;
     return angle;
 }
-
-mat4 calculate_view_matrix(double delta, double radius) noexcept {
-    const double angle { glm::radians(update_angle(delta)) };
-    const vec3 position { radius * glm::cos(angle), 0.0f, radius * sin(angle) };
-    return glm::lookAt(position, { 0.0, 0.0, 0.0}, vec3 { 0.0f, 1.0f, 0.0f });
-}
+#endif
 
 }  // namespace
 
 void on_render(const SharedWindow &window, float delta) noexcept {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    const mat4 MVP = Scene.P * calculate_view_matrix(delta, 2);
+    const mat4 MVP = Scene.P * App.camera.get_matrix();
     Scene.mesh->render(MVP);
     SDL_GL_SwapWindow(window.get());
 }
 
 /* --------------------- Input Handling -------------------- */
+
+void handle_event(const SDL_KeyboardEvent &event) {
+    constexpr double rotation_delta = 10.0;
+
+    switch (event.keysym.sym) {
+        case SDLK_ESCAPE:
+            App.run = false;
+            break;
+        case SDLK_LEFT:
+            App.camera.rotate(rotation_delta, 0.0);
+        case SDLK_RIGHT:
+            App.camera.rotate(-rotation_delta, 0.0);
+            break;
+        case SDLK_UP:
+            App.camera.rotate(rotation_delta, 0.0);
+        case SDLK_DOWN:
+            App.camera.rotate(-rotation_delta, 0.0);
+            break;
+    }
+}
 
 void on_button(ps4_button, bool pressed) {
     std::cout << "game controller button " << (pressed ? "pressed" : "released") << std::endl;

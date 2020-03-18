@@ -129,9 +129,7 @@ void handle_event(const SDL_Event &event) {
     switch (event.type) {
         case SDL_KEYDOWN:
         case SDL_KEYUP:
-            if (event.key.keysym.sym == SDLK_ESCAPE) {
-                App.run = false;
-            }
+            handle_event(event.key);
             break;
         case SDL_JOYAXISMOTION:
         case SDL_JOYBUTTONDOWN:
