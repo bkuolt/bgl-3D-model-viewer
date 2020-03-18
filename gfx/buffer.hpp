@@ -101,7 +101,7 @@ using SharedIBO = std::shared_ptr<IndexBuffer>;
 class VertexArray {
  public:
     VertexArray(const SharedVBO &vbo, const SharedIBO &ibo)
-        : _vbo (vbo), _ibo(ibo) {
+        : _vbo(vbo), _ibo(ibo) {
         glGenVertexArrays(1, &_handle);
         if (_handle == 0 || glGetError() != GL_NO_ERROR) {
             throw std::runtime_error { "could not create vertex array" };
@@ -124,7 +124,7 @@ class VertexArray {
         glBindVertexArray(0);
     }
 
-    void setAttribute(GLenum type, GLsizei size, GLuint location, GLsizei stride, GLsizei offset) {
+    void setAttribute(GLuint location, GLenum type, GLsizei size, GLsizei stride, GLsizei offset) {
         glEnableVertexAttribArray(location);
         glVertexAttribPointer(location, size, type, GL_FALSE, stride, reinterpret_cast<void*>(offset));
     }
@@ -137,28 +137,29 @@ class VertexArray {
 
 using SharedVAO = std::shared_ptr<VertexArray>;
 
-
 template<typename T>
-void SetAttribute(const SharedVAO &vao, GLuint location, GLsizei stride, GLsizei offset);
+void SetAttribute(const SharedVAO &vao, GLuint location, GLsizei stride, GLsizei offset) {
+    static_assert("attribute type not supported");
+}
 
 template<>
 inline void SetAttribute<GLuint>(const SharedVAO &vao, GLuint location, GLsizei stride, GLsizei offset) {
-    vao->setAttribute(location, 1, GL_UNSIGNED_INT, stride, offset);
+    vao->setAttribute(location, GL_UNSIGNED_INT, 1, stride, offset);
 }
 
 template<>
 inline void SetAttribute<GLfloat>(const SharedVAO &vao, GLuint location, GLsizei stride, GLsizei offset) {
-    vao->setAttribute(location, 1, GL_FLOAT, stride, offset);
+    vao->setAttribute(location, GL_FLOAT, 1, stride, offset);
 }
 
 template<>
 inline void SetAttribute<vec3>(const SharedVAO &vao, GLuint location, GLsizei stride, GLsizei offset) {
-    vao->setAttribute(location, 3, GL_FLOAT, stride, offset);
+    vao->setAttribute(location, GL_FLOAT, 3, stride, offset);
 }
 
 template<>
 inline void SetAttribute<vec2>(const SharedVAO &vao, GLuint location, GLsizei stride, GLsizei offset) {
-    vao->setAttribute(location, 2, GL_FLOAT, stride, offset);
+    vao->setAttribute(location, GL_FLOAT, 2, stride, offset);
 }
 
 }  // namespace bgl
