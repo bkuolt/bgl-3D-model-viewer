@@ -18,7 +18,7 @@ gfx.o: gfx/gfx.cpp gfx/gfx.hpp
 	@$(CC) \
 		$(FLAGS) -c gfx/gfx.cpp
 
-mesh.o: gfx/mesh.cpp gfx/mesh.hpp
+mesh.o: gfx/mesh.cpp gfx/mesh.hpp gfx/buffer.hpp
 	@$(CC) \
 		$(FLAGS) -c gfx/mesh.cpp
 
