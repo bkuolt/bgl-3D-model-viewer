@@ -7,13 +7,13 @@ layout (location = 2) in vec3 normal;
 layout (location = 3) in vec2 texcoords;
 layout (location = 4) uniform sampler2D texture;  /* not used yet */
 
-struct Pixel {
-    vec3 normal;
-};
-
-out Pixel pixel;  /* not used yet */
+out flat vec3 L;
+out vec3 N;
 
 void main() {
+    const vec4 light = vec4(1.0f, -1.0f, 1.0f, 0.0f);
+
+    L = vec3(light);
+    N = normalize(mat3(MVP) * normal);
     gl_Position = MVP * vec4(position, 1.0);
-    pixel.normal = normalize(mat3(MVP) * normal);
 }
