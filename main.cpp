@@ -66,7 +66,11 @@ struct {
 
 void set_up_scene(const std::filesystem::path &path) {
     Scene.mesh = LoadMesh(path);
-    Scene.P = glm::ortho(-1.0, 1.0, -1.0, 1.0, 1.0, 100.0);
+
+    int width, height;
+    SDL_GetWindowSize(App.window.get(), &width, &height);
+    const double ratio = static_cast<double>(width) / height;
+    Scene.P = glm::frustum(-ratio, ratio, -1.0, 1.0, 1.0, 10.0);
 
     // initialize OpenGL
     if (SDL_GL_SetSwapInterval(0) == -1) {  // disable vsync for benchmarking
@@ -100,7 +104,7 @@ mat4 calculate_view_matrix(double delta, double radius) noexcept {
 
 void on_render(const SharedWindow &window, float delta) noexcept {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    const mat4 MVP = Scene.P * calculate_view_matrix(delta, 10);
+    const mat4 MVP = Scene.P * calculate_view_matrix(delta, 2);
     Scene.mesh->render(MVP);
     SDL_GL_SwapWindow(window.get());
 }

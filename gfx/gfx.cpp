@@ -81,4 +81,63 @@ SharedContext createGLContext(const SharedWindow &window) {
     return std::shared_ptr<SDL_GLContext>(new SDL_GLContext { context }, Deleter);
 }
 
+#if 0
+class grid final {
+ public:
+    explicit grid(size_t size);
+    void render();
+
+ private:
+    void create_vbo();
+    void create_ibo();
+    void create_vao();
+
+    Buffer<vec3, GL_ARRAY_BUFFER> _vbo;
+    IndexBuffer _ibo;
+    // TODO(bkuolt): vao
+    // TODO(bkuolt): shader
+    const GLsizei _size;
+};
+
+grid::grid(size_t size)
+    : _size { size },
+      _vbo { _size * 4 },
+      _ibo { _size * 2} {
+    create_vbo();
+    create_ibo();
+    create_vao();
+    // TODO(bkuolt): load shader
+}
+
+void grid::create_vbo() {
+    auto buffer = _vbo.map();
+    for (auto i = 0u; i < _size; ++i) {
+        // horizontally
+        *buffer++ = vec3 { -_size / 2 + i, 0.0f, -_size / 2 };
+        *buffer++ = vec3 { -_size / 2 + i, 0.0f,  _size / 2 };
+        // vertically
+        *buffer++ = vec3 { -_size / 2, 0.0f, -_size / 2 + i};
+        *buffer++ = vec3 {  _size / 2, 0.0f, -_size / 2 + i};
+        }
+    }
+    _vbo.unmap();
+}
+
+void grid::create_ibo() {
+    auto buffer = _ibo.map();
+    // TODO(bkuolt): calculate line 
+    _ibo.unmap();
+}
+
+void grid::create_vao() {
+    // TODO(bkuolt)
+}
+
+void grid::render() {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINES);
+    _vao.bind();
+    // TODO(render)
+}
+#endif  // 0
+
 }  // namespace bgl
