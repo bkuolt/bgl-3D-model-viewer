@@ -14,25 +14,17 @@ main.o: main.cpp
 	@$(CC) \
 		$(FLAGS) -c main.cpp
 
-gfx.o: gfx/gfx.cpp gfx/gfx.hpp
-	@$(CC) \
-		$(FLAGS) -c gfx/gfx.cpp
-
-mesh.o: gfx/mesh.cpp gfx/mesh.hpp gfx/buffer.hpp
-	@$(CC) \
-		$(FLAGS) -c gfx/mesh.cpp
-
-shader.o: gfx/shader.cpp gfx/shader.hpp
-	@$(CC) \
-		$(FLAGS) -c gfx/shader.cpp
-
 input.o: input.cpp input.hpp
 	$(CC) $(FLAGS) -c input.cpp
 
-demo: main.o gfx.o input.o shader.o mesh.o
+gfx/libgfx.a:
+	@$(MAKE) -C gfx
+
+demo: main.o input.o gfx/libgfx.a
 	$(CC) -o demo \
 	$(FLAGS) \
-	main.o gfx.o input.o shader.o mesh.o \
+	main.o input.o \
+	-Lgfx -lgfx \
 	$(LIBS)
 
 install:
@@ -54,5 +46,6 @@ run: all
 	#./assets/Ogros.md2
 
 clean:
+	@$(MAKE) -C gfx clean
 	@rm -f *.o
 	@rm -f demo
