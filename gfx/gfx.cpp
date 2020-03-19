@@ -29,6 +29,13 @@ std::ostream& operator<<(std::ostream &os, const vec2 &vector) {
     return os;
 }
 
+std::ostream& operator<<(std::ostream &os, const vec3 &vector) {
+    os << "(" << std::fixed << std::setprecision(2) << vector.x
+       << " | "
+       << std::fixed << std::setprecision(2) << vector.y
+       << std::fixed << std::setprecision(2) << vector.z << ")";
+    return os;
+}
 namespace {
 
 void initialize_SDL() {

@@ -119,7 +119,7 @@ void set_up_scene(const std::filesystem::path &path) {
 
     Scene.mesh = LoadMesh(path);
     Scene.camera.setViewCenter({ 0.0, 0.0, 0.0 });
-    Scene.camera.setPosition({ 0.0, 0.0, 5.0 });
+    Scene.camera.setPosition({ 0.0, 0.0, 2.0 });
 
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);

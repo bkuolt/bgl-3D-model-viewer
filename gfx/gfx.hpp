@@ -24,6 +24,7 @@ SharedWindow createFullScreenWindow();
 SharedContext createGLContext(const SharedWindow &window);
 
 std::ostream& operator<<(std::ostream &os, const vec2 &vector);
+std::ostream& operator<<(std::ostream &os, const vec3 &vector);
 
 #ifdef __linux
 namespace console_color {
