@@ -81,6 +81,55 @@ SharedContext createGLContext(const SharedWindow &window) {
     return std::shared_ptr<SDL_GLContext>(new SDL_GLContext { context }, Deleter);
 }
 
+#if 0  // TODO(bkuolt): Camera implementation
+class Camera {
+ public:
+ Camera();
+    Camera(const vec3 &position, const vec3 &viewCenter);
+    Camera(const Camera&) = default;
+    Camera(Camera&&) = default;
+    virtual ~Camera() noexcept = default;
+
+    Camera& operator=(const Camera&) = default;
+    Camera& operator=(Camera&&) = default;
+
+    void setPosition(const vec3 &position) noexcept;
+    void setZoom(double factor = 1.0) noexcept;
+    void setViewCenter(const vec3 &center) noexcept;
+
+    const vec3& getPosition() const noexcept;
+    const vec3& getViewCenter() const noexcept;
+    double getZoom() const noexcept;
+
+    mat4 getMatrix() const noexcept;
+
+    void rotate(const vec2 degrees) noexcept;
+
+ private:
+    vec3 _position;
+    vec3 _center;
+    double _zoom { 1.0 };
+};
+
+//////////////
+
+    int width, height;
+    SDL_GetWindowSize(App.window.get(), &width, &height);
+    const double ratio = static_cast<double>(width) / height;
+    Scene.P = glm::frustum(-ratio /2, ratio / 2, -1.0, 1.0, 1.0, 10.0);
+
+    const mat4 MVP = Scene.P * ;
+
+double update_angle(double delta) {
+    constexpr double rotation_speed = 30.0f;  // [°/s]
+    static double angle = glm::radians(180.0f);
+    angle += delta * rotation_speed;
+    return angle;
+}
+
+#endif // 0
+
+
 #if 0
 class grid final {
  public:

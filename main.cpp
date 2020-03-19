@@ -12,12 +12,7 @@
 
 using namespace bgl;
 
-struct App {
-    bool run = true;
-    bgl::SharedWindow window;
-    bgl::SharedContext context;
-    Camera camera;
-} App;  // declared in App.hpp
+struct App App;  // declared in App.hpp
 
 namespace {
 
@@ -62,16 +57,13 @@ namespace {
 
 struct {
     SharedMesh mesh;
-    mat4 P;
+    Camera camera;
 } Scene;
 
 void set_up_scene(const std::filesystem::path &path) {
     Scene.mesh = LoadMesh(path);
 
-    int width, height;
-    SDL_GetWindowSize(App.window.get(), &width, &height);
-    const double ratio = static_cast<double>(width) / height;
-    Scene.P = glm::frustum(-ratio /2, ratio / 2, -1.0, 1.0, 1.0, 10.0);
+    // TODO(bkuolt): set up camera
 
     // initialize OpenGL
     if (SDL_GL_SetSwapInterval(0) == -1) {  // disable vsync for benchmarking
@@ -88,27 +80,18 @@ void set_up_scene(const std::filesystem::path &path) {
     glFrontFace(GL_CCW);
 }
 
-#if 0
-double update_angle(double delta) {
-    constexpr double rotation_speed = 30.0f;  // [°/s]
-    static double angle = glm::radians(180.0f);
-    angle += delta * rotation_speed;
-    return angle;
-}
-#endif
 
 }  // namespace
 
 void on_render(const SharedWindow &window, float delta) noexcept {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    const mat4 MVP = Scene.P * App.camera.get_matrix();
-    Scene.mesh->render(MVP);
+    Scene.mesh->render(Scene.camera.getMatrix());
     SDL_GL_SwapWindow(window.get());
 }
 
 /* --------------------- Input Handling -------------------- */
 
-void handle_event(const SDL_KeyboardEvent &event) {
+void on_key(const SDL_KeyboardEvent &event) {
     constexpr double rotation_delta = 10.0;
 
     switch (event.keysym.sym) {
@@ -116,14 +99,14 @@ void handle_event(const SDL_KeyboardEvent &event) {
             App.run = false;
             break;
         case SDLK_LEFT:
-            App.camera.rotate(rotation_delta, 0.0);
+            Scene.camera.rotate({ rotation_delta, 0.0 });
         case SDLK_RIGHT:
-            App.camera.rotate(-rotation_delta, 0.0);
+            Scene.camera.rotate({ -rotation_delta, 0.0 });
             break;
         case SDLK_UP:
-            App.camera.rotate(rotation_delta, 0.0);
+            Scene.camera.rotate({ rotation_delta, 0.0 });
         case SDLK_DOWN:
-            App.camera.rotate(-rotation_delta, 0.0);
+            Scene.camera.rotate({ -rotation_delta, 0.0 });
             break;
     }
 }
