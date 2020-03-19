@@ -134,9 +134,9 @@ mat4 Camera::getMatrix() const noexcept {
 }
 
 void Camera::rotate(const vec2 degrees) noexcept {
-    const vec2 currentAngle = 0;  // TODO(bkuolt): get angle
-    const double radius = 0;      // TODO(bkuolt): get radius
-    const double angle = glm::radians(currentAngle + degrees);
+    const vec2 currentAngle {};  // TODO(bkuolt): get angle
+    const double radius = 0.0;      // TODO(bkuolt): get radius
+    const double angle = glm::radians(currentAngle.x + degrees.x);  // TODO(bkuolt): incorporate y-axis
     setPosition({ radius * glm::cos(angle), 0.0f, radius * sin(angle) });
 }
 

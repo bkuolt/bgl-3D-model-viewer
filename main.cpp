@@ -2,6 +2,7 @@
 #include <csignal>
 #include <cstdlib>
 #include <iostream>
+#include <map>
 #include <stdexcept>
 
 #include "gfx/gfx.hpp"
@@ -58,53 +59,32 @@ struct {
     Camera camera;
 } Scene;
 
-void set_up_scene(const std::filesystem::path &path) {
-    Scene.mesh = LoadMesh(path);
+/* --------------------- Input Handling -------------------- */
 
-    // TODO(bkuolt): set up camera
-
-    // initialize OpenGL
-    if (SDL_GL_SetSwapInterval(0) == -1) {  // disable vsync for benchmarking
-        std::cout << "SDL_GL_SetSwapInterval() failed" << std::endl;
+void update_position(double delta) {
+    const Uint8 *keyboard_state = SDL_GetKeyboardState(NULL);
+    if (keyboard_state == nullptr) {
+        throw std::runtime_error { "could not get SDL keyboard state" };
     }
 
-    glEnable(GL_DEPTH_TEST);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glFrontFace(GL_CCW);
+    const double angle { 10.0 * delta };
+    if (keyboard_state[SDL_SCANCODE_LEFT]) {
+        Scene.camera.rotate({ angle, 0.0 });
+    } else if (keyboard_state[SDL_SCANCODE_RIGHT]) {
+        Scene.camera.rotate({ -angle, 0.0 });
+    } else if (keyboard_state[SDL_SCANCODE_UP]) {
+         Scene.camera.rotate({ 0.0, angle });
+    } else if (keyboard_state[SDL_SCANCODE_DOWN]) {
+        Scene.camera.rotate({ 0.0, -angle });
+    }
 }
-
 
 }  // namespace
 
-void on_render(const SharedWindow &window, float delta) noexcept {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    Scene.mesh->render(Scene.camera.getMatrix());
-    SDL_GL_SwapWindow(window.get());
-}
-
-/* --------------------- Input Handling -------------------- */
-
 void on_key(const SDL_KeyboardEvent &event) {
-    constexpr double rotation_delta = 10.0;
-
     switch (event.keysym.sym) {
         case SDLK_ESCAPE:
             App.run = false;
-            break;
-        case SDLK_LEFT:
-            Scene.camera.rotate({ rotation_delta, 0.0 });
-        case SDLK_RIGHT:
-            Scene.camera.rotate({ -rotation_delta, 0.0 });
-            break;
-        case SDLK_UP:
-            Scene.camera.rotate({ rotation_delta, 0.0 });
-        case SDLK_DOWN:
-            Scene.camera.rotate({ -rotation_delta, 0.0 });
             break;
     }
 }
@@ -122,4 +102,36 @@ void on_motion(const vec2 &lhs, const vec2 &rhs) {
 void on_trigger(float lhs, float rhs) {
     std::cout << "trigger [" << lhs << " , " << rhs << "]" << std::endl;
     // TODO(bkuolt): implement game logic
+}
+
+/* ------------------------ Rendering ---------------------- */
+
+namespace {
+
+void set_up_scene(const std::filesystem::path &path) {
+    // initialize OpenGL
+    if (SDL_GL_SetSwapInterval(0) == -1) {  // disable vsync for benchmarking
+        std::cout << "SDL_GL_SetSwapInterval() failed" << std::endl;
+    }
+
+    Scene.mesh = LoadMesh(path);
+    Scene.camera.setPosition({ 0.0, 0.0, -2.0 });
+
+    glEnable(GL_DEPTH_TEST);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+}
+
+}  // namespace
+
+void on_render(const SharedWindow &window, float delta) noexcept {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    update_position(delta);
+    Scene.mesh->render(Scene.camera.getMatrix());
+    SDL_GL_SwapWindow(window.get());
 }
