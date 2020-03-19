@@ -17,6 +17,9 @@
 #include <vector>
 
 
+#include "../App.hpp"
+
+#include <glm/gtc/matrix_transform.hpp>  // glm::lookAt(), glm::ortho()
 namespace bgl {
 
 std::ostream& operator<<(std::ostream &os, const vec2 &vector) {
@@ -91,15 +94,15 @@ Camera::Camera(const vec3 &position, const vec3 &viewCenter) {
 }
 
 void Camera::setPosition(const vec3 &position) noexcept {
-    // TODO(bkuolt)
+    _position = position;
 }
 
 void Camera::setZoom(double factor) noexcept {
-    // TODO(bkuolt)
+    _zoom = factor;
 }
 
 void Camera::setViewCenter(const vec3 &center) noexcept {
-    // TODO(bkuolt)
+    _center = center;
 }
 
 const vec3& Camera::getPosition() const noexcept {
@@ -115,30 +118,27 @@ double Camera::getZoom() const noexcept {
 }
 
 mat4 Camera::getMatrix() const noexcept {
-    return {};  // TODO(bkuolt)
-}
-
-void Camera::rotate(const vec2 degrees) noexcept {
-    // TODO(bkuolt)
-}
-
-#if 0  // TODO(bkuolt): Camera implementation
+    // calculates the projection matrix @p P
     int width, height;
     SDL_GetWindowSize(App.window.get(), &width, &height);
     const double ratio = static_cast<double>(width) / height;
-    Scene.P = glm::frustum(-ratio /2, ratio / 2, -1.0, 1.0, 1.0, 10.0);
+    const mat4 P = glm::frustum(-ratio / 2, ratio / 2,
+                                -1.0, 1.0,
+                                1.0, 5.0);
+    // TODO(bkuolt): incorporate zoom factor
 
-    const mat4 MVP = Scene.P * ;
+    // calculates the view matrix @p V
+    const mat4 V = glm::lookAt(_position, _center, { 0.0, 1.0, 0.0 });
 
-double update_angle(double delta) {
-    constexpr double rotation_speed = 30.0f;  // [°/s]
-    static double angle = glm::radians(180.0f);
-    angle += delta * rotation_speed;
-    return angle;
+    return V * P;
 }
 
-#endif // 0
-
+void Camera::rotate(const vec2 degrees) noexcept {
+    const vec2 currentAngle = 0;  // TODO(bkuolt): get angle
+    const double radius = 0;      // TODO(bkuolt): get radius
+    const double angle = glm::radians(currentAngle + degrees);
+    setPosition({ radius * glm::cos(angle), 0.0f, radius * sin(angle) });
+}
 
 #if 0
 class grid final {

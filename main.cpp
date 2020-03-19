@@ -4,8 +4,6 @@
 #include <iostream>
 #include <stdexcept>
 
-#include <glm/gtc/matrix_transform.hpp>  // glm::lookAt(), glm::ortho()
-
 #include "gfx/gfx.hpp"
 #include "input.hpp"
 #include "App.hpp"
