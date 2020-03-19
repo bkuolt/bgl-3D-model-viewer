@@ -39,7 +39,7 @@ namespace console_color {
 
 class Camera {
  public:
-    Camera();
+    Camera() noexcept = default;
     Camera(const vec3 &position, const vec3 &viewCenter);
     Camera(const Camera&) = default;
     Camera(Camera&&) = default;
@@ -61,8 +61,8 @@ class Camera {
     void rotate(const vec2 degrees) noexcept;
 
  private:
-    vec3 _position;
-    vec3 _center;
+    vec3 _position { 0.0, 0.0, -1.0 };
+    vec3 _center { 0.0, 0.0, 0.0 };
     double _zoom { 1.0 };
 };
 

@@ -81,38 +81,48 @@ SharedContext createGLContext(const SharedWindow &window) {
     return std::shared_ptr<SDL_GLContext>(new SDL_GLContext { context }, Deleter);
 }
 
+
+//////////////////////////////////
+//////////////////////////////////
+
+
+Camera::Camera(const vec3 &position, const vec3 &viewCenter) {
+    // TODO(bkuolt):
+}
+
+void Camera::setPosition(const vec3 &position) noexcept {
+    // TODO(bkuolt)
+}
+
+void Camera::setZoom(double factor) noexcept {
+    // TODO(bkuolt)
+}
+
+void Camera::setViewCenter(const vec3 &center) noexcept {
+    // TODO(bkuolt)
+}
+
+const vec3& Camera::getPosition() const noexcept {
+    return _position;
+}
+
+const vec3& Camera::getViewCenter() const noexcept {
+    return _center;
+}
+
+double Camera::getZoom() const noexcept {
+    return _zoom;
+}
+
+mat4 Camera::getMatrix() const noexcept {
+    return {};  // TODO(bkuolt)
+}
+
+void Camera::rotate(const vec2 degrees) noexcept {
+    // TODO(bkuolt)
+}
+
 #if 0  // TODO(bkuolt): Camera implementation
-class Camera {
- public:
- Camera();
-    Camera(const vec3 &position, const vec3 &viewCenter);
-    Camera(const Camera&) = default;
-    Camera(Camera&&) = default;
-    virtual ~Camera() noexcept = default;
-
-    Camera& operator=(const Camera&) = default;
-    Camera& operator=(Camera&&) = default;
-
-    void setPosition(const vec3 &position) noexcept;
-    void setZoom(double factor = 1.0) noexcept;
-    void setViewCenter(const vec3 &center) noexcept;
-
-    const vec3& getPosition() const noexcept;
-    const vec3& getViewCenter() const noexcept;
-    double getZoom() const noexcept;
-
-    mat4 getMatrix() const noexcept;
-
-    void rotate(const vec2 degrees) noexcept;
-
- private:
-    vec3 _position;
-    vec3 _center;
-    double _zoom { 1.0 };
-};
-
-//////////////
-
     int width, height;
     SDL_GetWindowSize(App.window.get(), &width, &height);
     const double ratio = static_cast<double>(width) / height;

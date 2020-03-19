@@ -35,7 +35,7 @@ glm::tvec3<bounding_box> get_bounds(const aiMesh &mesh) noexcept {
     return bounds;
 }
 
-void normalize_vertex_positions(const aiMesh &mesh, Vertex *buffer) {
+[[maybe_unused]] void normalize_vertex_positions(const aiMesh &mesh, Vertex *buffer) {
     const glm::tvec3<bounding_box> bounds = get_bounds(mesh);
     const vec3 dimensions {
         bounds.x.max - bounds.x.min,

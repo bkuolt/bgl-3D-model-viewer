@@ -89,7 +89,7 @@ SharedGameController find_game_controller() {
            }};
 }
 
-ps4_button map_button_name(Uint8 button) {
+[[maybe_unused]] ps4_button map_button_name(Uint8 button) {
     return {};  // TODO(bkuolt)
 }
 
