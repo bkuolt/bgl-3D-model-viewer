@@ -49,7 +49,7 @@ class Camera {
     Camera& operator=(Camera&&) = default;
 
     void setPosition(const vec3 &position) noexcept;
-    void setZoom(double factor = 1.0) noexcept;
+    void setZoom(double factor = 1.0);
     void setViewCenter(const vec3 &center) noexcept;
 
     const vec3& getPosition() const noexcept;
@@ -61,7 +61,7 @@ class Camera {
     void rotate(const vec2 degrees) noexcept;
 
  private:
-    vec3 _position { 0.0, 0.0, -1.0 };
+    vec3 _position { 0.0, 0.0, 1.0 };
     vec3 _center { 0.0, 0.0, 0.0 };
     double _zoom { 1.0 };
 };

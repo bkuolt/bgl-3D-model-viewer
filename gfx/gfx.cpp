@@ -15,7 +15,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <vector>
-
+#include <cmath>
 
 #include "../App.hpp"
 
@@ -42,6 +42,15 @@ void initialize_SDL() {
         std::atexit(SDL_Quit);
         initialized = true;
     }
+}
+
+double calculate_aspect_ratio() {
+    int width, height;
+    SDL_GetWindowSize(App.window.get(), &width, &height);
+    if (height == 0.0) {
+        throw std::runtime_error { "invalid aspect ratio" };
+    }
+    return static_cast<double>(width) / height;
 }
 
 }  // namespace
@@ -84,20 +93,20 @@ SharedContext createGLContext(const SharedWindow &window) {
     return std::shared_ptr<SDL_GLContext>(new SDL_GLContext { context }, Deleter);
 }
 
+/* -------------------------- Camera -------------------------- */
 
-//////////////////////////////////
-//////////////////////////////////
-
-
-Camera::Camera(const vec3 &position, const vec3 &viewCenter) {
-    // TODO(bkuolt):
-}
+Camera::Camera(const vec3 &position, const vec3 &center)
+    : _position { position }, _center { center }
+{}
 
 void Camera::setPosition(const vec3 &position) noexcept {
     _position = position;
 }
 
-void Camera::setZoom(double factor) noexcept {
+void Camera::setZoom(double factor) {
+    if (factor <= 0.0) {
+        throw std::invalid_argument { "invalid zoom factor" };
+    }
     _zoom = factor;
 }
 
@@ -119,23 +128,20 @@ double Camera::getZoom() const noexcept {
 
 mat4 Camera::getMatrix() const noexcept {
     // calculates the projection matrix @p P
-    int width, height;
-    SDL_GetWindowSize(App.window.get(), &width, &height);
-    const double ratio = static_cast<double>(width) / height;
-    const mat4 P = glm::frustum(-ratio / 2, ratio / 2,
-                                -1.0, 1.0,
-                                1.0, 5.0);
-    // TODO(bkuolt): incorporate zoom factor
+    const double ratio = calculate_aspect_ratio();
+    const mat4 P = glm::frustum(-(ratio / 2) * _zoom, (ratio / 2) *  _zoom,
+                                 -_zoom,  _zoom,
+                                 1.0, 10.0);
 
     // calculates the view matrix @p V
     const mat4 V = glm::lookAt(_position, _center, { 0.0, 1.0, 0.0 });
 
-    return V * P;
+    return P * V;
 }
 
 void Camera::rotate(const vec2 degrees) noexcept {
-    const vec2 currentAngle {};  // TODO(bkuolt): get angle
-    const double radius = 0.0;      // TODO(bkuolt): get radius
+    const vec2 currentAngle { glm::radians(glm::atan(_position.x)) };
+    const double radius = glm::length(_position - _center);
     const double angle = glm::radians(currentAngle.x + degrees.x);  // TODO(bkuolt): incorporate y-axis
     setPosition({ radius * glm::cos(angle), 0.0f, radius * sin(angle) });
 }
