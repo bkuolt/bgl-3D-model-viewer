@@ -1,5 +1,5 @@
 .DEFAULT_GOAL = all
-.PHONY = install \
+.PHONY = install \ gfx/libgfx.a \
          demo \
 		 all run clean
 
@@ -10,11 +10,11 @@ LIBS = -lstdc++fs \
 	-lassimp  \
 	-lGLEW -lGLU -lGL -lGLU
 
-main.o: main.cpp
+main.o: main.cpp App.hpp
 	@$(CC) \
 		$(FLAGS) -c main.cpp
 
-input.o: input.cpp input.hpp
+input.o: input.cpp input.hpp App.hpp
 	$(CC) $(FLAGS) -c input.cpp
 
 gfx/libgfx.a:
@@ -43,7 +43,6 @@ all: demo
 
 run: all
 	@./demo  ./assets/dragon.ply
-	#./assets/Ogros.md2
 
 clean:
 	@$(MAKE) -C gfx clean

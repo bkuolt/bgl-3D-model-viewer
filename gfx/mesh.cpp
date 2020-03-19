@@ -67,6 +67,7 @@ SharedVBO createVBO(const aiScene *scene) {
     const aiMesh &mesh = *scene->mMeshes[0];
 
     auto vbo = std::make_shared<VertexBuffer>(mesh.mNumVertices);
+    vbo->bind();
     Vertex *buffer = vbo->map();
     const bool is_textured { scene->mNumTextures > 1 };
     for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
@@ -89,6 +90,7 @@ SharedIBO createIBO(const aiMesh &mesh) {
     const GLsizei size = mesh.mNumFaces * 3;
     auto ibo = std::make_shared<IndexBuffer>(size);
 
+    ibo->bind();
     auto buffer = ibo->map();
     for (auto i = 0u; i < mesh.mNumFaces; ++i) {
         switch (mesh.mFaces[i].mNumIndices) {
@@ -175,7 +177,7 @@ Mesh::Mesh(const std::filesystem::path &path) {
 void Mesh::render(const mat4 &MVP) {
     glUseProgram(_program->_handle);
 
-    if (_texture) {
+    if (_texture && false /* TODO(bkuolt) */) {
         constexpr GLuint texture_unit = 0;
         glActiveTexture(GL_TEXTURE0 + texture_unit);
         glEnable(GL_TEXTURE_2D);
@@ -185,6 +187,10 @@ void Mesh::render(const mat4 &MVP) {
 
     _vao->bind();
     glUniformMatrix4fv(AttributLocations::MVP, 1, GL_FALSE, glm::value_ptr(MVP));
+    if (glGetError() != GL_NO_ERROR) {
+        std::cout << "error" << std::endl;
+    }
+
     glDrawElements(GL_TRIANGLES, _ibo->size(), GL_UNSIGNED_INT, nullptr);
     _vao->unbind();
 }

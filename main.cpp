@@ -94,17 +94,18 @@ void on_key(const SDL_KeyboardEvent &event) {
 
 void on_button(ps4_button, bool pressed) {
     std::cout << "game controller button " << (pressed ? "pressed" : "released") << std::endl;
-    // TODO(bkuolt): implement
+    // TODO(bkuolt)
 }
 
 void on_motion(const vec2 &lhs, const vec2 &rhs) {
     std::cout << "dual stick motion [" << lhs << " , " << rhs << "]" << std::endl;
-    // TODO(bkuolt): implement game logic
+    // TODO(bkuolt): use left hand side as camera rotation controll
+    // TODO(bkuolt): use right hand side as zoom level controll
 }
 
 void on_trigger(float lhs, float rhs) {
-    std::cout << "trigger [" << lhs << " , " << rhs << "]" << std::endl;
-    // TODO(bkuolt): implement game logic
+    std::cout << "trigger [" << lhs << " , " << rhs << "] pressed" << std::endl;
+    // TODO(bkuolt)
 }
 
 /* ------------------------ Rendering ---------------------- */
@@ -112,9 +113,8 @@ void on_trigger(float lhs, float rhs) {
 namespace {
 
 void set_up_scene(const std::filesystem::path &path) {
-    // initialize OpenGL
-    if (SDL_GL_SetSwapInterval(0) == -1) {  // disable vsync for benchmarking
-        std::cout << "SDL_GL_SetSwapInterval() failed" << std::endl;
+    if (SDL_GL_SetSwapInterval(0) == -1) {
+        throw std::runtime_error { "could not disable vsync" };
     }
 
     Scene.mesh = LoadMesh(path);
@@ -136,6 +136,7 @@ void set_up_scene(const std::filesystem::path &path) {
 void on_render(const SharedWindow &window, float delta) noexcept {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     update_position(delta);
-    Scene.mesh->render(Scene.camera.getMatrix());
+    const mat4 VP = Scene.camera.getMatrix();
+    Scene.mesh->render(VP);
     SDL_GL_SwapWindow(window.get());
 }

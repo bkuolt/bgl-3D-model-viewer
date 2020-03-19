@@ -7,11 +7,13 @@
 #include "gfx/gfx.hpp"  // bgl::SharedWindow, bgl::SharedContext
 #include "input.hpp"
 
-extern struct App {
+struct App {
     bool run = true;
     bgl::SharedWindow window;
     bgl::SharedContext context;
-} App;  // defined in main.cpp
+};
+
+extern struct App App;  // defined in main.cpp
 
 // Input Callbacks
 void on_button(bgl::ps4_button, bool pressed);
