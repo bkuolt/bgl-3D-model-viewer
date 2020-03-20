@@ -70,7 +70,7 @@ SharedVBO createVBO(const aiScene *scene) {
     Vertex *buffer = vbo->map();
     const bool is_textured { scene->mNumTextures > 1 };
     for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
-        buffer[vertex_index].normal = -vec3 { mesh.mNormals[vertex_index].x, mesh.mNormals[vertex_index].y, mesh.mNormals[vertex_index].z };
+        buffer[vertex_index].normal = vec3 { mesh.mNormals[vertex_index].x, mesh.mNormals[vertex_index].y, mesh.mNormals[vertex_index].z };
         buffer[vertex_index].position = vec3 { mesh.mVertices[vertex_index].x, mesh.mVertices[vertex_index].y, mesh.mVertices[vertex_index].z };
         if (is_textured) {
             buffer[vertex_index].texcoords = vec2 { mesh.mTextureCoords[0][vertex_index].x,
@@ -78,7 +78,7 @@ SharedVBO createVBO(const aiScene *scene) {
         }
     }
 
-    normalize_vertex_positions(mesh, buffer);
+    // normalize_vertex_positions(mesh, buffer);
     vbo->unmap();
 
     std::cout << "created a vbo with " << vbo->size() << " vertices" << std::endl;
@@ -110,31 +110,14 @@ SharedIBO createIBO(const aiMesh &mesh) {
 enum AttributLocations { MVP = 0, Position = 1, Normal, TexCoord, Texture };
 
 SharedVAO createVAO(const SharedVBO &vbo, const SharedIBO &ibo) {
-    GLuint vao = 0;
-    glGenVertexArrays(1, &vao);
-    if (vao == 0) {
-        throw std::runtime_error { "could not create VAO" };
-    }
-
-    glBindVertexArray(vao);
-
-    glEnableVertexAttribArray(AttributLocations::Position);
-    glEnableVertexAttribArray(AttributLocations::Normal);
-    glEnableVertexAttribArray(AttributLocations::TexCoord);
-
+    auto vao = std::make_shared<VertexArray>(vbo, ibo);
     const auto stride = sizeof(Vertex);
-    vbo->bind();
-    glVertexAttribPointer(AttributLocations::Position, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offsetof(Vertex, position)));
-    glVertexAttribPointer(AttributLocations::Normal, 3, GL_FLOAT, GL_TRUE, stride, reinterpret_cast<void*>(offsetof(Vertex, normal)));
-    glVertexAttribPointer(AttributLocations::TexCoord, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(offsetof(Vertex, texcoords)));
-
-    ibo->bind();
-
-    glBindVertexArray(0);
-    return std::shared_ptr<GLuint> { new GLuint { vao }, [] (GLuint *pointer) {
-                                                               glDeleteVertexArrays(1, pointer);
-                                                               delete pointer;
-                                                           }};
+    vao->bind();
+    SetAttribute<vec3>(vao, AttributLocations::Position, stride, offsetof(Vertex, position));
+    SetAttribute<vec3>(vao, AttributLocations::Normal, stride, offsetof(Vertex, normal));
+    SetAttribute<vec2>(vao, AttributLocations::TexCoord, stride, offsetof(Vertex, texcoords));
+    vao->unbind();
+    return vao;
 }
 
 std::shared_ptr<GLuint> create_texture(const aiTexture *texture) {
@@ -205,11 +188,14 @@ void Mesh::render(const mat4 &MVP) {
         vec3 color { 0.5, 0.0, 1.0 };
     } light;
 
-    glBindVertexArray(*_vao);
+
     _program->setUniform(AttributLocations::MVP, MVP);
     _program->setUniform("light.direction", light.direction);
     _program->setUniform("light.color", light.color);
+
+    _vao->bind();
     glDrawElements(GL_TRIANGLES, _ibo->size(), GL_UNSIGNED_INT, nullptr);
+    _vao->unbind();
 }
 
 }  // namespace bgl
