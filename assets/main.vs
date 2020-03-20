@@ -2,6 +2,7 @@
 #version 450 core
 
 struct Light {
+    bool used;
     vec3 direction;
     vec3 color;
 };
