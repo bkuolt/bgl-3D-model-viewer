@@ -201,7 +201,7 @@ void Mesh::render(const mat4 &MVP) {
     }
 
     glBindVertexArray(*_vao);
-    glUniformMatrix4fv(AttributLocations::MVP, 1, GL_FALSE, glm::value_ptr(MVP));
+    _program->setUniform(AttributLocations::MVP, MVP);
     glDrawElements(GL_TRIANGLES, _ibo->size(), GL_UNSIGNED_INT, nullptr);
 }
 

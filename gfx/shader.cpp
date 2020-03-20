@@ -94,4 +94,58 @@ void Program::link() {
     std::cout << "linked shader program" << std::endl;
 }
 
+GLuint Program::getLocation(const std::string &name) {
+    const GLuint location = glGetUniformLocation(_handle, name.c_str());
+    if (location == 0 || glGetError() != GL_NO_ERROR) {
+        throw std::runtime_error { "could not get uniform location" };
+    }
+    return location;
+}
+
+void Program::setUniform(GLuint location, GLfloat value) {
+    glProgramUniform1f(_handle, location, value);
+}
+
+void Program::setUniform(GLuint location, const vec3 &vector) {
+    glProgramUniform3fv(_handle, location, 1, glm::value_ptr(vector));
+}
+
+void Program::setUniform(GLuint location, const mat4 &matrix) {
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
+}
+
+void Program::setUniform(const std::string &name, GLfloat value) {
+    setUniform(getLocation(name), value);
+}
+
+void Program::setUniform(const std::string &name, const vec3 &vector) {
+    setUniform(getLocation(name), vector);
+}
+
+void Program::setUniform(const std::string &name, const mat4 &matrix) {
+    setUniform(getLocation(name), matrix);
+}
+
+
+/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+#if 0
+// #pragma include(“whatsits.h”)
+struct Light {};
+
+struct DirectionalLight : public Light {
+    vec3 direction;
+    vec3 color;
+};
+
+
+void SetUniform(const ShaderProgram &program, const Light &light) {
+    program->setUniform("Light.direction"), 1, myFloats);
+    program->setUniform("Light.color"), 1, &(myFloats[4]));
+}
+#endif  // 0
+/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+
+
 }  // namespace bgl
