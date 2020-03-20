@@ -70,7 +70,7 @@ void set_up_scene(const std::filesystem::path &path) {
     int width, height;
     SDL_GetWindowSize(App.window.get(), &width, &height);
     const double ratio = static_cast<double>(width) / height;
-    Scene.P = glm::frustum(-ratio, ratio, -1.0, 1.0, 1.0, 10.0);
+    Scene.P = glm::frustum(-ratio, ratio, -1.0, 1.0, 1.0, 3.0);
 
     // initialize OpenGL
     if (SDL_GL_SetSwapInterval(0) == -1) {  // disable vsync for benchmarking

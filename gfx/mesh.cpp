@@ -192,7 +192,7 @@ void Mesh::render(const mat4 &MVP) {
     _program->setUniform(AttributLocations::MVP, MVP);
     _program->setUniform("light.direction", light.direction);
     _program->setUniform("light.color", light.color);
-
+    
     _vao->bind();
     glDrawElements(GL_TRIANGLES, _ibo->size(), GL_UNSIGNED_INT, nullptr);
     _vao->unbind();
