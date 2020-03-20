@@ -126,26 +126,4 @@ void Program::setUniform(const std::string &name, const mat4 &matrix) {
     setUniform(getLocation(name), matrix);
 }
 
-
-/////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////
-#if 0
-// #pragma include(“whatsits.h”)
-struct Light {};
-
-struct DirectionalLight : public Light {
-    vec3 direction;
-    vec3 color;
-};
-
-
-void SetUniform(const ShaderProgram &program, const Light &light) {
-    program->setUniform("Light.direction"), 1, myFloats);
-    program->setUniform("Light.color"), 1, &(myFloats[4]));
-}
-#endif  // 0
-/////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////
-
-
 }  // namespace bgl

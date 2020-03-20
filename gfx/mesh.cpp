@@ -200,8 +200,15 @@ void Mesh::render(const mat4 &MVP) {
         glUniform1ui(AttributLocations::Texture, texture_unit);
     }
 
+    static const struct Light {
+        vec3 direction { -1.0, -1.0, -1.0 };
+        vec3 color { 0.5, 0.0, 1.0 };
+    } light;
+
     glBindVertexArray(*_vao);
     _program->setUniform(AttributLocations::MVP, MVP);
+    _program->setUniform("light.direction", light.direction);
+    _program->setUniform("light.color", light.color);
     glDrawElements(GL_TRIANGLES, _ibo->size(), GL_UNSIGNED_INT, nullptr);
 }
 
