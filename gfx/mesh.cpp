@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 namespace bgl {
 
@@ -172,6 +173,27 @@ Mesh::Mesh(const std::filesystem::path &path) {
     _program = std::make_shared<Program>(vs, fs);
 }
 
+/* ------------------------ Light Handling -------------------------- */
+
+struct Light {
+    vec3 direction;
+    vec3 color;
+};
+
+void SetUniform(const SharedProgram &program, GLuint location, const Light &light) {
+    program->setUniform(location, light.direction);
+    program->setUniform(location + 1, light.color);
+}
+
+void SetUniform(const SharedProgram &program, GLuint location, const std::vector<Light> lights) {
+    // TODO(bkuolt): write constexpr to make sure that the location count is correct.
+    for (auto i = 0; i < lights.size(); ++i) {
+        SetUniform(program, location + (i * 2), lights[i]);
+    }
+}
+
+/* ------------------------------------------------------------------ */
+
 void Mesh::render(const mat4 &MVP) {
     glUseProgram(_program->_handle);
 
@@ -183,16 +205,13 @@ void Mesh::render(const mat4 &MVP) {
         glUniform1ui(AttributLocations::Texture, texture_unit);
     }
 
-    static const struct Light {
-        vec3 direction { -1.0, -1.0, -1.0 };
-        vec3 color { 0.5, 0.0, 1.0 };
-    } light;
-
+    static std::vector<Light> lights {
+            { { -1.0, -1.0, -1.0 }, { 0.5, 0.0, 1.0 } }
+    };
 
     _program->setUniform(AttributLocations::MVP, MVP);
-    _program->setUniform("light.direction", light.direction);
-    _program->setUniform("light.color", light.color);
-    
+    SetUniform(_program, 5, lights);
+
     _vao->bind();
     glDrawElements(GL_TRIANGLES, _ibo->size(), GL_UNSIGNED_INT, nullptr);
     _vao->unbind();

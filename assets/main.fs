@@ -8,15 +8,15 @@ struct Light {
 };
 
 layout (location = 4) uniform sampler2D texture;  /* not supported yet */
-layout (location = 5) uniform Light light;
+layout (location = 5) uniform Light lights[5];
 
 in vec3 N;
 
 float calculateLightIntensity() {
-    return max(dot(light.direction, normalize(N)), 0.0);
+    return max(dot(lights[0].direction, normalize(N)), 0.0);
 }
 
 void main() {
     const vec4 ambient = vec4(0.3f, 0.3f, 0.3f, 1.0f);
-    gl_FragColor = ambient + (vec4(light.color, 1.0) * calculateLightIntensity());
+    gl_FragColor = ambient + (vec4(lights[0].color, 1.0) * calculateLightIntensity());
 }
