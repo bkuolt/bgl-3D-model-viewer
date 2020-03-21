@@ -173,27 +173,6 @@ Mesh::Mesh(const std::filesystem::path &path) {
     _program = std::make_shared<Program>(vs, fs);
 }
 
-/* ------------------------ Light Handling -------------------------- */
-
-struct Light {
-    GLboolean used { false };
-    vec3 direction;
-    vec3 color;
-};
-
-void SetUniform(const SharedProgram &program, GLuint location, const Light &light) {
-    program->setUniform(location, light.used);
-    program->setUniform(location + 1, light.direction);
-    program->setUniform(location + 2, light.color);
-}
-
-void SetUniform(const SharedProgram &program, GLuint location, const std::vector<Light> lights) {
-    // TODO(bkuolt): write constexpr to make sure that the location count is correct.
-    for (auto i = 0; i < lights.size(); ++i) {
-        SetUniform(program, location + (i * 3), lights[i]);
-    }
-}
-
 /* ------------------------------------------------------------------ */
 
 void Mesh::render(const mat4 &MVP) {
@@ -207,16 +186,11 @@ void Mesh::render(const mat4 &MVP) {
         glUniform1ui(AttributLocations::Texture, texture_unit);
     }
 
-    static std::vector<Light> lights {
-            { true, { -1.0, -1.0, -1.0 }, { 0.5, 0.0, 1.0 } }
-    };
-
     _program->setUniform(AttributLocations::MVP, MVP);
-    SetUniform(_program, 5, lights);
+    _vao->draw();
 
-    _vao->bind();
-    glDrawElements(GL_TRIANGLES, _ibo->size(), GL_UNSIGNED_INT, nullptr);
-    _vao->unbind();
+    // TODO(bkuolt): another pass for planar shadows
+    // TODO(bkuolt): another pass for motion blurring
 }
 
 }  // namespace bgl
