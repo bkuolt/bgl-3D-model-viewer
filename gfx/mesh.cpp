@@ -6,6 +6,7 @@
 #include <assimp/Importer.hpp>   // Model loader
 #include <assimp/scene.h>        // Output data structure
 
+#include <algorithm>
 #include <iostream>
 #include <string>
 
@@ -174,23 +175,29 @@ Mesh::Mesh(const std::filesystem::path &path) {
     _program = std::make_shared<Program>(vs, fs);
 }
 
+///////////
+# define HAS_TEXTURING_SUPPORT
+
 void Mesh::render(const mat4 &MVP) {
     glUseProgram(_program->_handle);
 
-    if (_texture && false /* TODO(bkuolt) */) {
+#ifdef HAS_TEXTURING_SUPPORT
+    if (_texture != nullptr) {
         constexpr GLuint texture_unit = 0;
         glActiveTexture(GL_TEXTURE0 + texture_unit);
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, *_texture);
         glUniform1ui(AttributLocations::Texture, texture_unit);
     }
+#endif
 
     _vao->bind();
     glUniformMatrix4fv(AttributLocations::MVP, 1, GL_FALSE, glm::value_ptr(MVP));
     if (glGetError() != GL_NO_ERROR) {
-        std::cout << "error" << std::endl;
+        throw std::runtime_error { "could not set uniform" };
     }
 
+    std::cout << _ibo->size() << " indices\n";
     glDrawElements(GL_TRIANGLES, _ibo->size(), GL_UNSIGNED_INT, nullptr);
     _vao->unbind();
 }

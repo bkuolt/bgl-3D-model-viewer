@@ -86,6 +86,7 @@ T* Buffer<T, type>::map() {
 
 template<typename T, GLenum type>
 void Buffer<T, type>::unmap() {
+    bind();
     glUnmapBuffer(type);
     if (glGetError() != GL_NO_ERROR) {
         throw std::runtime_error { "could not unmap vbo" };
