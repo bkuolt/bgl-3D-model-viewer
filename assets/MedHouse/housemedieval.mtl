@@ -1,16 +1,14 @@
-# Wavefront MTL file
-# Creator: Ultimate Unwrap3D Pro v3.29
-# URL: http://www.unwrap3d.com
-# Time: Tue Sep 20 10:13:32 2011
-# num_materials: 1
+#
+# Wavefront material file
+# Converted by Meshlab Group
+#
 
-newmtl House_Mat
-Ka 0.000000 0.000000 0.000000
-Kd 0.820000 0.830000 0.870000
-Ks 0.820000 0.830000 0.870000
-d 1.000000
+newmtl material_0
+Ka 0.200000 0.200000 0.200000
+Kd 0.819608 0.827451 0.866667
+Ks 1.000000 1.000000 1.000000
+Tr 1.000000
 illum 2
-Ns 1.000000
+Ns 0.000000
 map_Kd HouseMed_Diff.jpg
 
-# num_materials: 1

@@ -5,6 +5,7 @@
 #include "gl.hpp"
 #include "buffer.hpp"
 #include "shader.hpp"
+#include "texture.hpp"
 
 #include <filesystem>
 #include <memory>
@@ -12,27 +13,6 @@
 #include <assimp/texture.h>  // TODO(bkuolt): remove dependency
 
 namespace bgl {
-
-class Texture {
- public:
-    explicit Texture(const aiTexture *texture);
-    Texture(Texture&&) = delete;
-    Texture(const Texture&) = delete;
-    virtual ~Texture() noexcept;
-
-    Texture& operator=(const Texture&) = delete;
-    Texture& operator=(Texture&&) = delete;
-
-    void bind() noexcept;
-    void unbind() noexcept;
-
- private:
-    void load(const aiTexture *texture);
-
-    GLuint _handle;
-};
-
-using SharedTexture = std::shared_ptr<Texture>;  // TODO(bkuolt): implement
 
 class Mesh {
  public:

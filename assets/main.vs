@@ -14,8 +14,10 @@ layout (location = 4) uniform sampler2D texture;  /* not supported yet */
 layout (location = 5) uniform Light light;
 
 out vec3 N;
+out vec2 T;
 
 void main() {
     gl_Position = MVP * vec4(position, 1.0);
     N = normalize(mat3(MVP) * normal);
+    T = texcoords;
 }

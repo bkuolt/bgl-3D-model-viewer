@@ -8,12 +8,14 @@ FLAGS = -std=c++17 -pthread -Wall -O3
 LIBS = -lstdc++fs \
 	-lSDL2 -lSDL2_image \
 	-lassimp  \
+	-lIL \
 	-lGLEW -lGLU -lGL -lGLU
 
 main.o: main.cpp
 	@$(CC) \
 		$(FLAGS) -c main.cpp
 
+# ------------ libgfx ------------
 gfx.o: gfx/gfx.cpp gfx/gfx.hpp
 	@$(CC) \
 		$(FLAGS) -c gfx/gfx.cpp
@@ -26,13 +28,19 @@ shader.o: gfx/shader.cpp gfx/shader.hpp
 	@$(CC) \
 		$(FLAGS) -c gfx/shader.cpp
 
+texture.o: gfx/texture.cpp gfx/texture.hpp
+	@$(CC) \
+		$(FLAGS) -c gfx/texture.cpp
+
+# --------------------------------
+
 input.o: input.cpp input.hpp
 	$(CC) $(FLAGS) -c input.cpp
 
-demo: main.o gfx.o input.o shader.o mesh.o
+demo: main.o gfx.o input.o shader.o mesh.o texture.o
 	$(CC) -o demo \
 	$(FLAGS) \
-	main.o gfx.o input.o shader.o mesh.o \
+	main.o gfx.o input.o shader.o mesh.o texture.o \
 	$(LIBS)
 
 install:
@@ -45,7 +53,8 @@ install:
 		libsdl2-dev libsdl2-image-dev \
 		libassimp-dev \
 		libglew-dev libglm-dev \
-		libsdl2-2.0-0 libsdl2-image-2.0-0 libassimp4
+		libsdl2-2.0-0 libsdl2-image-2.0-0 libassimp4 \
+		libdevil-dev
 
 all: demo
 
