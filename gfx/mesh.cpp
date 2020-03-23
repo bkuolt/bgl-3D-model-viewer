@@ -107,23 +107,20 @@ SharedIBO createIBO(const aiMesh &mesh) {
 }
 
 
-enum AttributLocations { MVP = 0, Position = 1, Normal, TexCoord, Texture };
+enum class AttributLocations : GLuint { MVP = 0, Position = 1, Normal, TexCoord, Texture };
 
 SharedVAO createVAO(const SharedVBO &vbo, const SharedIBO &ibo) {
     auto vao = std::make_shared<VertexArray>(vbo, ibo);
     const auto stride = sizeof(Vertex);
     vao->bind();
-    SetAttribute<vec3>(vao, AttributLocations::Position, stride, offsetof(Vertex, position));
-    SetAttribute<vec3>(vao, AttributLocations::Normal, stride, offsetof(Vertex, normal));
-    SetAttribute<vec2>(vao, AttributLocations::TexCoord, stride, offsetof(Vertex, texcoords));
+    SetAttribute<vec3>(vao, (GLuint) AttributLocations::Position, stride, offsetof(Vertex, position));
+    SetAttribute<vec3>(vao, (GLuint) AttributLocations::Normal, stride, offsetof(Vertex, normal));
+    SetAttribute<vec2>(vao, (GLuint) AttributLocations::TexCoord, stride, offsetof(Vertex, texcoords));
     vao->unbind();
     return vao;
 }
 
-std::shared_ptr<GLuint> create_texture(const aiTexture *texture) {
-    std::cout << "loaded texture" << std::endl;
-    return {};  // TODO(bkuolt): implement
-}
+/* --------------------------------------------------------------------- */
 
 const aiScene* importScene(const std::filesystem::path &path) {
     aiPropertyStore* props = aiCreatePropertyStore();
@@ -148,6 +145,59 @@ const aiScene* importScene(const std::filesystem::path &path) {
 }
 
 }  // namespace
+
+
+/* ----------------------------- Texturing ----------------------------- */
+
+Texture::Texture(const aiTexture *texture) {
+    if (texture == nullptr) {
+        throw std::invalid_argument("");
+    }
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    GLuint _handle;
+    glGenTextures(1, &_handle);
+    if (_handle == 0 || glGetError() != GL_NO_ERROR) {
+        throw std::runtime_error("");
+    }
+
+    load(texture);
+}
+
+Texture::~Texture() noexcept {
+    glDeleteTextures(1, &_handle);
+}
+
+void Texture::bind() noexcept {
+    glBindTexture(GL_TEXTURE_2D, _handle);
+}
+
+void Texture::unbind() noexcept {
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void Texture::load(const aiTexture *texture) {
+    bind();
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+                 texture->mWidth , texture->mHeight, 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, texture->pcData);
+    if (glGetError() != GL_NO_ERROR) {
+        throw std::runtime_error { "could not upload texture data" };
+    }
+    glGenerateMipmap(GL_TEXTURE_2D);
+    unbind();
+    std::cout << "loaded texture" << std::endl;
+}
+
+SharedTexture create_texture(const aiTexture *texture) {
+    return std::shared_ptr<Texture>( new Texture { texture });
+}
+
+/* ------------------------------- Mesh -------------------------------- */
 
 Mesh::Mesh(const std::filesystem::path &path) {
     if (!std::filesystem::exists(path)) {
@@ -179,8 +229,8 @@ void Mesh::render(const mat4 &MVP) {
         constexpr GLuint texture_unit = 0;
         glActiveTexture(GL_TEXTURE0 + texture_unit);
         glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, *_texture);
-        glUniform1ui(AttributLocations::Texture, texture_unit);
+        _texture->bind();
+        glUniform1ui((GLuint) AttributLocations::Texture, texture_unit);
     }
 
     static const struct Light {
@@ -189,7 +239,7 @@ void Mesh::render(const mat4 &MVP) {
     } light;
 
 
-    _program->setUniform(AttributLocations::MVP, MVP);
+    _program->setUniform((GLuint) AttributLocations::MVP, MVP);
     _program->setUniform("light.direction", light.direction);
     _program->setUniform("light.color", light.color);
     

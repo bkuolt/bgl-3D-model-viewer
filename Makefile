@@ -50,7 +50,8 @@ install:
 all: demo
 
 run: all
-	@./demo  ./assets/dragon.ply
+	@./demo ./assets/MedHouse/housemedieval.obj 
+	#./assets/dragon.ply
 	#./assets/Ogros.md2
 
 clean:

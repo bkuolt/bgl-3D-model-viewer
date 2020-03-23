@@ -9,10 +9,30 @@
 #include <filesystem>
 #include <memory>
 
+#include <assimp/texture.h>  // TODO(bkuolt): remove dependency
 
 namespace bgl {
 
-using SharedTexture = std::shared_ptr<GLuint>;  // TODO(bkuolt): implement
+class Texture {
+ public:
+    explicit Texture(const aiTexture *texture);
+    Texture(Texture&&) = delete;
+    Texture(const Texture&) = delete;
+    virtual ~Texture() noexcept;
+
+    Texture& operator=(const Texture&) = delete;
+    Texture& operator=(Texture&&) = delete;
+
+    void bind() noexcept;
+    void unbind() noexcept;
+
+ private:
+    void load(const aiTexture *texture);
+
+    GLuint _handle;
+};
+
+using SharedTexture = std::shared_ptr<Texture>;  // TODO(bkuolt): implement
 
 class Mesh {
  public:
