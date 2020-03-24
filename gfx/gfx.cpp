@@ -67,7 +67,7 @@ std::shared_ptr<SDL_Window> createFullScreenWindow() {
     SDL_Window * const window = SDL_CreateWindow("BGL Tech Demo",
                                                  SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                                  1280, 720,
-                                                 SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN /* | SDL_WINDOW_FULLSCREEN_DESKTOP */);
+                                                 SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN | SDL_WINDOW_FULLSCREEN_DESKTOP );
     if (window == nullptr) {
         throw std::runtime_error{ SDL_GetError() };
     }

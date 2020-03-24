@@ -78,6 +78,10 @@ Program::~Program() noexcept {
     glDeleteProgram(_handle);
 }
 
+void Program::use() noexcept {
+    glUseProgram(_handle);
+}
+
 void Program::link() {
     glLinkProgram(_handle);
 
@@ -118,15 +122,8 @@ void Program::setUniform(GLuint location, const mat4 &matrix) {
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
-void Program::setUniform(GLuint location, const SharedTexture &texture) {
-    if (texture == nullptr) {
-        throw std::invalid_argument { "invalid texture" };
-    }
-
-    const GLuint textureUnit = 0;  // TODO(bkuolt): add support for more than one texture
-    glActiveTexture(GL_TEXTURE0 + textureUnit);
-    texture->bind();
-    glProgramUniform1i(_handle, location, textureUnit);
+void Program::setUniform(const std::string &name, bool value) {
+    setUniform(name, static_cast<GLuint>(value));
 }
 
 void Program::setUniform(const std::string &name, GLuint value) {
@@ -143,6 +140,18 @@ void Program::setUniform(const std::string &name, const vec3 &vector) {
 
 void Program::setUniform(const std::string &name, const mat4 &matrix) {
     setUniform(getLocation(name), matrix);
+}
+
+void Program::setUniform(const std::string &name, const SharedTexture &texture) {
+    if (texture == nullptr) {
+        throw std::invalid_argument { "invalid texture" };
+    }
+    const GLuint location = getLocation(name);
+    const GLuint textureUnit = 0;  // TODO(bkuolt): add support for more than one texture
+
+    glActiveTexture(GL_TEXTURE0 + textureUnit);
+    texture->bind();
+    glProgramUniform1i(_handle, location, textureUnit);
 }
 
 }  // namespace bgl

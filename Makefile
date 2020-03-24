@@ -11,11 +11,13 @@ LIBS = -lstdc++fs \
 	-lIL \
 	-lGLEW -lGLU -lGL -lGLU
 
-main.o: main.cpp App.hpp
+main.o: main.cpp \
+        App.hpp gfx/gfx.hpp
 	@$(CC) \
 		$(FLAGS) -c main.cpp
 
-input.o: input.cpp input.hpp App.hpp
+input.o: input.cpp input.hpp \
+         App.hpp gfx/gfx.hpp
 	$(CC) $(FLAGS) -c input.cpp
 
 gfx/libgfx.a:
