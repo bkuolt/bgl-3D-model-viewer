@@ -95,9 +95,9 @@ void Program::link() {
 }
 
 GLuint Program::getLocation(const std::string &name) {
-    const GLuint location = glGetUniformLocation(_handle, name.c_str());
-    if (location == 0 || glGetError() != GL_NO_ERROR) {
-        throw std::runtime_error { "could not get uniform location" };
+    const GLint location = glGetUniformLocation(_handle, name.c_str());
+    if (location == -1 || glGetError() != GL_NO_ERROR) {
+        throw std::runtime_error { "could not get uniform location " + name };
     }
     return location;
 }
@@ -119,13 +119,19 @@ void Program::setUniform(GLuint location, const mat4 &matrix) {
 }
 
 void Program::setUniform(GLuint location, const SharedTexture &texture) {
-#if 0  // TODO(bkuolt)
-    if (_texture) {
-         glEnable(GL_TEXTURE_2D);
-        glActiveTexture(GL_TEXTURE0 + texture_unit);
-        _texture->bind();
+#if 1  // TODO(bkuolt)
+    if (texture) {
+  //   glEnable(GL_TEXTURE_2D);
+        glActiveTexture(GL_TEXTURE0 + 0);
+        texture->bind();
+        glProgramUniform1i(_handle, location, 0);
+        std::cout << "texture loc: " << location << std::endl;
     }
 #endif  // 0
+}
+
+void Program::setUniform(const std::string &name, GLuint value) {
+    setUniform(getLocation(name), value);
 }
 
 void Program::setUniform(const std::string &name, GLfloat value) {

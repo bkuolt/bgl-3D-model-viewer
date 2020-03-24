@@ -41,6 +41,7 @@ class Program {
 
 	Program& operator=(const Program&) = delete;
 
+	void setUniform(const std::string &name, GLuint value);
 	void setUniform(const std::string &name, GLfloat value);
 	void setUniform(const std::string &name, const vec3 &vector);
 	void setUniform(const std::string &name, const mat4 &matrix);

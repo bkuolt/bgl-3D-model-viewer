@@ -29,12 +29,14 @@ vec3 getLightColor(in Light light) {
 }        
 
 void main() {
-    const vec3 ambient = vec3(0.3f, 0.3f, 0.3f);
+    const vec4 ambient = vec4(0.2f, 0.2f, 0.2f, 0.0);
 
-    vec3 color = ambient;
+    vec4 color = ambient;
     for (int i = 0; i < MAX_LIGHT_COUNT; ++i) {
-        color += getLightColor(lights[i]);
+        color += vec4(getLightColor(lights[i]), 0.0) * 0.3;
     }
 
-    gl_FragColor = vec4(color, 1.0f);    // texture2D(texture, T);
+    gl_FragColor = color + texture2D(texture, T);
+
+    //vec4(color, 1.0f);   
 }

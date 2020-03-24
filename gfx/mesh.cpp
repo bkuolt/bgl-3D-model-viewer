@@ -71,13 +71,19 @@ SharedVBO createVBO(const aiScene *scene) {
     auto vbo = std::make_shared<VertexBuffer>(mesh.mNumVertices);
     vbo->bind();
     Vertex *buffer = vbo->map();
-    const bool is_textured { scene->mNumTextures > 1 };
+
+////////////////////////////////////////////////////////////////////////
+    const bool is_textured = true ; // TODO(bkuol)t: depends on material
+    //{ scene->mNumTextures > 1 };
+////////////////////////////////////////////////////////////////////////////////////7
     for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
         buffer[vertex_index].normal = vec3 { mesh.mNormals[vertex_index].x, mesh.mNormals[vertex_index].y, mesh.mNormals[vertex_index].z };
         buffer[vertex_index].position = vec3 { mesh.mVertices[vertex_index].x, mesh.mVertices[vertex_index].y, mesh.mVertices[vertex_index].z };
         if (is_textured) {
             buffer[vertex_index].texcoords = vec2 { mesh.mTextureCoords[0][vertex_index].x,
-                                                    mesh.mTextureCoords[0][vertex_index].y };
+                                                    1.0 - mesh.mTextureCoords[0][vertex_index].y };
+
+       std::cout << buffer[vertex_index].texcoords.x << buffer[vertex_index].texcoords.x  << std::endl;
         }
     }
 
@@ -196,12 +202,14 @@ static const struct Light {
 void Mesh::render(const mat4 &MVP) {
     glUseProgram(_program->_handle);
 
+
+int l = _program->getLocation("texture");
     if (_texture) {
-        _program->setUniform((GLuint) AttributLocations::Texture, _texture);
+        _program->setUniform(l, _texture);
     }
 
-    _program->setUniform((GLuint) AttributLocations::MVP, MVP);
-    _program->setUniform("lights[0].used", true);
+    _program->setUniform(_program->getLocation("MVP"), MVP);
+    _program->setUniform("lights[0].used", (GLuint) true);
     _program->setUniform("lights[0].direction", light.direction);
     _program->setUniform("lights[0].color", light.color);
 
