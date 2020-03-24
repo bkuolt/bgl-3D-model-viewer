@@ -15,8 +15,11 @@
 #include <stdexcept>
 #include <type_traits>
 #include <vector>
+#include <cmath>
 
+#include "../App.hpp"
 
+#include <glm/gtc/matrix_transform.hpp>  // glm::lookAt(), glm::ortho()
 namespace bgl {
 
 std::ostream& operator<<(std::ostream &os, const vec2 &vector) {
@@ -26,6 +29,13 @@ std::ostream& operator<<(std::ostream &os, const vec2 &vector) {
     return os;
 }
 
+std::ostream& operator<<(std::ostream &os, const vec3 &vector) {
+    os << "(" << std::fixed << std::setprecision(2) << vector.x
+       << " | "
+       << std::fixed << std::setprecision(2) << vector.y
+       << std::fixed << std::setprecision(2) << vector.z << ")";
+    return os;
+}
 namespace {
 
 void initialize_SDL() {
@@ -39,6 +49,15 @@ void initialize_SDL() {
         std::atexit(SDL_Quit);
         initialized = true;
     }
+}
+
+double calculate_aspect_ratio() {
+    int width, height;
+    SDL_GetWindowSize(App.window.get(), &width, &height);
+    if (height == 0.0) {
+        throw std::runtime_error { "invalid aspect ratio" };
+    }
+    return static_cast<double>(width) / height;
 }
 
 }  // namespace
@@ -79,6 +98,59 @@ SharedContext createGLContext(const SharedWindow &window) {
 
     const auto Deleter = [] (SDL_GLContext *context) { SDL_GL_DeleteContext(context); };
     return std::shared_ptr<SDL_GLContext>(new SDL_GLContext { context }, Deleter);
+}
+
+/* -------------------------- Camera -------------------------- */
+
+Camera::Camera(const vec3 &position, const vec3 &center)
+    : _position { position }, _center { center }
+{}
+
+void Camera::setPosition(const vec3 &position) noexcept {
+    _position = position;
+}
+
+void Camera::setZoom(double factor) {
+    if (factor <= 0.0) {
+        throw std::invalid_argument { "invalid zoom factor" };
+    }
+    _zoom = factor;
+}
+
+void Camera::setViewCenter(const vec3 &center) noexcept {
+    _center = center;
+}
+
+const vec3& Camera::getPosition() const noexcept {
+    return _position;
+}
+
+const vec3& Camera::getViewCenter() const noexcept {
+    return _center;
+}
+
+double Camera::getZoom() const noexcept {
+    return _zoom;
+}
+
+mat4 Camera::getMatrix() const noexcept {
+    // calculates the projection matrix @p P
+    const double ratio = calculate_aspect_ratio();
+    const mat4 P = glm::frustum(-(ratio / 2) * _zoom, (ratio / 2) *  _zoom,
+                                 -_zoom,  _zoom,
+                                 1.0, 10.0);
+
+    // calculates the view matrix @p V
+    const mat4 V = glm::lookAt(_position, _center, { 0.0, 1.0, 0.0 });
+
+    return P * V;
+}
+
+void Camera::rotate(const vec2 degrees) noexcept {
+    const vec2 currentAngle { glm::radians(glm::atan(_position.x)) };
+    const double radius = glm::length(_position - _center);
+    const double angle = glm::radians(currentAngle.x + degrees.x);  // TODO(bkuolt): incorporate y-axis
+    setPosition({ radius * glm::cos(angle), 0.0f, radius * sin(angle) });
 }
 
 #if 0

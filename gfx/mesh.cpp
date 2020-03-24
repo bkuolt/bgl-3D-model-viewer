@@ -6,6 +6,7 @@
 #include <assimp/Importer.hpp>   // Model loader
 #include <assimp/scene.h>        // Output data structure
 
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -36,7 +37,7 @@ glm::tvec3<bounding_box> get_bounds(const aiMesh &mesh) noexcept {
     return bounds;
 }
 
-void normalize_vertex_positions(const aiMesh &mesh, Vertex *buffer) {
+[[maybe_unused]] void normalize_vertex_positions(const aiMesh &mesh, Vertex *buffer) {
     const glm::tvec3<bounding_box> bounds = get_bounds(mesh);
     const vec3 dimensions {
         bounds.x.max - bounds.x.min,
@@ -68,6 +69,7 @@ SharedVBO createVBO(const aiScene *scene) {
     const aiMesh &mesh = *scene->mMeshes[0];
 
     auto vbo = std::make_shared<VertexBuffer>(mesh.mNumVertices);
+    vbo->bind();
     Vertex *buffer = vbo->map();
     const bool is_textured { scene->mNumTextures > 1 };
     for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
@@ -90,6 +92,7 @@ SharedIBO createIBO(const aiMesh &mesh) {
     const GLsizei size = mesh.mNumFaces * 3;
     auto ibo = std::make_shared<IndexBuffer>(size);
 
+    ibo->bind();
     auto buffer = ibo->map();
     for (auto i = 0u; i < mesh.mNumFaces; ++i) {
         switch (mesh.mFaces[i].mNumIndices) {

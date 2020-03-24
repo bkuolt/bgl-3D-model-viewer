@@ -2,21 +2,16 @@
 #include <csignal>
 #include <cstdlib>
 #include <iostream>
+#include <map>
 #include <stdexcept>
-
-#include <glm/gtc/matrix_transform.hpp>  // glm::lookAt(), glm::ortho()
 
 #include "gfx/gfx.hpp"
 #include "input.hpp"
+#include "App.hpp"
 
 using namespace bgl;
 
-
-struct App {
-    bool run = true;
-    SharedWindow window;
-    SharedContext context;
-} App;
+struct App App;  // declared in App.hpp
 
 namespace {
 
@@ -61,21 +56,70 @@ namespace {
 
 struct {
     SharedMesh mesh;
-    mat4 P;
+    Camera camera;
 } Scene;
 
-void set_up_scene(const std::filesystem::path &path) {
-    Scene.mesh = LoadMesh(path);
+/* --------------------- Input Handling -------------------- */
 
-    int width, height;
-    SDL_GetWindowSize(App.window.get(), &width, &height);
-    const double ratio = static_cast<double>(width) / height;
-    Scene.P = glm::frustum(-ratio, ratio, -1.0, 1.0, 1.0, 3.0);
-
-    // initialize OpenGL
-    if (SDL_GL_SetSwapInterval(0) == -1) {  // disable vsync for benchmarking
-        std::cout << "SDL_GL_SetSwapInterval() failed" << std::endl;
+void update_position(double delta) {
+    const Uint8 *keyboard_state = SDL_GetKeyboardState(NULL);
+    if (keyboard_state == nullptr) {
+        throw std::runtime_error { "could not get SDL keyboard state" };
     }
+
+    const double angle { 10.0 * delta };
+    if (keyboard_state[SDL_SCANCODE_LEFT]) {
+        Scene.camera.rotate({ angle, 0.0 });
+    } else if (keyboard_state[SDL_SCANCODE_RIGHT]) {
+        Scene.camera.rotate({ -angle, 0.0 });
+    } else if (keyboard_state[SDL_SCANCODE_UP]) {
+         Scene.camera.rotate({ 0.0, angle });
+    } else if (keyboard_state[SDL_SCANCODE_DOWN]) {
+        Scene.camera.rotate({ 0.0, -angle });
+    }
+}
+
+}  // namespace
+
+void on_key(const SDL_KeyboardEvent &event) {
+    switch (event.keysym.scancode) {
+        case SDL_SCANCODE_ESCAPE:
+            App.run = false;
+            break;
+        default:
+            // nothing to do
+            break;
+    }
+}
+
+void on_button(ps4_button, bool pressed) {
+    std::cout << "game controller button " << (pressed ? "pressed" : "released") << std::endl;
+    // TODO(bkuolt)
+}
+
+void on_motion(const vec2 &lhs, const vec2 &rhs) {
+    std::cout << "dual stick motion [" << lhs << " , " << rhs << "]" << std::endl;
+    // TODO(bkuolt): use left hand side as camera rotation controll
+    // TODO(bkuolt): use right hand side as zoom level controll
+}
+
+void on_trigger(float lhs, float rhs) {
+    std::cout << "trigger [" << lhs << " , " << rhs << "] pressed" << std::endl;
+    // TODO(bkuolt)
+}
+
+/* ------------------------ Rendering ---------------------- */
+
+namespace {
+
+void set_up_scene(const std::filesystem::path &path) {
+    if (SDL_GL_SetSwapInterval(0) == -1) {
+        throw std::runtime_error { "could not disable vsync" };
+    }
+
+    Scene.mesh = LoadMesh(path);
+    Scene.camera.setViewCenter({ 0.0, 0.0, 0.0 });
+    Scene.camera.setPosition({ 0.0, 0.0, 2.0 });
 
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -89,41 +133,21 @@ void set_up_scene(const std::filesystem::path &path) {
 
 double update_angle(double delta) {
     constexpr double rotation_speed = 30.0f;  // [°/s]
-    static double angle = glm::radians(180.0f);
+    static double angle = 180.0;
     angle += delta * rotation_speed;
     return angle;
-}
-
-mat4 calculate_view_matrix(double delta, double radius) noexcept {
-    const double angle { glm::radians(update_angle(delta)) };
-    const vec3 position { radius * glm::cos(angle), 0.0f, radius * sin(angle) };
-    return glm::lookAt(position, { 0.0, 0.0, 0.0 }, vec3 { 0.0f, 1.0f, 0.0f });
 }
 
 }  // namespace
 
 void on_render(const SharedWindow &window, float delta) noexcept {
+    const vec2 degrees { update_angle(delta) , 0.0 };
+    Scene.camera.rotate(degrees);  // update_position(delta);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    const mat4 MVP = Scene.P * calculate_view_matrix(delta, 2);
-    Scene.mesh->render(MVP);
+    const mat4 VP = Scene.camera.getMatrix();
+    Scene.mesh->render(VP);
     SDL_GL_SwapWindow(window.get());
-}
-
-/* --------------------- Input Handling -------------------- */
-
-void on_button(ps4_button, bool pressed) {
-    std::cout << "game controller button " << (pressed ? "pressed" : "released") << std::endl;
-    // TODO(bkuolt): implement
-}
-
-void on_motion(const vec2 &lhs, const vec2 &rhs) {
-    std::cout << "dual stick motion [" << lhs << " , " << rhs << "]" << std::endl;
-    // TODO(bkuolt): implement game logic
-}
-
-void on_trigger(float lhs, float rhs) {
-    std::cout << "trigger [" << lhs << " , " << rhs << "]" << std::endl;
-    // TODO(bkuolt): implement game logic
 }
 
 /* ------------------------ Light Handling -------------------------- */

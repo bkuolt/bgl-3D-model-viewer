@@ -1,5 +1,5 @@
 .DEFAULT_GOAL = all
-.PHONY = install \
+.PHONY = install \ gfx/libgfx.a \
          demo \
 		 all run clean
 
@@ -11,36 +11,21 @@ LIBS = -lstdc++fs \
 	-lIL \
 	-lGLEW -lGLU -lGL -lGLU
 
-main.o: main.cpp
+main.o: main.cpp App.hpp
 	@$(CC) \
 		$(FLAGS) -c main.cpp
 
-# ------------ libgfx ------------
-gfx.o: gfx/gfx.cpp gfx/gfx.hpp
-	@$(CC) \
-		$(FLAGS) -c gfx/gfx.cpp
-
-mesh.o: gfx/mesh.cpp gfx/mesh.hpp
-	@$(CC) \
-		$(FLAGS) -c gfx/mesh.cpp
-
-shader.o: gfx/shader.cpp gfx/shader.hpp
-	@$(CC) \
-		$(FLAGS) -c gfx/shader.cpp
-
-texture.o: gfx/texture.cpp gfx/texture.hpp
-	@$(CC) \
-		$(FLAGS) -c gfx/texture.cpp
-
-# --------------------------------
-
-input.o: input.cpp input.hpp
+input.o: input.cpp input.hpp App.hpp
 	$(CC) $(FLAGS) -c input.cpp
 
-demo: main.o gfx.o input.o shader.o mesh.o texture.o
+gfx/libgfx.a:
+	@$(MAKE) -C gfx
+
+demo: main.o input.o gfx/libgfx.a
 	$(CC) -o demo \
 	$(FLAGS) \
-	main.o gfx.o input.o shader.o mesh.o texture.o \
+	main.o input.o \
+	-Lgfx -lgfx \
 	$(LIBS)
 
 install:
@@ -64,5 +49,6 @@ run: all
 	#./assets/Ogros.md2
 
 clean:
+	@$(MAKE) -C gfx clean
 	@rm -f *.o
 	@rm -f demo

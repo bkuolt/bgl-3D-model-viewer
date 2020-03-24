@@ -4,20 +4,24 @@
 
 #include <chrono>  // const std::chrono::milliseconds
 
-#include "gfx/gfx.hpp"
+#include "gfx/gfx.hpp"  // bgl::SharedWindow, bgl::SharedContext
 #include "input.hpp"
 
-
-extern struct App {
+struct App {
     bool run = true;
     bgl::SharedWindow window;
     bgl::SharedContext context;
-} App;  // defined in main.cpp
+};
 
+extern struct App App;  // defined in main.cpp
+
+// Input Callbacks
 void on_button(bgl::ps4_button, bool pressed);
 void on_motion(const bgl::vec2 &lhs, const bgl::vec2 &rhs);
 void on_trigger(const float lhs, float rhs);
+void on_key(const SDL_KeyboardEvent &event);
+
+// Render Callbacks
 void on_render(const bgl::SharedWindow &window, float delta) noexcept;
 
 #endif  // APP_HPP_
-

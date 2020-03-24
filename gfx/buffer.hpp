@@ -78,7 +78,7 @@ template<typename T, GLenum type>
 T* Buffer<T, type>::map() {
     bind();
     T *buffer = reinterpret_cast<T*>(glMapBuffer(type, GL_WRITE_ONLY));
-    if (buffer == nullptr) {
+    if (buffer == nullptr || glGetError() != GL_NO_ERROR) {
         throw std::runtime_error { "could not create buffer" };
     }
     return buffer;
@@ -86,6 +86,7 @@ T* Buffer<T, type>::map() {
 
 template<typename T, GLenum type>
 void Buffer<T, type>::unmap() {
+    bind();
     glUnmapBuffer(type);
     if (glGetError() != GL_NO_ERROR) {
         throw std::runtime_error { "could not unmap vbo" };
@@ -133,6 +134,9 @@ class VertexArray {
     void setAttribute(GLuint location, GLenum type, GLsizei size, GLsizei stride, GLsizei offset) {
         glEnableVertexAttribArray(location);
         glVertexAttribPointer(location, size, type, GL_FALSE, stride, reinterpret_cast<void*>(offset));
+        if (glGetError() != GL_NO_ERROR) {
+            throw std::runtime_error { "glVertexAttribPointer() failed" };
+        }
     }
 
  private:

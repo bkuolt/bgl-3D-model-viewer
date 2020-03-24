@@ -89,7 +89,7 @@ SharedGameController find_game_controller() {
            }};
 }
 
-ps4_button map_button_name(Uint8 button) {
+[[maybe_unused]] ps4_button map_button_name(Uint8 button) {
     return {};  // TODO(bkuolt)
 }
 
@@ -129,9 +129,7 @@ void handle_event(const SDL_Event &event) {
     switch (event.type) {
         case SDL_KEYDOWN:
         case SDL_KEYUP:
-            if (event.key.keysym.sym == SDLK_ESCAPE) {
-                App.run = false;
-            }
+            on_key(event.key);
             break;
         case SDL_JOYAXISMOTION:
         case SDL_JOYBUTTONDOWN:
