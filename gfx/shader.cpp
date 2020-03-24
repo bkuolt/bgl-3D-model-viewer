@@ -102,6 +102,10 @@ GLuint Program::getLocation(const std::string &name) {
     return location;
 }
 
+void Program::setUniform(GLuint location, GLuint value) {
+    glProgramUniform1ui(_handle, location, value);
+}
+
 void Program::setUniform(GLuint location, GLfloat value) {
     glProgramUniform1f(_handle, location, value);
 }
@@ -112,6 +116,16 @@ void Program::setUniform(GLuint location, const vec3 &vector) {
 
 void Program::setUniform(GLuint location, const mat4 &matrix) {
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
+}
+
+void Program::setUniform(GLuint location, const SharedTexture &texture) {
+#if 0  // TODO(bkuolt)
+    if (_texture) {
+         glEnable(GL_TEXTURE_2D);
+        glActiveTexture(GL_TEXTURE0 + texture_unit);
+        _texture->bind();
+    }
+#endif  // 0
 }
 
 void Program::setUniform(const std::string &name, GLfloat value) {

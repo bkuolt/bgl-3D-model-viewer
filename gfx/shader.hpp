@@ -3,11 +3,11 @@
 #define GFX_SHADER_HPP_
 
 #include "gl.hpp"
+#include "texture.hpp"
 
 #include <filesystem>
 #include <memory>
 #include <string>
-
 
 namespace bgl {
 
@@ -45,15 +45,17 @@ class Program {
 	void setUniform(const std::string &name, const vec3 &vector);
 	void setUniform(const std::string &name, const mat4 &matrix);
 
+	void setUniform(GLuint location, GLuint value);
 	void setUniform(GLuint location, GLfloat value);
 	void setUniform(GLuint location, const vec3 &vector);
 	void setUniform(GLuint location, const mat4 &matrix);
+	void setUniform(GLuint location, const SharedTexture &texture);
+
+	GLuint getLocation(const std::string &name);
 
 	const GLuint _handle;
-
  private:
     void link();
-	GLuint getLocation(const std::string &name);
 
     SharedShader _vs;
     SharedShader _fs;

@@ -120,14 +120,14 @@ SharedVAO createVAO(const SharedVBO &vbo, const SharedIBO &ibo) {
     return vao;
 }
 
-SharedTexture loadTexture(const aiScene *scene) {
+SharedTexture loadTexture(const std::filesystem::path &base_path, const aiScene *scene) {
     std::cout << scene->mNumMaterials << " materials" << std::endl;
 
     for (auto i = 0u; i <  scene->mNumMaterials; ++i) {
         if (scene->mMaterials[i]->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
             aiString path;
             scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &path);
-            return LoadTexture(path.data);
+            return LoadTexture(base_path / path.data);
         }
     }
 
@@ -177,34 +177,24 @@ Mesh::Mesh(const std::filesystem::path &path) {
     _ibo = createIBO(mesh);
     _vao = createVAO(_vbo, _ibo);
 
-    _texture = loadTexture(scene);
+    _texture = loadTexture(path.parent_path(), scene);
 
     const auto vs = LoadShader(GL_VERTEX_SHADER, "./assets/main.vs");
     const auto fs = LoadShader(GL_FRAGMENT_SHADER, "./assets/main.fs");
     _program = std::make_shared<Program>(vs, fs);
 }
 
+static const struct Light {
+    vec3 direction { -1.0, -1.0, -1.0 };
+    vec3 color { 0.5, 0.0, 1.0 };
+} light;
+
 void Mesh::render(const mat4 &MVP) {
     glUseProgram(_program->_handle);
 
-#if 0
     if (_texture) {
-        constexpr GLuint texture_unit = 0;
-        glEnable(GL_TEXTURE_2D);
-        glActiveTexture(GL_TEXTURE0 + texture_unit);
-        _texture->bind();
-
-     //   glUniform1ui((GLuint) AttributLocations::Texture, texture_unit);
-    } else {
-        std::cout << "..";
+        _program->setUniform((GLuint) AttributLocations::Texture, _texture);
     }
-#endif  // 0
-
-    static const struct Light {
-        vec3 direction { -1.0, -1.0, -1.0 };
-        vec3 color { 0.5, 0.0, 1.0 };
-    } light;
-
 
     _program->setUniform((GLuint) AttributLocations::MVP, MVP);
     _program->setUniform("light.direction", light.direction);
