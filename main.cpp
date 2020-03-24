@@ -125,3 +125,33 @@ void on_trigger(float lhs, float rhs) {
     std::cout << "trigger [" << lhs << " , " << rhs << "]" << std::endl;
     // TODO(bkuolt): implement game logic
 }
+
+/* ------------------------ Light Handling -------------------------- */
+
+#if 0 // --> in main.cpp
+struct Light {
+    GLboolean used { false };
+    vec3 direction;
+    vec3 color;
+};
+
+void SetUniform(const SharedProgram &program, GLuint location, const Light &light) {
+    program->setUniform(location, light.used);
+    program->setUniform(location + 1, light.direction);
+    program->setUniform(location + 2, light.color);
+}
+
+void SetUniform(const SharedProgram &program, GLuint location, const std::vector<Light> lights) {
+    // TODO(bkuolt): write constexpr to make sure that the location count is correct.
+    for (auto i = 0; i < lights.size(); ++i) {
+        SetUniform(program, location + (i * 3), lights[i]);
+    }
+}
+
+    static std::vector<Light> lights {
+            { true, { -1.0, -1.0, -1.0 }, { 0.5, 0.0, 1.0 } }
+    };
+    SetUniform(_program, 5, lights);
+
+
+#endif

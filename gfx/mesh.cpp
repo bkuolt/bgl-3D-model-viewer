@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 namespace bgl {
 
@@ -197,12 +198,16 @@ void Mesh::render(const mat4 &MVP) {
     }
 
     _program->setUniform((GLuint) AttributLocations::MVP, MVP);
-    _program->setUniform("light.direction", light.direction);
-    _program->setUniform("light.color", light.color);
+    _program->setUniform("lights[0].used", true);
+    _program->setUniform("lights[0].direction", light.direction);
+    _program->setUniform("lights[0].color", light.color);
 
     _vao->bind();
     glDrawElements(GL_TRIANGLES, _ibo->size(), GL_UNSIGNED_INT, nullptr);
     _vao->unbind();
+
+    // TODO(bkuolt): another pass for planar shadows
+    // TODO(bkuolt): another pass for motion blurring
 }
 
 }  // namespace bgl

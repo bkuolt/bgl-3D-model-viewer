@@ -124,6 +124,12 @@ class VertexArray {
         glBindVertexArray(0);
     }
 
+    void draw() {
+        bind();
+        glDrawElements(GL_TRIANGLES, _ibo->size(), GL_UNSIGNED_INT, nullptr);
+        unbind();
+    }
+
     void setAttribute(GLuint location, GLenum type, GLsizei size, GLsizei stride, GLsizei offset) {
         glEnableVertexAttribArray(location);
         glVertexAttribPointer(location, size, type, GL_FALSE, stride, reinterpret_cast<void*>(offset));
