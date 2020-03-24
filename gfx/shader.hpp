@@ -41,27 +41,35 @@ class Program {
 
 	Program& operator=(const Program&) = delete;
 
+	void use() noexcept;
+
+	void setUniform(const std::string &name, bool value);
+	void setUniform(const std::string &name, GLuint value);
 	void setUniform(const std::string &name, GLfloat value);
 	void setUniform(const std::string &name, const vec3 &vector);
 	void setUniform(const std::string &name, const mat4 &matrix);
+	void setUniform(const std::string &name, const SharedTexture &texture);
 
 	void setUniform(GLuint location, GLuint value);
 	void setUniform(GLuint location, GLfloat value);
 	void setUniform(GLuint location, const vec3 &vector);
 	void setUniform(GLuint location, const mat4 &matrix);
-	void setUniform(GLuint location, const SharedTexture &texture);
 
 	GLuint getLocation(const std::string &name);
 
-	const GLuint _handle;
  private:
     void link();
 
+	const GLuint _handle;
     SharedShader _vs;
     SharedShader _fs;
 };
 
 using SharedProgram = std::shared_ptr<Program>;
+
+inline SharedProgram LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs) {
+    return std::make_shared<Program>(LoadShader(GL_VERTEX_SHADER, vs), LoadShader(GL_FRAGMENT_SHADER, fs));
+}
 
 }  // namespace bgl
 

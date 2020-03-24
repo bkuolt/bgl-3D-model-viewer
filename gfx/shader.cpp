@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
 
 
 namespace bgl {
@@ -36,7 +37,6 @@ void Shader::load(const std::filesystem::path &path) {
 
         GLchar *line = strdup((std::string(string.c_str()) + "\n").c_str());
         lines.push_back(line);
-        // std::cout << std::quoted(line) << std::endl;
         std::getline(file, string);
     }
 
@@ -78,6 +78,10 @@ Program::~Program() noexcept {
     glDeleteProgram(_handle);
 }
 
+void Program::use() noexcept {
+    glUseProgram(_handle);
+}
+
 void Program::link() {
     glLinkProgram(_handle);
 
@@ -95,9 +99,9 @@ void Program::link() {
 }
 
 GLuint Program::getLocation(const std::string &name) {
-    const GLuint location = glGetUniformLocation(_handle, name.c_str());
-    if (location == 0 || glGetError() != GL_NO_ERROR) {
-        throw std::runtime_error { "could not get uniform location" };
+    const GLint location = glGetUniformLocation(_handle, name.c_str());
+    if (location == -1 || glGetError() != GL_NO_ERROR) {
+        throw std::runtime_error { "could not get uniform location " + name };
     }
     return location;
 }
@@ -118,14 +122,12 @@ void Program::setUniform(GLuint location, const mat4 &matrix) {
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
-void Program::setUniform(GLuint location, const SharedTexture &texture) {
-#if 0  // TODO(bkuolt)
-    if (_texture) {
-         glEnable(GL_TEXTURE_2D);
-        glActiveTexture(GL_TEXTURE0 + texture_unit);
-        _texture->bind();
-    }
-#endif  // 0
+void Program::setUniform(const std::string &name, bool value) {
+    setUniform(name, static_cast<GLuint>(value));
+}
+
+void Program::setUniform(const std::string &name, GLuint value) {
+    setUniform(getLocation(name), value);
 }
 
 void Program::setUniform(const std::string &name, GLfloat value) {
@@ -138,6 +140,18 @@ void Program::setUniform(const std::string &name, const vec3 &vector) {
 
 void Program::setUniform(const std::string &name, const mat4 &matrix) {
     setUniform(getLocation(name), matrix);
+}
+
+void Program::setUniform(const std::string &name, const SharedTexture &texture) {
+    if (texture == nullptr) {
+        throw std::invalid_argument { "invalid texture" };
+    }
+    const GLuint location = getLocation(name);
+    const GLuint textureUnit = 0;  // TODO(bkuolt): add support for more than one texture
+
+    glActiveTexture(GL_TEXTURE0 + textureUnit);
+    texture->bind();
+    glProgramUniform1i(_handle, location, textureUnit);
 }
 
 }  // namespace bgl

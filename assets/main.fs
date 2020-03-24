@@ -3,7 +3,7 @@
 #extension GL_ARB_explicit_uniform_location : require
 #extension GL_ARB_separate_shader_objects : require
 
-#define MAX_LIGHT_COUNT 5
+#define MAX_LIGHTS 5
 
 struct Light {
     bool used;
@@ -11,30 +11,30 @@ struct Light {
     vec3 color;
 };
 
-layout (location = 4) uniform sampler2D texture;  /* not supported yet */
-layout (location = 5) uniform Light lights[MAX_LIGHT_COUNT];
+layout (location = 1) uniform bool isTextured;
+layout (location = 2) uniform sampler2D texture;
+layout (location = 3) uniform Light lights[5];
 
-in vec3 N;
-in vec2 T;
+in vec3 pixelNormal;
+in vec2 pixelTexCoord;
 
 float calculateLightIntensity(in Light light) {
-    return max(dot(light.direction, normalize(N)), 0.0);
+    return max(dot(light.direction, normalize(pixelNormal)), 0.0);
 }
 
-vec3 getLightColor(in Light light) {
-    if (!light.used) {
-        return vec3(0.0f, 0.0f, 0.0f);
+vec4 getLightColor() {
+    const vec4 ambient = vec4(0.2f, 0.2f, 0.2f, 0.0);
+
+    vec4 color = ambient;
+    for (int i = 0; i < MAX_LIGHTS; ++i) {
+        if (lights[i].used) {
+            color += vec4(lights[i].color, 0.0) * calculateLightIntensity(lights[i]) * 0.8;
+        }
     }
-    return light.color * calculateLightIntensity(light);
-}        
+    return color;
+}
 
 void main() {
-    const vec3 ambient = vec3(0.3f, 0.3f, 0.3f);
-
-    vec3 color = ambient;
-    for (int i = 0; i < MAX_LIGHT_COUNT; ++i) {
-        color += getLightColor(lights[i]);
-    }
-
-    gl_FragColor = vec4(color, 1.0f);    // texture2D(texture, T);
+    gl_FragColor = getLightColor() *
+        ((isTextured) ? texture2D(texture, pixelTexCoord) : vec4(0));
 }
