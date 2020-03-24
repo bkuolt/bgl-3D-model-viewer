@@ -11,6 +11,7 @@ layout (location = 0) uniform mat4 MVP;
 layout (location = 1) in vec3 position;
 layout (location = 2) in vec3 normal;
 layout (location = 3) in vec2 texcoords;
+uniform bool isTextured;
 layout (location = 4) uniform sampler2D texture;  /* not supported yet */
 layout (location = 5) uniform Light lights[5];
 

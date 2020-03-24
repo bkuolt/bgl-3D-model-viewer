@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <list>
 
 namespace bgl {
 
@@ -64,6 +65,26 @@ glm::tvec3<bounding_box> get_bounds(const aiMesh &mesh) noexcept {
     }
 }
 
+/**
+ * @brief Checks whether a scene is textured.
+ * @note A scene is considered textured if it has at least one diffuse map.
+ */
+bool IsTextured(const aiScene *scene) {
+    std::list<std::filesystem::path> textures;
+    for (auto i = 0u; i < scene->mNumMaterials; ++i) {
+        if (scene->mMaterials[i]->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
+            aiString path;
+            scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &path);
+            textures.push_back(path.data);
+        }
+    }
+
+    if (textures.size() > 1) {
+        std::cout << "Warning: Found more than one diffuse map, but only one is supported" << std::endl;
+    }
+    return !textures.empty();
+}
+
 SharedVBO createVBO(const aiScene *scene) {
     static_assert(std::is_same<ai_real, float>::value);
     const aiMesh &mesh = *scene->mMeshes[0];
@@ -72,22 +93,20 @@ SharedVBO createVBO(const aiScene *scene) {
     vbo->bind();
     Vertex *buffer = vbo->map();
 
-////////////////////////////////////////////////////////////////////////
-    const bool is_textured = true ; // TODO(bkuol)t: depends on material
-    //{ scene->mNumTextures > 1 };
-////////////////////////////////////////////////////////////////////////////////////7
+    const bool is_textured = IsTextured(scene);
     for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
         buffer[vertex_index].normal = vec3 { mesh.mNormals[vertex_index].x, mesh.mNormals[vertex_index].y, mesh.mNormals[vertex_index].z };
         buffer[vertex_index].position = vec3 { mesh.mVertices[vertex_index].x, mesh.mVertices[vertex_index].y, mesh.mVertices[vertex_index].z };
-        if (is_textured) {
-            buffer[vertex_index].texcoords = vec2 { mesh.mTextureCoords[0][vertex_index].x,
-                                                    1.0 - mesh.mTextureCoords[0][vertex_index].y };
+    }
 
-       std::cout << buffer[vertex_index].texcoords.x << buffer[vertex_index].texcoords.x  << std::endl;
+    if (is_textured) {
+        for (auto i = 0u; i < mesh.mNumVertices; ++i) {
+            buffer[i].texcoords = vec2 { mesh.mTextureCoords[0][i].x,
+                                         1.0 - mesh.mTextureCoords[0][i].y };
         }
     }
 
-    // normalize_vertex_positions(mesh, buffer);
+    // TODO(bkuolt): rethink "normalize_vertex_positions(mesh, buffer);""
     vbo->unmap();
 
     std::cout << "created a vbo with " << vbo->size() << " vertices" << std::endl;
@@ -171,7 +190,6 @@ const aiScene* importScene(const std::filesystem::path &path) {
 }  // namespace
 
 
-
 /* ------------------------------- Mesh -------------------------------- */
 
 Mesh::Mesh(const std::filesystem::path &path) {
@@ -187,7 +205,9 @@ Mesh::Mesh(const std::filesystem::path &path) {
     _ibo = createIBO(mesh);
     _vao = createVAO(_vbo, _ibo);
 
-    _texture = loadTexture(path.parent_path(), scene);
+    if (IsTextured(scene)) {
+        _texture = loadTexture(path.parent_path(), scene);
+    }
 
     const auto vs = LoadShader(GL_VERTEX_SHADER, "./assets/main.vs");
     const auto fs = LoadShader(GL_FRAGMENT_SHADER, "./assets/main.fs");
@@ -207,6 +227,8 @@ int l = _program->getLocation("texture");
     if (_texture) {
         _program->setUniform(l, _texture);
     }
+
+    _program->setUniform("isTextured", (unsigned int) (_texture != nullptr));
 
     _program->setUniform(_program->getLocation("MVP"), MVP);
     _program->setUniform("lights[0].used", (GLuint) true);

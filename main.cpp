@@ -61,7 +61,7 @@ struct {
 
 /* --------------------- Input Handling -------------------- */
 
-void update_position(double delta) {
+[[maybe_unused]] void update_position(double delta) {
     const Uint8 *keyboard_state = SDL_GetKeyboardState(NULL);
     if (keyboard_state == nullptr) {
         throw std::runtime_error { "could not get SDL keyboard state" };

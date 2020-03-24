@@ -11,6 +11,7 @@ struct Light {
     vec3 color;
 };
 
+uniform bool isTextured;
 layout (location = 4) uniform sampler2D texture;  /* not supported yet */
 layout (location = 5) uniform Light lights[MAX_LIGHT_COUNT];
 
@@ -36,7 +37,5 @@ void main() {
         color += vec4(getLightColor(lights[i]), 0.0) * 0.3;
     }
 
-    gl_FragColor = color + texture2D(texture, T);
-
-    //vec4(color, 1.0f);   
+    gl_FragColor = color + ((isTextured) ? texture2D(texture, T) : vec4(0));
 }

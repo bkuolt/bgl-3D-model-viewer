@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
 
 
 namespace bgl {
@@ -36,7 +37,6 @@ void Shader::load(const std::filesystem::path &path) {
 
         GLchar *line = strdup((std::string(string.c_str()) + "\n").c_str());
         lines.push_back(line);
-        // std::cout << std::quoted(line) << std::endl;
         std::getline(file, string);
     }
 
@@ -119,15 +119,14 @@ void Program::setUniform(GLuint location, const mat4 &matrix) {
 }
 
 void Program::setUniform(GLuint location, const SharedTexture &texture) {
-#if 1  // TODO(bkuolt)
-    if (texture) {
-  //   glEnable(GL_TEXTURE_2D);
-        glActiveTexture(GL_TEXTURE0 + 0);
-        texture->bind();
-        glProgramUniform1i(_handle, location, 0);
-        std::cout << "texture loc: " << location << std::endl;
+    if (texture == nullptr) {
+        throw std::invalid_argument { "invalid texture" };
     }
-#endif  // 0
+
+    const GLuint textureUnit = 0;  // TODO(bkuolt): add support for more than one texture
+    glActiveTexture(GL_TEXTURE0 + textureUnit);
+    texture->bind();
+    glProgramUniform1i(_handle, location, textureUnit);
 }
 
 void Program::setUniform(const std::string &name, GLuint value) {
