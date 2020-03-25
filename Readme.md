@@ -38,3 +38,4 @@ or run `./demo <path-to-your model>` to view your custom models.
 - [Assimp](http://www.assimp.org/)
 - [GLEW](http://glew.sourceforge.net/)
 - [glm](https://glm.g-truc.net/0.9.9/index.html)
+- [DevIL](http://openil.sourceforge.net/)
