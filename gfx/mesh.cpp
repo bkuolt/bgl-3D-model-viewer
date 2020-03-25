@@ -236,7 +236,7 @@ Mesh::Mesh(const std::filesystem::path &path) {
     _vbo = createVBO(scene);
     _ibo = createIBO(mesh);
     _vao = createVAO(_vbo, _ibo);
-    _program = LoadProgram("./assets/main.vs", "./assets/main.fs");
+    _program = LoadProgram("./shaders/main.vs", "./shaders/main.fs");
 
     if (IsTextured(scene)) {
         _texture = loadTexture(path.parent_path(), scene);
@@ -245,7 +245,7 @@ Mesh::Mesh(const std::filesystem::path &path) {
 
 void Mesh::render(const mat4 &MVP) {
     _program->use();
-    _program->setUniform(_program->getLocation("MVP"), MVP);
+    _program->setUniform(AttributLocations::MVP, MVP);
 
     setUpLightning(_program);
 

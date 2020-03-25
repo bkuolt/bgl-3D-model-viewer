@@ -154,47 +154,82 @@ void Camera::rotate(const vec2 degrees) noexcept {
 }
 
 /* --------------------------- Grid --------------------------- */
+
 #if 1
+namespace {
+
+constexpr size_t roundCellSize(size_t size) noexcept {
+    return static_cast<size_t>((size / 2) * 2); 
+}
+
+}  // namespace
+
+enum locations { MVP = 0 , color, position };
+
 grid::grid(size_t size)
-    : _size { static_cast<GLsizei>(std::ceil((size / 2) *2)) },
-      _vao { std::make_shared<VertexArray<vec3>>(_vbo, _ibo) },
-      _program(LoadProgram("./assets/grid.vs", "./assets/grid.fs")) {
+    : _size { roundCellSize(size) },
+      _vbo { std::make_shared<VBO>() },
+      _ibo { std::make_shared<IBO>() },
+      _vao { std::make_shared<VAO>(_vbo, _ibo) },
+      _program(LoadProgram("./shaders/grid.vs", "./shaders/grid.fs")) {
+#if 0
     create_vbo();
     create_ibo();
     create_vao();
+#endif  // 0
 }
 
 void grid::create_vbo() {
     _vbo->resize(_size * _size);
-    vec3 *buffer = _vbo->map();
-    for (auto i = 0u; i < _size; ++i) {
-        // horizontally
-        *buffer++ = vec3 { -_size / 2 + i, 0.0f, -_size / 2 };
-        *buffer++ = vec3 { -_size / 2 + i, 0.0f,  _size / 2 };
-        // vertically
-        *buffer++ = vec3 { -_size / 2, 0.0f, -_size / 2 + i};
-        *buffer++ = vec3 {  _size / 2, 0.0f, -_size / 2 + i};
+    auto buffer = reinterpret_cast<vec3**>(_vbo->map());
+    for (auto z = 0u; z < _size; ++z) {
+        for (auto x = 0u; x < _size; ++x) {
+            buffer[z][x] = vec3 { x, 0.0, z };
+        }
     }
     _vbo->unmap();
 }
 
 void grid::create_ibo() {
-    const GLsizei numLines { _size * 2 };
+    const size_t numLines { _size * 2 };
     _ibo->resize(numLines * 2);
 
     GLuint *buffer = _ibo->map();
-    // TODO(bkuolt)
+    auto get_index = [&](int x, int z) { return (_size * z) + x; };
+
+    for (auto i = 0u; i < _size; ++i) {
+         // vertical line
+        *buffer++ = get_index(i, 0);
+        *buffer++ = get_index(i, _size - 1);
+
+        // horizontal line
+        *buffer++ = get_index(0, i);
+        *buffer++ = get_index(_size - 1, i);
+    }
+
     _ibo->unmap();
 }
 
 void grid::create_vao() {
-    // TODO(bkuolt)
+    _vao->bind();
+    SetAttribute<vec3>(_vao, locations::position, 0, 0);
+    _vao->unbind();
 }
 
-void grid::render() {
+void grid::render(const mat4 &MVP) {
+#if 0
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINES);
+    // TODO(bkuolt): adjust OpenGL line rendering settings
+
+    _program->use();
+    _program->setUniform(locations::MVP, MVP);
+    _program->setUniform(locations::color, vec3(1.0f, 1.0f, 1.0f) /* white */);
+
     _vao->bind();
-    // TODO(render)
+    _vao->draw(GL_LINES);
+    _vao->unbind();
+#endif  // 0
+
 }
 #endif  // 1
 

@@ -119,7 +119,7 @@ void Program::setUniform(GLuint location, const vec3 &vector) {
 }
 
 void Program::setUniform(GLuint location, const mat4 &matrix) {
-    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
+    glProgramUniformMatrix4fv(_handle, location, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
 void Program::setUniform(const std::string &name, bool value) {

@@ -56,6 +56,7 @@ namespace {
 
 struct {
     SharedMesh mesh;
+    SharedGrid grid;
     Camera camera;
 } Scene;
 
@@ -121,6 +122,8 @@ void set_up_scene(const std::filesystem::path &path) {
     Scene.camera.setViewCenter({ 0.0, 0.0, 0.0 });
     Scene.camera.setPosition({ 0.0, 0.0, 2.0 });
 
+    Scene.grid = CreateGrid(10);
+
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -147,35 +150,7 @@ void on_render(const SharedWindow &window, float delta) noexcept {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     const mat4 VP = Scene.camera.getMatrix();
     Scene.mesh->render(VP);
+    Scene.grid->render(VP);
     SDL_GL_SwapWindow(window.get());
 }
 
-/* ------------------------ Light Handling -------------------------- */
-
-#if 0 // --> in main.cpp
-struct Light {
-    GLboolean used { false };
-    vec3 direction;
-    vec3 color;
-};
-
-void SetUniform(const SharedProgram &program, GLuint location, const Light &light) {
-    program->setUniform(location, light.used);
-    program->setUniform(location + 1, light.direction);
-    program->setUniform(location + 2, light.color);
-}
-
-void SetUniform(const SharedProgram &program, GLuint location, const std::vector<Light> lights) {
-    // TODO(bkuolt): write constexpr to make sure that the location count is correct.
-    for (auto i = 0; i < lights.size(); ++i) {
-        SetUniform(program, location + (i * 3), lights[i]);
-    }
-}
-
-    static std::vector<Light> lights {
-            { true, { -1.0, -1.0, -1.0 }, { 0.5, 0.0, 1.0 } }
-    };
-    SetUniform(_program, 5, lights);
-
-
-#endif

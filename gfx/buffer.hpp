@@ -96,6 +96,7 @@ void Buffer<T, type>::unmap() {
 template<typename T>
 using VertexBuffer = Buffer<T, GL_ARRAY_BUFFER>;
 using IndexBuffer  = Buffer<GLuint, GL_ELEMENT_ARRAY_BUFFER>;
+using IBO = IndexBuffer;
 
 template<typename T>
 using SharedVBO = std::shared_ptr<VertexBuffer<T>>;
@@ -128,9 +129,9 @@ class VertexArray {
         glBindVertexArray(0);
     }
 
-    void draw() {
+    void draw(GLenum type = GL_TRIANGLES) {
         bind();
-        glDrawElements(GL_TRIANGLES, _ibo->size(), GL_UNSIGNED_INT, nullptr);
+        glDrawElements(type, _ibo->size(), GL_UNSIGNED_INT, nullptr);
         unbind();
     }
 

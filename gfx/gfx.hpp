@@ -70,11 +70,13 @@ class Camera {
 #if 1
 class grid final {
  public:
+    using VBO = bgl::VertexBuffer<vec3>;
     using SharedVBO = bgl::SharedVBO<vec3>;
     using SharedVAO = bgl::SharedVAO<vec3>;
+    using VAO = VertexArray<vec3>;
 
     explicit grid(size_t size);
-    void render();
+    void render(const mat4 &MVP);
 
  private:
     void create_vbo();
@@ -88,6 +90,13 @@ class grid final {
     SharedVAO _vao;
     SharedProgram _program;
 };
+
+using SharedGrid = std::shared_ptr<grid>;
+
+inline SharedGrid CreateGrid(size_t size) {
+   return std::make_shared<grid>(size);
+}
+
 #endif  // 1
 
 }  // namespace bgl
