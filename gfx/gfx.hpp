@@ -67,6 +67,29 @@ class Camera {
     double _zoom { 1.0 };
 };
 
+#if 1
+class grid final {
+ public:
+    using SharedVBO = bgl::SharedVBO<vec3>;
+    using SharedVAO = bgl::SharedVAO<vec3>;
+
+    explicit grid(size_t size);
+    void render();
+
+ private:
+    void create_vbo();
+    void create_ibo();
+    void create_vao();
+
+    const size_t _size;
+
+    SharedVBO _vbo;
+    SharedIBO _ibo;
+    SharedVAO _vao;
+    SharedProgram _program;
+};
+#endif  // 1
+
 }  // namespace bgl
 
 #endif  // GFX_GFX_HPP_

@@ -86,11 +86,11 @@ bool IsTextured(const aiScene *scene) {
     return !textures.empty();
 }
 
-SharedVBO CreateVBO(const aiScene *scene) {
+SharedVBO<Vertex> createVBO(const aiScene *scene) {
     static_assert(std::is_same<ai_real, float>::value);
     const aiMesh &mesh = *scene->mMeshes[0];
 
-    auto vbo = std::make_shared<VertexBuffer>(mesh.mNumVertices);
+    auto vbo = std::make_shared<VertexBuffer<Vertex>>(mesh.mNumVertices);
     vbo->bind();
     Vertex *buffer = vbo->map();
 
@@ -114,7 +114,7 @@ SharedVBO CreateVBO(const aiScene *scene) {
     return vbo;
 }
 
-SharedIBO CreateIBO(const aiMesh &mesh) {
+SharedIBO createIBO(const aiMesh &mesh) {
     const GLsizei size = mesh.mNumFaces * 3;
     auto ibo = std::make_shared<IndexBuffer>(size);
 
@@ -136,16 +136,15 @@ SharedIBO CreateIBO(const aiMesh &mesh) {
     return ibo;
 }
 
+enum AttributLocations : GLuint { MVP = 0, Position = 8, Normal, TexCoord, Texture };
 
-enum class AttributLocations : GLuint { MVP = 0, Position = 8, Normal, TexCoord, Texture };
-
-SharedVAO CreateVAO(const SharedVBO &vbo, const SharedIBO &ibo) {
-    auto vao = std::make_shared<VertexArray>(vbo, ibo);
+SharedVAO<Vertex> createVAO(const SharedVBO<Vertex> &vbo, const SharedIBO &ibo) {
+    auto vao = std::make_shared<VertexArray<Vertex>>(vbo, ibo);
     const auto stride = sizeof(Vertex);
     vao->bind();
-    SetAttribute<vec3>(vao, (GLuint) AttributLocations::Position, stride, offsetof(Vertex, position));
-    SetAttribute<vec3>(vao, (GLuint) AttributLocations::Normal, stride, offsetof(Vertex, normal));
-    SetAttribute<vec2>(vao, (GLuint) AttributLocations::TexCoord, stride, offsetof(Vertex, texcoords));
+    SetAttribute<vec3>(vao, AttributLocations::Position, stride, offsetof(Vertex, position));
+    SetAttribute<vec3>(vao, AttributLocations::Normal, stride, offsetof(Vertex, normal));
+    SetAttribute<vec2>(vao, AttributLocations::TexCoord, stride, offsetof(Vertex, texcoords));
     vao->unbind();
     return vao;
 }
@@ -219,8 +218,6 @@ const aiScene* importScene(const std::filesystem::path &path) {
     return scene;
 }
 
-// TODO(bkuolt): setUpLights
-
 }  // namespace
 
 
@@ -236,9 +233,9 @@ Mesh::Mesh(const std::filesystem::path &path) {
     const aiScene *scene = importScene(path);
     const aiMesh &mesh = getMesh(scene);
 
-    _vbo = CreateVBO(scene);
-    _ibo = CreateIBO(mesh);
-    _vao = CreateVAO(_vbo, _ibo);
+    _vbo = createVBO(scene);
+    _ibo = createIBO(mesh);
+    _vao = createVAO(_vbo, _ibo);
     _program = LoadProgram("./assets/main.vs", "./assets/main.fs");
 
     if (IsTextured(scene)) {

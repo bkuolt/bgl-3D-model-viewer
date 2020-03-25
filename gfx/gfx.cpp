@@ -67,7 +67,7 @@ std::shared_ptr<SDL_Window> createFullScreenWindow() {
     SDL_Window * const window = SDL_CreateWindow("BGL Tech Demo",
                                                  SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                                  1280, 720,
-                                                 SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN | SDL_WINDOW_FULLSCREEN_DESKTOP );
+                                                 SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN | SDL_WINDOW_FULLSCREEN_DESKTOP);
     if (window == nullptr) {
         throw std::runtime_error{ SDL_GetError() };
     }
@@ -153,36 +153,20 @@ void Camera::rotate(const vec2 degrees) noexcept {
     setPosition({ radius * glm::cos(angle), 0.0f, radius * sin(angle) });
 }
 
-#if 0
-class grid final {
- public:
-    explicit grid(size_t size);
-    void render();
-
- private:
-    void create_vbo();
-    void create_ibo();
-    void create_vao();
-
-    Buffer<vec3, GL_ARRAY_BUFFER> _vbo;
-    IndexBuffer _ibo;
-    // TODO(bkuolt): vao
-    // TODO(bkuolt): shader
-    const GLsizei _size;
-};
-
+/* --------------------------- Grid --------------------------- */
+#if 1
 grid::grid(size_t size)
-    : _size { size },
-      _vbo { _size * 4 },
-      _ibo { _size * 2} {
+    : _size { static_cast<GLsizei>(std::ceil((size / 2) *2)) },
+      _vao { std::make_shared<VertexArray<vec3>>(_vbo, _ibo) },
+      _program(LoadProgram("./assets/grid.vs", "./assets/grid.fs")) {
     create_vbo();
     create_ibo();
     create_vao();
-    // TODO(bkuolt): load shader
 }
 
 void grid::create_vbo() {
-    auto buffer = _vbo.map();
+    _vbo->resize(_size * _size);
+    vec3 *buffer = _vbo->map();
     for (auto i = 0u; i < _size; ++i) {
         // horizontally
         *buffer++ = vec3 { -_size / 2 + i, 0.0f, -_size / 2 };
@@ -190,15 +174,17 @@ void grid::create_vbo() {
         // vertically
         *buffer++ = vec3 { -_size / 2, 0.0f, -_size / 2 + i};
         *buffer++ = vec3 {  _size / 2, 0.0f, -_size / 2 + i};
-        }
     }
-    _vbo.unmap();
+    _vbo->unmap();
 }
 
 void grid::create_ibo() {
-    auto buffer = _ibo.map();
-    // TODO(bkuolt): calculate line 
-    _ibo.unmap();
+    const GLsizei numLines { _size * 2 };
+    _ibo->resize(numLines * 2);
+
+    GLuint *buffer = _ibo->map();
+    // TODO(bkuolt)
+    _ibo->unmap();
 }
 
 void grid::create_vao() {
@@ -207,9 +193,9 @@ void grid::create_vao() {
 
 void grid::render() {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINES);
-    _vao.bind();
+    _vao->bind();
     // TODO(render)
 }
-#endif  // 0
+#endif  // 1
 
 }  // namespace bgl

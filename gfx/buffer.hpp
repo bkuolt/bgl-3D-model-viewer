@@ -93,15 +93,18 @@ void Buffer<T, type>::unmap() {
     }
 }
 
-using VertexBuffer = Buffer<Vertex, GL_ARRAY_BUFFER>;
+template<typename T>
+using VertexBuffer = Buffer<T, GL_ARRAY_BUFFER>;
 using IndexBuffer  = Buffer<GLuint, GL_ELEMENT_ARRAY_BUFFER>;
 
-using SharedVBO = std::shared_ptr<VertexBuffer>;
+template<typename T>
+using SharedVBO = std::shared_ptr<VertexBuffer<T>>;
 using SharedIBO = std::shared_ptr<IndexBuffer>;
 
+template<typename T>
 class VertexArray {
  public:
-    VertexArray(const SharedVBO &vbo, const SharedIBO &ibo)
+    VertexArray(const SharedVBO<T> &vbo, const SharedIBO &ibo)
         : _vbo(vbo), _ibo(ibo) {
         glGenVertexArrays(1, &_handle);
         if (_handle == 0 || glGetError() != GL_NO_ERROR) {
@@ -141,35 +144,35 @@ class VertexArray {
 
  private:
     GLuint _handle { 0 };
-    const SharedVBO _vbo;
+    const SharedVBO<T> _vbo;
     const SharedIBO _ibo;
 };
 
-using SharedVAO = std::shared_ptr<VertexArray>;
+template<typename T = Vertex>
+using SharedVAO = std::shared_ptr<VertexArray<T>>;
 
-template<typename T>
-void SetAttribute(const SharedVAO &vao, GLuint location, GLsizei stride, GLsizei offset) {
-    static_assert("attribute type not supported");
-}
+/* ------------------------ Uniform Setter Helper ------------------------ */
+namespace details {
 
-template<>
-inline void SetAttribute<GLuint>(const SharedVAO &vao, GLuint location, GLsizei stride, GLsizei offset) {
-    vao->setAttribute(location, GL_UNSIGNED_INT, 1, stride, offset);
-}
+template<GLenum Type, GLsizei Count>
+struct type_traits_base {
+    static const GLenum type { Type };
+    static const GLsizei count { Count };
+};
 
-template<>
-inline void SetAttribute<GLfloat>(const SharedVAO &vao, GLuint location, GLsizei stride, GLsizei offset) {
-    vao->setAttribute(location, GL_FLOAT, 1, stride, offset);
-}
+template<typename T> struct type_traits {};
+template<> struct type_traits<GLuint> : public type_traits_base<GL_UNSIGNED_INT, 1> {};
+template<> struct type_traits<GLfloat> : public type_traits_base<GL_FLOAT, 1> {};
+template<> struct type_traits<vec2> : public type_traits_base<GL_FLOAT, 2> {};
+template<> struct type_traits<vec3> : public type_traits_base<GL_FLOAT, 3> {};
 
-template<>
-inline void SetAttribute<vec3>(const SharedVAO &vao, GLuint location, GLsizei stride, GLsizei offset) {
-    vao->setAttribute(location, GL_FLOAT, 3, stride, offset);
-}
+}  // namespace details
 
-template<>
-inline void SetAttribute<vec2>(const SharedVAO &vao, GLuint location, GLsizei stride, GLsizei offset) {
-    vao->setAttribute(location, GL_FLOAT, 2, stride, offset);
+template<typename T, typename Vertex>
+void SetAttribute(const SharedVAO<Vertex> &vao, GLuint location, GLsizei stride, GLsizei offset) {
+    vao->setAttribute(location,
+                      details::type_traits<T>::type, details::type_traits<T>::count,
+                      stride, offset);
 }
 
 }  // namespace bgl

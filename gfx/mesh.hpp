@@ -21,9 +21,9 @@ class Mesh {
     void render(const mat4 &MVP);
 
  private:
-    SharedVBO _vbo;
+    SharedVBO<Vertex> _vbo;
     SharedIBO _ibo;
-    SharedVAO _vao;
+    SharedVAO<Vertex> _vao;
     SharedTexture _texture;
     SharedProgram _program;
 };
