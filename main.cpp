@@ -120,7 +120,7 @@ void set_up_scene(const std::filesystem::path &path) {
 
     Scene.mesh = LoadMesh(path);
     Scene.camera.setViewCenter({ 0.0, 0.0, 0.0 });
-    Scene.camera.setPosition({ 0.0, 0.0, 2.0 });
+    Scene.camera.setPosition({ 0.0, 1.0, 2.0 });
 
     Scene.grid = CreateGrid(10);
 
@@ -129,9 +129,9 @@ void set_up_scene(const std::filesystem::path &path) {
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glFrontFace(GL_CCW);
+    //glEnable(GL_CULL_FACE);
+    //glCullFace(GL_BACK);
+    //glFrontFace(GL_CCW);
 }
 
 double update_angle(double delta) {

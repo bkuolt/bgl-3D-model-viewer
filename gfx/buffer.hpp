@@ -129,9 +129,12 @@ class VertexArray {
         glBindVertexArray(0);
     }
 
-    void draw(GLenum type = GL_TRIANGLES) {
+    void draw(GLenum mode = GL_TRIANGLES) {
         bind();
-        glDrawElements(type, _ibo->size(), GL_UNSIGNED_INT, nullptr);
+        glDrawElements(mode, _ibo->size(), GL_UNSIGNED_INT, nullptr);
+        if (glGetError() != GL_NO_ERROR) {
+            throw std::runtime_error { "glDrawElements() failed" };
+        }
         unbind();
     }
 

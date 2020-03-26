@@ -244,6 +244,7 @@ Mesh::Mesh(const std::filesystem::path &path) {
 }
 
 void Mesh::render(const mat4 &MVP) {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     _program->use();
     _program->setUniform(AttributLocations::MVP, MVP);
 

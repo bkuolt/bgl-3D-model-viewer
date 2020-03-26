@@ -172,7 +172,7 @@ grid::grid(size_t size)
       _ibo { std::make_shared<IBO>() },
       _vao { std::make_shared<VAO>(_vbo, _ibo) },
       _program(LoadProgram("./shaders/grid.vs", "./shaders/grid.fs")) {
-#if 0
+#if 1
     create_vbo();
     create_ibo();
     create_vao();
@@ -180,53 +180,59 @@ grid::grid(size_t size)
 }
 
 void grid::create_vbo() {
+    auto get_index = [&](int x, int z) { return (_size * z) + x; };
+
     _vbo->resize(_size * _size);
-    auto buffer = reinterpret_cast<vec3**>(_vbo->map());
+    auto buffer = _vbo->map();
     for (auto z = 0u; z < _size; ++z) {
         for (auto x = 0u; x < _size; ++x) {
-            buffer[z][x] = vec3 { x, 0.0, z };
+            buffer[get_index(x, z)] = vec3 { x, -1.0, z } - vec3(_size/2, 0, _size/2);
         }
     }
     _vbo->unmap();
 }
 
 void grid::create_ibo() {
-    const size_t numLines { _size * 2 };
-    _ibo->resize(numLines * 2);
-
-    GLuint *buffer = _ibo->map();
     auto get_index = [&](int x, int z) { return (_size * z) + x; };
 
-    for (auto i = 0u; i < _size; ++i) {
-         // vertical line
-        *buffer++ = get_index(i, 0);
-        *buffer++ = get_index(i, _size - 1);
+    const size_t num_triangles { 2 * _size * _size };
+    _ibo->resize(num_triangles * 3 /* vertices */);
+    GLuint *buffer = _ibo->map();
+    for (auto z = 0u; z < _size - 1; ++z) {
+        for (auto x = 0u; x < _size - 1; ++x) {
+            buffer[0] = get_index(x, z);
+            buffer[1] = get_index(x, z + 1);
+            buffer[2] = get_index(x + 1, z + 1);
+            buffer += 3;
 
-        // horizontal line
-        *buffer++ = get_index(0, i);
-        *buffer++ = get_index(_size - 1, i);
+            buffer[0] = get_index(x, z);
+            buffer[1] = get_index(x + 1, z + 1);
+            buffer[2] = get_index(x + 1, z);
+            buffer += 3;
+        }
     }
-
     _ibo->unmap();
 }
 
 void grid::create_vao() {
     _vao->bind();
-    SetAttribute<vec3>(_vao, locations::position, 0, 0);
+    SetAttribute<vec3>(_vao, locations::position, sizeof(vec3), 0 /* no offset */);
     _vao->unbind();
 }
 
 void grid::render(const mat4 &MVP) {
-#if 0
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINES);
+#if 1
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     // TODO(bkuolt): adjust OpenGL line rendering settings
+    glEnable(GL_LINE_SMOOTH);
+    glLineWidth(1);
 
     _program->use();
     _program->setUniform(locations::MVP, MVP);
     _program->setUniform(locations::color, vec3(1.0f, 1.0f, 1.0f) /* white */);
 
     _vao->bind();
-    _vao->draw(GL_LINES);
+    _vao->draw(GL_TRIANGLES);
     _vao->unbind();
 #endif  // 0
 
