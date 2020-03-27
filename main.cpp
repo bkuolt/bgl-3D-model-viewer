@@ -154,3 +154,5 @@ void on_render(const SharedWindow &window, float delta) noexcept {
     SDL_GL_SwapWindow(window.get());
 }
 
+// TODO: Ego Camera support
+// Tastatur Support

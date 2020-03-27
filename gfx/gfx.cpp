@@ -153,13 +153,45 @@ void Camera::rotate(const vec2 degrees) noexcept {
     setPosition({ radius * glm::cos(angle), 0.0f, radius * sin(angle) });
 }
 
+/* --------------------------- Box --------------------------- */
+#if 0
+
+class Box {
+ public:
+    using SharedVBO = SharedVBO<vec3>;
+    using SharedVAO = SharedVAO<vec3>;
+
+    explicit Box(GLfloat size);
+    explicit Box(const vec3 &dimensions);
+
+    void render(const mat4 &VP);
+
+ private:
+    static SharedVBO _vbo;
+    static SharedIBO _ibo;
+    static SharedVAO _vao;
+};
+
+Box::Box(const vec3 &dimensions) {
+    // TODO(bkuolt)
+}
+Box::Box(GLfloat size) {
+    // TODO(bkuolt)
+}
+
+void Box::render(const mat4 &VP) {
+    // TODO(bkuolt)
+}
+
+
+#endif  // 1
+
 /* --------------------------- Grid --------------------------- */
 
-#if 1
 namespace {
 
 constexpr size_t roundCellSize(size_t size) noexcept {
-    return static_cast<size_t>((size / 2) * 2); 
+    return static_cast<size_t>((size / 2) * 2);
 }
 
 }  // namespace
@@ -172,11 +204,9 @@ grid::grid(size_t size)
       _ibo { std::make_shared<IBO>() },
       _vao { std::make_shared<VAO>(_vbo, _ibo) },
       _program(LoadProgram("./shaders/grid.vs", "./shaders/grid.fs")) {
-#if 1
     create_vbo();
     create_ibo();
     create_vao();
-#endif  // 0
 }
 
 void grid::create_vbo() {
@@ -221,7 +251,6 @@ void grid::create_vao() {
 }
 
 void grid::render(const mat4 &MVP) {
-#if 1
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     // TODO(bkuolt): adjust OpenGL line rendering settings
     glEnable(GL_LINE_SMOOTH);
@@ -234,9 +263,6 @@ void grid::render(const mat4 &MVP) {
     _vao->bind();
     _vao->draw(GL_TRIANGLES);
     _vao->unbind();
-#endif  // 0
-
 }
-#endif  // 1
 
 }  // namespace bgl
