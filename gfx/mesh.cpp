@@ -47,13 +47,11 @@ Box::Box(const vec3 &dimensions)
       _vao { std::make_shared<VertexArray<vec3>>(_vbo, _ibo) },
       _dimensions { dimensions } {
     // create vbo
-    _vbo->bind();
     _vbo->resize(box_vertices.size());
     std::copy(box_vertices.begin(), box_vertices.end(), _vbo->map());
     _vbo->unmap();
 
     // create ibo
-    _ibo->bind();
     _ibo->resize(box_indices.size() * 2);
     uvec2 *buffer = reinterpret_cast<uvec2*>(_ibo->map());
     std::copy(box_indices.begin(), box_indices.end(), buffer);
@@ -336,10 +334,8 @@ void Mesh::render(const mat4 &MVP) {
     if (isTextured) {
         _program->setUniform("texture", _texture);
     }
-    _vao->bind();
-    _vao->draw();
-    _vao->unbind();
 
+    _vao->draw();
     _box.render(MVP);
 
     // TODO(bkuolt): another pass for planar shadows

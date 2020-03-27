@@ -219,17 +219,15 @@ void grid::create_vao() {
 
 void grid::render(const mat4 &MVP) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    // TODO(bkuolt): adjust OpenGL line rendering settings
     glEnable(GL_LINE_SMOOTH);
     glLineWidth(1);
+    // TODO(bkuolt): adjust OpenGL line rendering settings
 
+    constexpr vec3 white { 1.0f, 1.0f, 1.0f };
     _program->use();
     _program->setUniform(locations::MVP, MVP);
-    _program->setUniform(locations::color, vec3(1.0f, 1.0f, 1.0f) /* white */);
-
-    _vao->bind();
+    _program->setUniform(locations::color, white);
     _vao->draw(GL_TRIANGLES);
-    _vao->unbind();
 }
 
 }  // namespace bgl
