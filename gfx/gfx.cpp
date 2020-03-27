@@ -155,58 +155,51 @@ void Camera::rotate(const vec2 degrees) noexcept {
 
 /* --------------------------- Grid --------------------------- */
 
-namespace {
-
-constexpr size_t roundCellSize(size_t size) noexcept {
-    return static_cast<size_t>((size / 2) * 2);
-}
-
-}  // namespace
-
 enum locations { MVP = 0 , color, position };
 
-grid::grid(size_t size)
-    : _size { roundCellSize(size) },
+grid::grid(GLfloat size, std::size_t num_cells)
+    : _cell_size { size },
+      _num_cells { num_cells },
       _vbo { std::make_shared<VBO>() },
       _ibo { std::make_shared<IBO>() },
       _vao { std::make_shared<VAO>(_vbo, _ibo) },
-      _program(LoadProgram("./shaders/grid.vs", "./shaders/grid.fs")) {
+      _program(LoadProgram("./shaders/wireframe.vs", "./shaders/wireframe.fs")) {
     create_vbo();
     create_ibo();
     create_vao();
 }
 
 void grid::create_vbo() {
-    auto get_index = [&](int x, int z) { return (_size * z) + x; };
+    auto get_index = [&](int x, int z) -> GLuint { return (_num_cells * z) + x; };
+    const vec3 T { _num_cells / 2.0f, 1.0f, _num_cells / 2.0f };
 
-    _vbo->resize(_size * _size);
-    auto buffer = _vbo->map();
-    for (auto z = 0u; z < _size; ++z) {
-        for (auto x = 0u; x < _size; ++x) {
-            buffer[get_index(x, z)] = vec3 { x, -1.0, z } - vec3(_size/2, 0, _size/2);
+    _vbo->resize(_num_cells * _num_cells);
+    vec3 *buffer = _vbo->map();
+    for (auto z = 0u; z < _num_cells; ++z) {
+        for (auto x = 0u; x < _num_cells; ++x) {
+            buffer[get_index(x, z)] = vec3 { x * _cell_size, 0.0, z * _cell_size } - T;
         }
     }
     _vbo->unmap();
 }
 
 void grid::create_ibo() {
-    auto get_index = [&](int x, int z) { return (_size * z) + x; };
+    auto get_index = [&](int x, int z) { return (_num_cells * z) + x; };
 
-    const size_t num_triangles { 2 * _size * _size };
+    const size_t num_triangles { 2 * _num_cells * _num_cells + 4 };
     _ibo->resize(num_triangles * 3 /* vertices */);
-    GLuint *buffer = _ibo->map();
-    for (auto z = 0u; z < _size - 1; ++z) {
-        for (auto x = 0u; x < _size - 1; ++x) {
-            buffer[0] = get_index(x, z);
-            buffer[1] = get_index(x, z + 1);
-            buffer[2] = get_index(x + 1, z + 1);
-            buffer += 3;
 
-            buffer[0] = get_index(x, z);
-            buffer[1] = get_index(x + 1, z + 1);
-            buffer[2] = get_index(x + 1, z);
-            buffer += 3;
+    using uvec2 = glm::tvec2<GLuint>;
+    uvec2 *buffer = reinterpret_cast<uvec2*>(_ibo->map());
+
+    for (auto z = 0u; z < _num_cells - 1; ++z) {
+        for (auto x = 0u; x < _num_cells - 1; ++x) {
+            *buffer++ = uvec2 { get_index(0, z), get_index(_num_cells - 1, z) };  // vertically
+            *buffer++ = uvec2 { get_index(x, 0), get_index(x, _num_cells - 1) };  // horitontally
         }
+
+        *buffer++ = uvec2 { get_index(_num_cells - 1, 0), get_index(_num_cells - 1, _num_cells - 1) };
+        *buffer++ = uvec2 { get_index(0, _num_cells - 1), get_index(_num_cells - 1, _num_cells - 1) };
     }
     _ibo->unmap();
 }
@@ -227,7 +220,7 @@ void grid::render(const mat4 &MVP) {
     _program->use();
     _program->setUniform(locations::MVP, MVP);
     _program->setUniform(locations::color, white);
-    _vao->draw(GL_TRIANGLES);
+    _vao->draw(GL_LINES);
 }
 
 }  // namespace bgl

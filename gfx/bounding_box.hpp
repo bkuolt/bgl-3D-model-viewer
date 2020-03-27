@@ -8,8 +8,7 @@ namespace bgl {
 class bounding_box {
  public:
     bounding_box() noexcept;
-
-    // getSize()
+    // TODO(bkuolt)
 
  private:
 };

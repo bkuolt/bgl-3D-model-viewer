@@ -70,20 +70,23 @@ class Camera {
 #if 1
 class grid final {
  public:
-    using VBO = bgl::VertexBuffer<vec3>;
-    using SharedVBO = bgl::SharedVBO<vec3>;
-    using SharedVAO = bgl::SharedVAO<vec3>;
-    using VAO = VertexArray<vec3>;
+    using Vertex = vec3;
+    using VBO = bgl::VertexBuffer<Vertex>;
+    using VAO = VertexArray<Vertex>;
 
-    explicit grid(size_t size);
+    using SharedVBO = bgl::SharedVBO<Vertex>;
+    using SharedVAO = bgl::SharedVAO<Vertex>;
+
+    explicit grid(GLfloat size, std::size_t num_cells);
     void render(const mat4 &MVP);
 
  private:
+    const GLfloat _cell_size;
+    const std::size_t _num_cells;
+
     void create_vbo();
     void create_ibo();
     void create_vao();
-
-    const size_t _size;
 
     SharedVBO _vbo;
     SharedIBO _ibo;
@@ -93,8 +96,8 @@ class grid final {
 
 using SharedGrid = std::shared_ptr<grid>;
 
-inline SharedGrid CreateGrid(size_t size) {
-   return std::make_shared<grid>(size);
+inline SharedGrid CreateGrid(GLfloat size, size_t num_cells) {
+   return std::make_shared<grid>(size, num_cells);
 }
 
 #endif  // 1

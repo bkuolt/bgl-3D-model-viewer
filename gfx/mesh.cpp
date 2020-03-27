@@ -36,16 +36,16 @@ front: back:
 0--3   4--7
 */
 static constexpr std::array<uvec2, 12> box_indices {{
-    { 0, 3 }, { 1, 2 }, { 0, 1 }, { 2, 3 },  // front
-    { 4, 7 }, { 5, 6 }, { 4, 5 }, { 6, 7 },   // back
-    {0, 4}, {1,5}, {3, 7}, {2, 6}  // sides
+    { 0, 3 }, { 1, 2 }, { 0, 1 }, { 2, 3 },  // frontside
+    { 4, 7 }, { 5, 6 }, { 4, 5 }, { 6, 7 },  // backside
+    {0, 4}, {1, 5}, {3, 7}, {2, 6}  // left and right sides
 }};
 
 Box::Box(const vec3 &dimensions)
-    : _vbo { std::make_shared<VertexBuffer<vec3>>() },
+    : _dimensions { dimensions },
+      _vbo { std::make_shared<VertexBuffer<vec3>>() },
       _ibo { std::make_shared<IndexBuffer>() },
-      _vao { std::make_shared<VertexArray<vec3>>(_vbo, _ibo) },
-      _dimensions { dimensions } {
+      _vao { std::make_shared<VertexArray<vec3>>(_vbo, _ibo) } {
     // create vbo
     _vbo->resize(box_vertices.size());
     std::copy(box_vertices.begin(), box_vertices.end(), _vbo->map());
@@ -62,7 +62,7 @@ Box::Box(const vec3 &dimensions)
     SetAttribute<vec3>(_vao, 2 /*locations::position*/, sizeof(vec3), 0 /* no offset */);
     _vao->unbind();
 
-    _program = LoadProgram("./shaders/grid.vs", "./shaders/grid.fs");
+    _program = LoadProgram("./shaders/wireframe.vs", "./shaders/wireframe.fs");
 }
 
 Box::Box(GLfloat size)

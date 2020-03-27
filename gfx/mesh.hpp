@@ -14,8 +14,6 @@
 
 namespace bgl {
 
-
-#if 1
 class Box {
  public:
     using SharedVBO = bgl::SharedVBO<vec3>;
@@ -35,7 +33,6 @@ class Box {
     SharedVAO _vao;
     SharedProgram _program;
 };
-#endif  // 1
 
 class Mesh {
  public:

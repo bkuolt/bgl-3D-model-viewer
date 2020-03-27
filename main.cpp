@@ -122,16 +122,17 @@ void set_up_scene(const std::filesystem::path &path) {
     Scene.camera.setViewCenter({ 0.0, 0.0, 0.0 });
     Scene.camera.setPosition({ 0.0, 1.0, 2.0 });
 
-    Scene.grid = CreateGrid(10);
+    Scene.grid = CreateGrid(1.0, 10);
 
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    //glEnable(GL_CULL_FACE);
-    //glCullFace(GL_BACK);
-    //glFrontFace(GL_CCW);
+#if 0
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+#endif  // 0
 }
 
 double update_angle(double delta) {
@@ -153,6 +154,3 @@ void on_render(const SharedWindow &window, float delta) noexcept {
     Scene.grid->render(VP);
     SDL_GL_SwapWindow(window.get());
 }
-
-// TODO: Ego Camera support
-// Tastatur Support
