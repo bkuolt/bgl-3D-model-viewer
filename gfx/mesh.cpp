@@ -13,9 +13,82 @@
 #include <list>
 #include <sstream>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/transform.hpp>  // scale
 namespace bgl {
 
+/* ------------------------ Bounding Box ------------------------ */
+
+////////////////////////////////////////////////
+using uvec2 = glm::tvec2<GLuint>;
+
+constexpr std::array<vec3, 8> box_vertices {{
+    { -0.5, -0.5, 0.5 }, { -0.5,  0.5, 0.5 },    // front, left handside
+    {  0.5,  0.5, 0.5 }, {  0.5, -0.5, 0.5 },    // front, right handside
+    { -0.5, -0.5, -0.5 }, { -0.5,  0.5, -0.5 },  // back, left handside
+    {  0.5,  0.5, -0.5 }, {  0.5, -0.5, -0.5 }   // back, right handside
+}};
+
+/* 
+front: back:
+1--2   5--6 
+|  |   |  |
+0--3   4--7
+*/
+static constexpr std::array<uvec2, 12> box_indices {{
+    { 0, 3 }, { 1, 2 }, { 0, 1 }, { 2, 3 },  // front
+    { 4, 7 }, { 5, 6 }, { 4, 5 }, { 6, 7 },   // back
+    {0, 4}, {1,5}, {3, 7}, {2, 6}  // sides
+}};
+
+Box::Box(const vec3 &dimensions)
+    : _vbo { std::make_shared<VertexBuffer<vec3>>() },
+      _ibo { std::make_shared<IndexBuffer>() },
+      _vao { std::make_shared<VertexArray<vec3>>(_vbo, _ibo) },
+      _dimensions { dimensions } {
+    // create vbo
+    _vbo->bind();
+    _vbo->resize(box_vertices.size());
+    std::copy(box_vertices.begin(), box_vertices.end(), _vbo->map());
+    _vbo->unmap();
+
+    // create ibo
+    _ibo->bind();
+    _ibo->resize(box_indices.size() * 2);
+    uvec2 *buffer = reinterpret_cast<uvec2*>(_ibo->map());
+    std::copy(box_indices.begin(), box_indices.end(), buffer);
+    _ibo->unmap();
+
+    // create vao
+    _vao->bind();
+    SetAttribute<vec3>(_vao, 2 /*locations::position*/, sizeof(vec3), 0 /* no offset */);
+    _vao->unbind();
+
+    _program = LoadProgram("./shaders/grid.vs", "./shaders/grid.fs");
+}
+
+Box::Box(GLfloat size)
+    : Box({ size, size, size })
+{}
+
+void Box::render(const mat4 &VP) {
+    _program->use();
+
+    mat4 M = glm::scale(_dimensions);
+    _program->setUniform("MVP", VP * M);
+    _program->setUniform("color", vec3 { 1.0, 0.0, 0.0 } /* red */);
+
+    _vao->bind();
+    _vao->draw(GL_LINES);
+    _vao->unbind();
+}
+
+void Box::resize(const vec3 &dimensions) {
+    _dimensions = dimensions;
+}
+
 namespace {
+
 
 struct bounding_box {
     float min;
@@ -107,7 +180,7 @@ SharedVBO<Vertex> createVBO(const aiScene *scene) {
         }
     }
 
-    // TODO(bkuolt): rethink "normalize_vertex_positions(mesh, buffer);""
+    // TODO(bkuolt): rethink "normalize_vertex_positionsnormalize_vertex_positions(mesh, buffer);""
     vbo->unmap();
 
     std::cout << "created a vbo with " << vbo->size() << " vertices" << std::endl;
@@ -238,6 +311,14 @@ Mesh::Mesh(const std::filesystem::path &path) {
     _vao = createVAO(_vbo, _ibo);
     _program = LoadProgram("./shaders/main.vs", "./shaders/main.fs");
 
+
+
+    glm::tvec3<bounding_box> bounds = get_bounds(mesh);
+    _box.resize({
+        bounds.x.max -  bounds.x.min,
+        bounds.y.max -  bounds.y.min,
+        bounds.z.max -  bounds.z.min });
+
     if (IsTextured(scene)) {
         _texture = loadTexture(path.parent_path(), scene);
     }
@@ -255,10 +336,11 @@ void Mesh::render(const mat4 &MVP) {
     if (isTextured) {
         _program->setUniform("texture", _texture);
     }
-
     _vao->bind();
     _vao->draw();
     _vao->unbind();
+
+    _box.render(MVP);
 
     // TODO(bkuolt): another pass for planar shadows
     // TODO(bkuolt): another pass for motion blurring

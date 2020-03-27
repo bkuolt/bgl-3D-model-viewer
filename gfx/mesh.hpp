@@ -14,6 +14,29 @@
 
 namespace bgl {
 
+
+#if 1
+class Box {
+ public:
+    using SharedVBO = bgl::SharedVBO<vec3>;
+    using SharedVAO = bgl::SharedVAO<vec3>;
+
+    explicit Box(GLfloat size = 1);
+    explicit Box(const vec3 &dimensions);
+
+    void render(const mat4 &VP);
+    void resize(const vec3 &dimensions);
+
+ private:
+    vec3 _dimensions;
+
+    SharedVBO _vbo;
+    SharedIBO _ibo;
+    SharedVAO _vao;
+    SharedProgram _program;
+};
+#endif  // 1
+
 class Mesh {
  public:
     explicit Mesh(const std::filesystem::path &path);
@@ -26,6 +49,7 @@ class Mesh {
     SharedVAO<Vertex> _vao;
     SharedTexture _texture;
     SharedProgram _program;
+    Box _box;
 };
 
 using SharedMesh = std::shared_ptr<Mesh>;

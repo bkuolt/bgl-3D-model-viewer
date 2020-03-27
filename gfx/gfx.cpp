@@ -153,39 +153,6 @@ void Camera::rotate(const vec2 degrees) noexcept {
     setPosition({ radius * glm::cos(angle), 0.0f, radius * sin(angle) });
 }
 
-/* --------------------------- Box --------------------------- */
-#if 0
-
-class Box {
- public:
-    using SharedVBO = SharedVBO<vec3>;
-    using SharedVAO = SharedVAO<vec3>;
-
-    explicit Box(GLfloat size);
-    explicit Box(const vec3 &dimensions);
-
-    void render(const mat4 &VP);
-
- private:
-    static SharedVBO _vbo;
-    static SharedIBO _ibo;
-    static SharedVAO _vao;
-};
-
-Box::Box(const vec3 &dimensions) {
-    // TODO(bkuolt)
-}
-Box::Box(GLfloat size) {
-    // TODO(bkuolt)
-}
-
-void Box::render(const mat4 &VP) {
-    // TODO(bkuolt)
-}
-
-
-#endif  // 1
-
 /* --------------------------- Grid --------------------------- */
 
 namespace {
