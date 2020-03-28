@@ -171,7 +171,9 @@ grid::grid(GLfloat size, std::size_t num_cells)
 
 void grid::create_vbo() {
     auto get_index = [&](int x, int z) -> GLuint { return (_num_cells * z) + x; };
-    const vec3 T { _num_cells / 2.0f, 1.0f, _num_cells / 2.0f };
+
+    const float size = _num_cells * _cell_size;
+    const vec3 T { size / 2.0f, 1.0f, size / 2.0f };
 
     _vbo->resize(_num_cells * _num_cells);
     vec3 *buffer = _vbo->map();
@@ -194,8 +196,8 @@ void grid::create_ibo() {
 
     for (auto z = 0u; z < _num_cells - 1; ++z) {
         for (auto x = 0u; x < _num_cells - 1; ++x) {
-            *buffer++ = uvec2 { get_index(0, z), get_index(_num_cells - 1, z) };  // vertically
-            *buffer++ = uvec2 { get_index(x, 0), get_index(x, _num_cells - 1) };  // horitontally
+            *buffer++ = uvec2 { get_index(0, z), get_index(_num_cells - 1, z) };  // verticall line
+            *buffer++ = uvec2 { get_index(x, 0), get_index(x, _num_cells - 1) };  // horizontal line
         }
 
         *buffer++ = uvec2 { get_index(_num_cells - 1, 0), get_index(_num_cells - 1, _num_cells - 1) };

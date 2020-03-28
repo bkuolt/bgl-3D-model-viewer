@@ -67,9 +67,7 @@ class Program {
 
 using SharedProgram = std::shared_ptr<Program>;
 
-inline SharedProgram LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs) {
-    return std::make_shared<Program>(LoadShader(GL_VERTEX_SHADER, vs), LoadShader(GL_FRAGMENT_SHADER, fs));
-}
+SharedProgram LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs);
 
 }  // namespace bgl
 

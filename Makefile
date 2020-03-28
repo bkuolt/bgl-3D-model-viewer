@@ -46,9 +46,7 @@ install:
 all: demo
 
 run: all
-	@./demo ./assets/MedHouse/housemedieval.obj 
-	#./assets/dragon.ply
-	#./assets/Ogros.md2
+	@./demo ./assets/MedHouse/housemedieval.obj
 
 clean:
 	@$(MAKE) -C gfx clean

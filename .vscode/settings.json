@@ -68,5 +68,8 @@
         "bit": "cpp",
         "*.ipp": "cpp",
         "filesystem": "cpp"
-    }
+    },
+    "C_Cpp.default.intelliSenseMode": "gcc-x64",
+    "C_Cpp.default.cStandard": "c11",
+    "C_Cpp.default.cppStandard": "c++20"
 }

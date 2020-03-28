@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <map>
 
 
 namespace bgl {
@@ -152,6 +153,29 @@ void Program::setUniform(const std::string &name, const SharedTexture &texture) 
     glActiveTexture(GL_TEXTURE0 + textureUnit);
     texture->bind();
     glProgramUniform1i(_handle, location, textureUnit);
+}
+
+/* --------------------------------- */
+
+namespace {
+
+std::map<std::filesystem::path, std::weak_ptr<Shader>> shaders;
+
+std::shared_ptr<Shader> get_shader(GLenum shaderType, const std::filesystem::path &path) {
+    auto iterator = shaders.find(path);
+    if (iterator == shaders.end() || iterator->second.expired()) {
+        auto shader = LoadShader(shaderType, path);
+        shaders.emplace(path, shader);
+        return shader;
+    }
+    return iterator->second.lock();
+}
+
+}  // namespace
+
+SharedProgram LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs) {
+    return std::make_shared<Program>(get_shader(GL_VERTEX_SHADER, vs),
+                                     get_shader(GL_FRAGMENT_SHADER, fs));
 }
 
 }  // namespace bgl
