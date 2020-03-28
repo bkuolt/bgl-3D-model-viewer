@@ -6,7 +6,7 @@
 CC = g++-8
 FLAGS = -std=c++17 -pthread -Wall -O3
 LIBS = -lstdc++fs \
-	-lSDL2 -lSDL2_image \
+	-lSDL2 -lSDL2_image -lSDL2_ttf \
 	-lassimp  \
 	-lIL \
 	-lGLEW -lGLU -lGL -lGLU
@@ -41,7 +41,8 @@ install:
 		libassimp-dev \
 		libglew-dev libglm-dev \
 		libsdl2-2.0-0 libsdl2-image-2.0-0 libassimp4 \
-		libdevil-dev
+		libdevil-dev \
+		libsdl2-ttf-dev 
 
 all: demo
 

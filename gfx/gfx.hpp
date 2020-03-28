@@ -14,6 +14,9 @@
 #include <memory>       // std::shared_ptr
 #include <filesystem>   // std::filesystem::path
 
+#include <SDL2/SDL_ttf.h>
+
+
 
 namespace bgl {
 
@@ -67,7 +70,6 @@ class Camera {
     double _zoom { 1.0 };
 };
 
-#if 1
 class grid final {
  public:
     using Vertex = vec3;
@@ -100,7 +102,44 @@ inline SharedGrid CreateGrid(GLfloat size, size_t num_cells) {
    return std::make_shared<grid>(size, num_cells);
 }
 
-#endif  // 1
+/* ---------------------------- Font ---------------------------- */
+
+class Font;
+class Text;
+
+using SharedFont = std::shared_ptr<Font>;
+using SharedText = std::shared_ptr<Text>;
+
+class Font : protected std::enable_shared_from_this<Font> {
+ public:
+    friend class Text;
+
+    Font(const std::filesystem::path &path, std::size_t size);
+    virtual ~Font() noexcept;
+
+    SharedText createText(const std::string &text = {});
+
+ private:
+    const std::size_t _size;
+    TTF_Font *_handle { nullptr };
+};
+
+class Text {
+ public:
+    friend class Font;
+    explicit Text(const SharedFont &font, const std::string &text = {});
+    virtual ~Text() noexcept;
+
+    void setText(const std::string &text);
+    void render();
+
+ private:
+   const SharedFont _font;
+
+   std::string _text;
+   glm::ivec2 _dimensions;
+   SDL_Texture *_texture { nullptr };
+};
 
 }  // namespace bgl
 

@@ -147,6 +147,12 @@ void on_render(const SharedWindow &window, float delta) noexcept {
     const vec2 degrees { update_angle(delta) , 0.0 };
     Scene.camera.rotate(degrees);  // update_position(delta);
 
+#if 0
+    Font font("./assets/Cascadia.ttf", 32);
+    auto text = font.createText("Hallo");
+    text->render();
+#endif
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     const mat4 VP = Scene.camera.getMatrix();
     Scene.mesh->render(VP);
