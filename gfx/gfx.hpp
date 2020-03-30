@@ -8,26 +8,44 @@
 #include "mesh.hpp"
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_video.h>  // SDL_GLContext, SDL_Window
 
 #include <ostream>      // std::ostream
 #include <memory>       // std::shared_ptr
 #include <filesystem>   // std::filesystem::path
-
-#include <SDL2/SDL_ttf.h>
-
-
+#include <utility>      // std::swap()
 
 namespace bgl {
 
-using SharedWindow = std::shared_ptr<SDL_Window>;
-using SharedContext = std::shared_ptr<SDL_GLContext>;
+class Window {
+ public:
+    explicit Window(const std::string &title, bool windowed);
+    explicit Window(Window &&);
+    Window(const Window&) = delete;
+    virtual ~Window() noexcept;
 
-SharedWindow createFullScreenWindow();
-SharedContext createGLContext(const SharedWindow &window);
+    Window& operator=(Window &&rhs);
+    Window& operator=(const Window&) = delete;
 
-std::ostream& operator<<(std::ostream &os, const vec2 &vector);
-std::ostream& operator<<(std::ostream &os, const vec3 &vector);
+    void show() noexcept;
+    void hide() noexcept;
+    uvec2 getSize() const noexcept;
+
+    SDL_GLContext getOpenGLContext() noexcept;
+    SDL_Window *getHandle() noexcept;
+
+    void render();
+
+ private:
+    void swap(Window &rhs) noexcept;
+
+    SDL_Window *_window { nullptr };
+    SDL_GLContext _context { nullptr };
+};
+
+using SharedWindow = std::shared_ptr<Window>;
+SharedWindow createWindow(const std::string &title = "", bool windowed = false);
 
 #ifdef __linux
 namespace console_color {
@@ -40,35 +58,6 @@ namespace console_color {
 }  // namespace console_color
 
 #endif  // __linux
-
-class Camera {
- public:
-    Camera() noexcept = default;
-    Camera(const vec3 &position, const vec3 &viewCenter);
-    Camera(const Camera&) = default;
-    Camera(Camera&&) = default;
-    virtual ~Camera() noexcept = default;
-
-    Camera& operator=(const Camera&) = default;
-    Camera& operator=(Camera&&) = default;
-
-    void setPosition(const vec3 &position) noexcept;
-    void setZoom(double factor = 1.0);
-    void setViewCenter(const vec3 &center) noexcept;
-
-    const vec3& getPosition() const noexcept;
-    const vec3& getViewCenter() const noexcept;
-    double getZoom() const noexcept;
-
-    mat4 getMatrix() const noexcept;
-
-    void rotate(const vec2 degrees) noexcept;
-
- private:
-    vec3 _position { 0.0, 0.0, 1.0 };
-    vec3 _center { 0.0, 0.0, 0.0 };
-    double _zoom { 1.0 };
-};
 
 class grid final {
  public:

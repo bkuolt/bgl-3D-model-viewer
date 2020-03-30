@@ -16,6 +16,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <set>
 #include <thread>
 #include <vector>
 
@@ -148,40 +149,24 @@ void handle_event(const SDL_Event &event) {
 /*-----------------------------------------------------------------------------
   -------------------------------- Interface ----------------------------------
   ----------------------------------------------------------------------------- */
+extern std::set<Window*> windows;
 
 std::future<SharedGameController> get_game_controller() {
     return std::async(std::launch::async, &find_game_controller);
 }
 
 void loop() {
-    using namespace std::chrono_literals;
-
-    Uint32 timestamp_render = SDL_GetTicks();
-    Uint32 timestamp_fps = SDL_GetTicks();
-    size_t fps = 0;
-
     SDL_Event event;
     while (App.run) {
         while (SDL_PollEvent(&event)) {
             handle_event(event);
         }
 
-        const Uint32 duration = SDL_GetTicks() - timestamp_render;
-        const float delta = duration / 1000.0f;
-        timestamp_render = SDL_GetTicks();
-        on_render(::App.window, delta);
-        ++fps;
-
-        // track fps
-        if (SDL_GetTicks() - timestamp_fps >= 1000) {
-            timestamp_fps = timestamp_render;
-            std::cout << console_color::blue << "\r" << fps << " fps" << std::flush;
-            fps = 0;
-        }
+        std::for_each(windows.begin(), windows.end(), [] (Window *window) { window->render(); });
     }
 
     std::cout << "\r" << console_color::white << std::endl;
-    SDL_DestroyWindow(::App.window.get());  // make sure that the window is destroyed before the context
+    SDL_DestroyWindow(::App.window->getHandle());  // make sure that the window is destroyed before the context
 }
 
 }  // namespace bgl

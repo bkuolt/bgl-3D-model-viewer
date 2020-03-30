@@ -8,6 +8,9 @@ gfx.o: gfx.cpp gfx.hpp \
        buffer.hpp gl.hpp
 	@$(CC) $(FLAGS) -c gfx.cpp
 
+camera.o: camera.cpp camera.hpp
+	@$(CC) $(FLAGS) -c camera.cpp
+
 mesh.o: mesh.cpp mesh.hpp \
         buffer.hpp gl.hpp
 	@$(CC) $(FLAGS) -c mesh.cpp
@@ -20,9 +23,9 @@ texture.o: texture.cpp texture.hpp \
            gl.hpp
 	@$(CC) $(FLAGS) -c texture.cpp
 
-libgfx.la: gfx.o shader.o mesh.o texture.o
+libgfx.la: gfx.o shader.o mesh.o texture.o camera.o
 	ar rcs libgfx.a \
-	gfx.o shader.o mesh.o texture.o
+	gfx.o shader.o mesh.o texture.o camera.o
 
 all: libgfx.la
 

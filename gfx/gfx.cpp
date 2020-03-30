@@ -1,157 +1,163 @@
 // Copyright 2020 Bastian Kuolt
+#include "../App.hpp"
 #include "gfx.hpp"
 #include "shader.hpp"
+
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_video.h>
 
-#include <algorithm>  // std::for_each
-#include <iomanip>    // std::setprecision, std::fixed
+#include <algorithm>  // std::for_each()
+#include <cmath>
 #include <iostream>
-
-#include <sstream>
-#include <string>
+#include <set>
+#include <sstream>    // std::ostringstream
 #include <stdexcept>
+#include <string>
 #include <type_traits>
 #include <vector>
-#include <cmath>
 
-#include "../App.hpp"
-
-#include <glm/gtc/matrix_transform.hpp>  // glm::lookAt(), glm::ortho()
 namespace bgl {
 
-std::ostream& operator<<(std::ostream &os, const vec2 &vector) {
-    os << "(" << std::fixed << std::setprecision(2) << vector.x
-       << " | "
-       << std::fixed << std::setprecision(2) << vector.y << ")";
-    return os;
-}
+std::set<Window*> windows;
 
-std::ostream& operator<<(std::ostream &os, const vec3 &vector) {
-    os << "(" << std::fixed << std::setprecision(2) << vector.x
-       << " | "
-       << std::fixed << std::setprecision(2) << vector.y
-       << std::fixed << std::setprecision(2) << vector.z << ")";
-    return os;
-}
 namespace {
 
-void initialize_SDL() {
-    static bool initialized = false;
+SDL_GLContext create_OpenGL_Context(SDL_Window *window) {
+    const bool successfull {
+           !SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4)
+        && !SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5)
+        && !SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE)
+        && !SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)
+        && !SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24)
+    };
 
-    if (!initialized) {
-        const auto result = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
-        if (result == -1) {
-            throw std::runtime_error { "could not initialize SDL2" };
-        }
-        std::atexit(SDL_Quit);
-        initialized = true;
-    }
-}
-
-double calculate_aspect_ratio() {
-    int width, height;
-    SDL_GetWindowSize(App.window.get(), &width, &height);
-    if (height == 0.0) {
-        throw std::runtime_error { "invalid aspect ratio" };
-    }
-    return static_cast<double>(width) / height;
-}
-
-}  // namespace
-
-std::shared_ptr<SDL_Window> createFullScreenWindow() {
-    initialize_SDL();
-    SDL_Window * const window = SDL_CreateWindow("BGL Tech Demo",
-                                                 SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                                 1280, 720,
-                                                 SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN | SDL_WINDOW_FULLSCREEN_DESKTOP);
-    if (window == nullptr) {
-        throw std::runtime_error{ SDL_GetError() };
+    if (!successfull) {
+        throw std::runtime_error { SDL_GetError() };
     }
 
-    const auto Deleter = [] (SDL_Window *window) { SDL_DestroyWindow(window); };
-    return std::shared_ptr<SDL_Window>(window, Deleter);
-}
-
-SharedContext createGLContext(const SharedWindow &window) {
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-
-    auto context = SDL_GL_CreateContext(window.get());
+    SDL_GLContext context { SDL_GL_CreateContext(window) };
     if (context == nullptr) {
         throw std::runtime_error { "could not create OpenGL context" };
     }
+    if (SDL_GL_SetSwapInterval(0) == -1) {
+        throw std::runtime_error { "could not disable vsync" };
+    }
 
-    const auto error = glewInit();
+    const GLenum error { glewInit() };
     if (GLEW_OK != error) {
         throw std::runtime_error { reinterpret_cast<const char*>(glewGetErrorString(error)) };
     }
 
-    std::cout << "GL: "<< glGetString(GL_VERSION)
-              << " GLSL: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
-
-    const auto Deleter = [] (SDL_GLContext *context) { SDL_GL_DeleteContext(context); };
-    return std::shared_ptr<SDL_GLContext>(new SDL_GLContext { context }, Deleter);
+    std::cout << "created rendering context: "
+              << "GL: "   << glGetString(GL_VERSION) << " "
+              << "GLSL: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+    return context;
 }
 
-/* -------------------------- Camera -------------------------- */
-
-Camera::Camera(const vec3 &position, const vec3 &center)
-    : _position { position }, _center { center }
-{}
-
-void Camera::setPosition(const vec3 &position) noexcept {
-    _position = position;
-}
-
-void Camera::setZoom(double factor) {
-    if (factor <= 0.0) {
-        throw std::invalid_argument { "invalid zoom factor" };
+SDL_Window* create_window(const std::string &title, bool windowed = false) {
+    SDL_DisplayMode displayMode;
+    if (SDL_GetDesktopDisplayMode(0 /* default device */, &displayMode) != 0) {
+        throw std::runtime_error { SDL_GetError() };
     }
-    _zoom = factor;
+
+    SDL_Window *window {
+        SDL_CreateWindow(title.c_str(),
+                         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                         displayMode.w * 0.75, displayMode.h * 0.75,
+                         SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN | (!windowed ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0)) };
+
+    return window ? window : throw std::runtime_error{ SDL_GetError() };
 }
 
-void Camera::setViewCenter(const vec3 &center) noexcept {
-    _center = center;
+std::once_flag SDL_initialization_flag;
+
+void initialize_SDL() {
+    const auto result = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
+    if (result == -1) {
+        throw std::runtime_error { "could not initialize SDL2" };
+    }
+    std::atexit(SDL_Quit);
 }
 
-const vec3& Camera::getPosition() const noexcept {
-    return _position;
+}  // namespace
+
+Window::Window(const std::string &title, bool windowed) {
+    std::call_once(SDL_initialization_flag, &initialize_SDL);
+    _window = create_window(title, windowed);
+    _context = create_OpenGL_Context(_window);
+    windows.emplace(this);
 }
 
-const vec3& Camera::getViewCenter() const noexcept {
-    return _center;
+Window::Window(Window &&rhs) {
+    swap(rhs);
 }
 
-double Camera::getZoom() const noexcept {
-    return _zoom;
+Window::~Window() noexcept {
+    SDL_DestroyWindow(_window);
+    SDL_GL_DeleteContext(_context);
+    windows.erase(this);
 }
 
-mat4 Camera::getMatrix() const noexcept {
-    // calculates the projection matrix @p P
-    const double ratio = calculate_aspect_ratio();
-    const mat4 P = glm::frustum(-(ratio / 2) * _zoom, (ratio / 2) *  _zoom,
-                                 -_zoom,  _zoom,
-                                 1.0, 10.0);
-
-    // calculates the view matrix @p V
-    const mat4 V = glm::lookAt(_position, _center, { 0.0, 1.0, 0.0 });
-
-    return P * V;
+Window& Window::operator=(Window &&rhs) {
+    swap(rhs);
+    return *this;
 }
 
-void Camera::rotate(const vec2 degrees) noexcept {
-    const vec2 currentAngle { glm::radians(glm::atan(_position.x)) };
-    const double radius = glm::length(_position - _center);
-    const double angle = glm::radians(currentAngle.x + degrees.x);  // TODO(bkuolt): incorporate y-axis
-    setPosition({ radius * glm::cos(angle), 0.0f, radius * sin(angle) });
+void Window::swap(Window &rhs) noexcept {
+    std::swap(_window, rhs._window);
+    std::swap(_context, rhs._context);
+}
+
+SDL_GLContext Window::getOpenGLContext() noexcept {
+    return _context;
+}
+
+SDL_Window *Window::getHandle() noexcept {
+    return _window;
+}
+
+void Window::show() noexcept {
+    SDL_ShowWindow(_window);
+}
+
+void Window::hide() noexcept {
+    SDL_HideWindow(_window);
+}
+
+uvec2 Window::getSize() const noexcept {
+    int width, height;
+    SDL_GetWindowSize(_window, &width, &height);
+    return { width, height };
+}
+
+
+ void Window::render() {
+    using namespace std::chrono_literals;
+
+    static Uint32 timestamp_render = SDL_GetTicks();
+    static Uint32 timestamp_fps = SDL_GetTicks();
+    static size_t fps = 0;
+
+
+    const Uint32 duration = SDL_GetTicks() - timestamp_render;
+    const float delta = duration / 1000.0f;
+    timestamp_render = SDL_GetTicks();
+    on_render(::App.window, delta);
+    ++fps;
+
+    // track fps
+    if (SDL_GetTicks() - timestamp_fps >= 1000) {
+        timestamp_fps = timestamp_render;
+        std::cout << console_color::blue << "\r" << fps << " fps" << std::flush;
+        fps = 0;
+    }
+}
+
+SharedWindow createWindow(const std::string &title, bool windowed) {
+    return std::make_shared<Window>(title, windowed);
 }
 
 /* --------------------------- Grid --------------------------- */
@@ -240,7 +246,7 @@ void initialize_TTF() {
 }
 
 SDL_Renderer* getRenderer() {
-    SDL_Renderer *renderer { SDL_GetRenderer(App.window.get()) };
+    SDL_Renderer *renderer { SDL_GetRenderer(App.window->getHandle()) };
     if (renderer == nullptr) {
         throw std::runtime_error { "could not get SDL Renderer" };
     }

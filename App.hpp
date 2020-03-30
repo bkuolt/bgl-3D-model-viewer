@@ -10,7 +10,6 @@
 struct App {
     bool run = true;
     bgl::SharedWindow window;
-    bgl::SharedContext context;
 };
 
 extern struct App App;  // defined in main.cpp

@@ -6,6 +6,7 @@
 #include <stdexcept>
 
 #include "gfx/gfx.hpp"
+#include "gfx/camera.hpp"
 #include "input.hpp"
 #include "App.hpp"
 
@@ -36,10 +37,9 @@ int main(int argc, char *argv[]) {
     std::signal(SIGHUP, signal_handler);
 
     try {
-        App.window = createFullScreenWindow();
-        App.context = createGLContext(App.window);
+        App.window = createWindow("BGL Model Viewer");
         set_up_scene(argv[1]);
-        SDL_ShowWindow(App.window.get());
+        App.window->show();
         loop();
     } catch (const std::exception &exception) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", exception.what(), nullptr);
@@ -114,10 +114,6 @@ void on_trigger(float lhs, float rhs) {
 namespace {
 
 void set_up_scene(const std::filesystem::path &path) {
-    if (SDL_GL_SetSwapInterval(0) == -1) {
-        throw std::runtime_error { "could not disable vsync" };
-    }
-
     Scene.mesh = LoadMesh(path);
     Scene.camera.setViewCenter({ 0.0, 0.0, 0.0 });
     Scene.camera.setPosition({ 0.0, 1.0, 2.0 });
@@ -125,13 +121,14 @@ void set_up_scene(const std::filesystem::path &path) {
 
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 #if 0
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 #endif  // 0
+
+    on_render(App.window, 0.0);
 }
 
 double update_angle(double delta) {
@@ -157,5 +154,5 @@ void on_render(const SharedWindow &window, float delta) noexcept {
     const mat4 VP = Scene.camera.getMatrix();
     Scene.mesh->render(VP);
     Scene.grid->render(VP);
-    SDL_GL_SwapWindow(window.get());
+    SDL_GL_SwapWindow(window->getHandle());
 }

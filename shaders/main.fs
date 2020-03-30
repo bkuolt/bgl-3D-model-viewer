@@ -36,5 +36,5 @@ vec4 getLightColor() {
 
 void main() {
     gl_FragColor = getLightColor() *
-        ((isTextured) ? texture2D(texture, pixelTexCoord) : vec4(0));
+        ((isTextured) ? texture2D(texture, pixelTexCoord) : vec4(1.0, 1.0, 1.0, 1.0));
 }
