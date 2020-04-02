@@ -128,7 +128,7 @@ void set_up_scene(const std::filesystem::path &path) {
     glFrontFace(GL_CCW);
 #endif  // 0
 
-    on_render(App.window, 0.0);
+    on_render(0.0);
 }
 
 double update_angle(double delta) {
@@ -140,7 +140,7 @@ double update_angle(double delta) {
 
 }  // namespace
 
-void on_render(const SharedWindow &window, float delta) noexcept {
+void on_render(float delta) noexcept {
     const vec2 degrees { update_angle(delta) , 0.0 };
     Scene.camera.rotate(degrees);  // update_position(delta);
 
@@ -154,5 +154,4 @@ void on_render(const SharedWindow &window, float delta) noexcept {
     const mat4 VP = Scene.camera.getMatrix();
     Scene.mesh->render(VP);
     Scene.grid->render(VP);
-    SDL_GL_SwapWindow(window->getHandle());
 }

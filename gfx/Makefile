@@ -23,9 +23,11 @@ texture.o: texture.cpp texture.hpp \
            gl.hpp
 	@$(CC) $(FLAGS) -c texture.cpp
 
-libgfx.la: gfx.o shader.o mesh.o texture.o camera.o
-	ar rcs libgfx.a \
-	gfx.o shader.o mesh.o texture.o camera.o
+window.o: window.cpp window.hpp
+	@$(CC) $(FLAGS) -c window.cpp
+
+libgfx.la: gfx.o shader.o mesh.o texture.o camera.o window.o
+	ar rcs libgfx.a *.o
 
 all: libgfx.la
 

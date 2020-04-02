@@ -21,6 +21,6 @@ void on_trigger(const float lhs, float rhs);
 void on_key(const SDL_KeyboardEvent &event);
 
 // Render Callbacks
-void on_render(const bgl::SharedWindow &window, float delta) noexcept;
+void on_render(float delta) noexcept;
 
 #endif  // APP_HPP_
