@@ -14,6 +14,38 @@ namespace bgl {
 
 namespace {
 
+class frame_counter {
+ public:
+    bool count() noexcept {
+        _delta = (SDL_GetTicks() - _timestamp_render) / 1000.0f;
+        _timestamp_render = SDL_GetTicks();
+        ++_num_frames;
+
+        const bool is_new_second { SDL_GetTicks() - _timestamp_fps >= 1000 };
+        if (is_new_second) {
+            _timestamp_fps = SDL_GetTicks();
+            _fps = _num_frames;
+        }
+
+        return is_new_second;
+    }
+
+    size_t fps() const noexcept {
+        return  _fps;
+    }
+
+    double delta() const noexcept {
+        return _delta;
+    }
+
+ private:
+    Uint32 _timestamp_fps { 0 };
+    Uint32 _timestamp_render { 0 };
+    size_t _num_frames { 0 };
+    size_t _fps { 0 };
+    double _delta { 0.0 };
+};
+
 SDL_GLContext create_OpenGL_Context(SDL_Window *window) {
     const bool successfull {
            !SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4)
@@ -128,25 +160,14 @@ uvec2 Window::getSize() const noexcept {
 }
 
 void Window::render() {
-    using namespace std::chrono_literals;
+    static frame_counter frame_counter;
 
-    static Uint32 timestamp_render = SDL_GetTicks();
-    static Uint32 timestamp_fps = SDL_GetTicks();
-    static size_t fps = 0;
-
-    const Uint32 duration = SDL_GetTicks() - timestamp_render;
-    const float delta = duration / 1000.0f;
-
-    timestamp_render = SDL_GetTicks();
-    on_render(delta);
+    const bool changed = frame_counter.count();
+    on_render(frame_counter.delta());
     SDL_GL_SwapWindow(_window);
-    ++fps;
 
-    // track fps
-    if (SDL_GetTicks() - timestamp_fps >= 1000) {
-        timestamp_fps = timestamp_render;
-        std::cout << console_color::blue << "\r" << fps << " fps" << std::flush;
-        fps = 0;
+    if (changed) {
+        std::cout << "\r" << console_color::blue << frame_counter.fps() << " FPS" << std::flush;
     }
 }
 
