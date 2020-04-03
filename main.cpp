@@ -60,37 +60,50 @@ struct {
     Camera camera;
 } Scene;
 
+bgl::Camera::shared_motion motion;
+
 /* --------------------- Input Handling -------------------- */
 
-[[maybe_unused]] void update_position(double delta) {
-    const Uint8 *keyboard_state = SDL_GetKeyboardState(NULL);
-    if (keyboard_state == nullptr) {
-        throw std::runtime_error { "could not get SDL keyboard state" };
-    }
+}  // namespace
 
-    const double angle { 10.0 * delta };
-    if (keyboard_state[SDL_SCANCODE_LEFT]) {
-        Scene.camera.rotate({ angle, 0.0 });
-    } else if (keyboard_state[SDL_SCANCODE_RIGHT]) {
-        Scene.camera.rotate({ -angle, 0.0 });
-    } else if (keyboard_state[SDL_SCANCODE_UP]) {
-         Scene.camera.rotate({ 0.0, angle });
-    } else if (keyboard_state[SDL_SCANCODE_DOWN]) {
-        Scene.camera.rotate({ 0.0, -angle });
+
+
+
+void create_camera_motion(bool pressed, Camera::horizontal_direction direction, double angle) {
+    static bool is_pressed = false;
+
+    if (pressed) {
+        if (motion == nullptr) {
+            motion = Scene.camera.createMotion(direction, 85);
+        }
+    } else {
+        if (motion) {
+            motion->stop();
+            motion.reset();
+        }
     }
 }
 
-}  // namespace
+
 
 void on_key(const SDL_KeyboardEvent &event) {
     switch (event.keysym.scancode) {
         case SDL_SCANCODE_ESCAPE:
             App.run = false;
             break;
+
+        case SDL_SCANCODE_LEFT:
+            create_camera_motion(event.state == SDL_PRESSED, Camera::horizontal_direction::left, 85);
+            break;
+        case SDL_SCANCODE_RIGHT:
+            create_camera_motion(event.state == SDL_PRESSED, Camera::horizontal_direction::right, 85);
+            break;
         default:
             // nothing to do
             break;
     }
+
+
 }
 
 void on_button(ps4_button, bool pressed) {
@@ -111,6 +124,7 @@ void on_trigger(float lhs, float rhs) {
 
 /* ------------------------ Rendering ---------------------- */
 
+
 namespace {
 
 void set_up_scene(const std::filesystem::path &path) {
@@ -125,6 +139,9 @@ void set_up_scene(const std::filesystem::path &path) {
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+    glEnable(GL_LINE_SMOOTH);
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);  // OpenGL Line Antialiasing
+
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
@@ -135,10 +152,17 @@ void set_up_scene(const std::filesystem::path &path) {
 }  // namespace
 
 void on_render(float delta) noexcept {
+#if 0
     const vec2 rotation_speed { 0.0, 20.0 };  // [°/s]
     Scene.camera.rotate(rotation_speed * delta);
+#endif
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    if (motion) {
+        motion->update();
+    }
+
     const mat4 PV = Scene.camera.getMatrix();
     Scene.mesh->render(PV);
     Scene.grid->render(PV);

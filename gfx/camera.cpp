@@ -85,22 +85,30 @@ camera_motion::camera_motion(Camera &camera, const vec3 &axis, double speed)
 {}
 
 void camera_motion::start() noexcept {
+    std::cout << "motion started" << std::endl;
     _timer.start();
+    _timestamp = std::chrono::milliseconds();
 }
 
 void camera_motion::stop() noexcept {
+    std::cout << "motion stopped" << std::endl;
+    update();
     _timer.stop();
 }
 
-bool camera_motion::is_running() const noexcept {
-    return !_timer.is_stopped();
+bool camera_motion::is_running() const noexcept {  // TOO: unnötig
+    return _timer.is_running();
 }
 
 void camera_motion::update() noexcept {
     if (is_running()) {
-        const std::chrono::nanoseconds ns { _timer.elapsed().user };
-        const auto elapsed { std::chrono::duration_cast<std::chrono::milliseconds>(ns).count() };
-        const float angle { std::fmod(glm::radians(_speed * elapsed), M_2_PI) };
+        const std::chrono::milliseconds delta { _timer.elapsed() - _timestamp };
+        _timestamp = _timer.elapsed();
+        //std::cout << "delta: " << delta.count() << std::endl;
+
+        const float speed = _speed * (delta.count() / 1000.0);
+        //std::cout << " speed: " <<  speed << std::endl;
+        const float angle { std::fmod(glm::radians(speed), M_2_PI) };  // TODO(nach camera verchieben)
 
         const vec3 position { glm::rotate(_camera.getPosition(), angle, _camera._up) };
         _camera.setPosition(position);
@@ -109,7 +117,7 @@ void camera_motion::update() noexcept {
 
 #if 1
 Camera::shared_motion Camera::createMotion(horizontal_direction direction, float speed) {
-    const auto motion_speed { (direction == horizontal_direction::left) ? speed : -speed };
+    const auto motion_speed { (direction == horizontal_direction::left) ? -speed : speed };
     return std::make_shared<camera_motion>(*this, _up, motion_speed);
 }
 #endif  // 1
