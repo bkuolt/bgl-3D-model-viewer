@@ -3,36 +3,68 @@
 #include "camera.hpp"
 
 #include <stdexcept>
-
+#include <iostream>
 
 namespace bgl {
 
 namespace {
 
 double calculate_aspect_ratio() {
-    const uvec2 size { App.window->getSize() };
-    return size.y ? static_cast<double>(size.x) / size.y :  throw std::runtime_error { "invalid aspect ratio" };
+#ifdef DEBUG
+    return 16.0 / 9.0;
+#else
+    const uvec2 size {  () ?   App.window->getSize() : throw std::runtime_error { "could not get aspect ratio" }};
+    return size.y ? static_cast<double>(size.x) / size.y : throw std::runtime_error { "invalid aspect ratio" };
+#endif  // DEBUG
 }
 
 }  // namespace
 
+Camera::Camera() noexcept {
+    updateProjectionMatrix();
+}
+
 Camera::Camera(const vec3 &position, const vec3 &center)
-    : _position { position }, _center { center }
-{}
+    : _position { position }, _center { center } {
+    updateProjectionMatrix();
+    updateViewMatrix();
+}
+
+void Camera::updateProjectionMatrix() {
+    const double ratio = calculate_aspect_ratio();
+    const double width { (ratio / 2) * _zoom };
+    _P = glm::frustum(-width, width,
+                      -_zoom,  _zoom,
+                      1.0, 10.0);
+}
+
+void Camera::updateViewMatrix() noexcept {
+    _V = glm::lookAt(_position, _center, _up);
+}
+
+void Camera::rotate(const vec2 angle) noexcept {
+    vec3 position =  glm::rotate(getPosition(), glm::radians(angle.y), _up);
+    setPosition(position);
+    updateViewMatrix();
+}
+
+mat4 Camera::getMatrix() const noexcept {
+    return _P * _V;
+}
 
 void Camera::setPosition(const vec3 &position) noexcept {
     _position = position;
+    updateViewMatrix();
 }
 
 void Camera::setZoom(double factor) {
-    if (factor <= 0.0) {
-        throw std::invalid_argument { "invalid zoom factor" };
-    }
-    _zoom = factor;
+    _zoom = (factor > 0.0) ? factor : throw std::invalid_argument { "invalid zoom factor" };
+    updateProjectionMatrix();
 }
 
 void Camera::setViewCenter(const vec3 &center) noexcept {
     _center = center;
+    updateViewMatrix();
 }
 
 const vec3& Camera::getPosition() const noexcept {
@@ -45,26 +77,6 @@ const vec3& Camera::getViewCenter() const noexcept {
 
 double Camera::getZoom() const noexcept {
     return _zoom;
-}
-
-mat4 Camera::getMatrix() const noexcept {
-    // calculates the projection matrix @p P
-    const double ratio = calculate_aspect_ratio();
-    const mat4 P = glm::frustum(-(ratio / 2) * _zoom, (ratio / 2) *  _zoom,
-                                 -_zoom,  _zoom,
-                                 1.0, 10.0);
-
-    // calculates the view matrix @p V
-    const mat4 V = glm::lookAt(_position, _center, { 0.0, 1.0, 0.0 });
-
-    return P * V;
-}
-
-void Camera::rotate(const vec2 degrees) noexcept {
-    const vec2 currentAngle { glm::radians(glm::atan(_position.x)) };
-    const double radius = glm::length(_position - _center);
-    const double angle = glm::radians(currentAngle.x + degrees.x);  // TODO(bkuolt): incorporate y-axis
-    setPosition({ radius * glm::cos(angle), 0.0f, radius * sin(angle) });
 }
 
 }  // namespace bgl

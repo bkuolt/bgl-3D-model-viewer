@@ -43,9 +43,15 @@ class grid final {
     explicit grid(GLfloat size, std::size_t num_cells);
     void render(const mat4 &MVP);
 
+    void translate(const vec3 &v) {
+        _translation += v;
+    }
+
  private:
     const GLfloat _cell_size;
     const std::size_t _num_cells;
+
+    vec3 _translation;
 
     void create_vbo();
     void create_ibo();

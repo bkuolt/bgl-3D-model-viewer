@@ -25,6 +25,10 @@ class Box {
     void render(const mat4 &VP);
     void resize(const vec3 &dimensions);
 
+    const vec3& getSize() const noexcept {
+       return _dimensions;
+    }
+
  private:
     vec3 _dimensions;
 
@@ -39,6 +43,10 @@ class Mesh {
     explicit Mesh(const std::filesystem::path &path);
     virtual ~Mesh() = default;
     void render(const mat4 &MVP);
+
+    const Box& getBoundingBox() const noexcept {
+       return _box;
+    }
 
  private:
     SharedVBO<Vertex> _vbo;

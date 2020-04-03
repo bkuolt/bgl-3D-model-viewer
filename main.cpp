@@ -117,41 +117,29 @@ void set_up_scene(const std::filesystem::path &path) {
     Scene.mesh = LoadMesh(path);
     Scene.camera.setViewCenter({ 0.0, 0.0, 0.0 });
     Scene.camera.setPosition({ 0.0, 1.0, 2.0 });
+
     Scene.grid = CreateGrid(0.125, 40);
+    const vec3 v { 0.0, -Scene.mesh->getBoundingBox().getSize().y / 2.0, 0.0 };
+    Scene.grid->translate(v);
 
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-#if 0
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
-#endif  // 0
 
     on_render(0.0);
-}
-
-double update_angle(double delta) {
-    constexpr double rotation_speed = 30.0f;  // [°/s]
-    static double angle = 180.0;
-    angle += delta * rotation_speed;
-    return angle;
 }
 
 }  // namespace
 
 void on_render(float delta) noexcept {
-    const vec2 degrees { update_angle(delta) , 0.0 };
-    Scene.camera.rotate(degrees);  // update_position(delta);
-
-#if 0
-    Font font("./assets/Cascadia.ttf", 32);
-    auto text = font.createText("Hallo");
-    text->render();
-#endif
+    const vec2 rotation_speed { 0.0, 20.0 };  // [°/s]
+    Scene.camera.rotate(rotation_speed * delta);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    const mat4 VP = Scene.camera.getMatrix();
-    Scene.mesh->render(VP);
-    Scene.grid->render(VP);
+    const mat4 PV = Scene.camera.getMatrix();
+    Scene.mesh->render(PV);
+    Scene.grid->render(PV);
 }

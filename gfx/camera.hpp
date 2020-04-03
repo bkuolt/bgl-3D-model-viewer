@@ -8,7 +8,7 @@ namespace bgl {
 
 class Camera {
  public:
-    Camera() noexcept = default;
+    Camera() noexcept;
     Camera(const vec3 &position, const vec3 &viewCenter);
     Camera(const Camera&) = default;
     Camera(Camera&&) = default;
@@ -30,9 +30,16 @@ class Camera {
     mat4 getMatrix() const noexcept;
 
  private:
+    void updateProjectionMatrix();
+    void updateViewMatrix() noexcept;
+
     vec3 _position { 0.0, 0.0, 1.0 };
     vec3 _center { 0.0, 0.0, 0.0 };
+    const vec3 _up {0.0, 1.0, 0.0 };
     double _zoom { 1.0 };
+
+    mat4 _V;
+    mat4 _P;
 };
 
 }  // namespace bgl

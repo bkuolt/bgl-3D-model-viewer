@@ -2,6 +2,8 @@
 #ifndef APP_HPP_
 #define APP_HPP_
 
+#define DEBUG
+
 #include <chrono>  // const std::chrono::milliseconds
 
 #include "gfx/gfx.hpp"  // bgl::SharedWindow, bgl::SharedContext

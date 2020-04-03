@@ -40,7 +40,7 @@ void grid::create_vbo() {
     auto get_index = [&](int x, int z) -> GLuint { return (_num_cells * z) + x; };
 
     const float size = _num_cells * _cell_size;
-    const vec3 T { size / 2.0f, 1.0f, size / 2.0f };
+    const vec3 T { size / 2.0f, 0.0f, size / 2.0f };
 
     _vbo->resize(_num_cells * _num_cells);
     vec3 *buffer = _vbo->map();
@@ -79,7 +79,7 @@ void grid::create_vao() {
     _vao->unbind();
 }
 
-void grid::render(const mat4 &MVP) {
+void grid::render(const mat4 &PV) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glEnable(GL_LINE_SMOOTH);
     glLineWidth(1);
@@ -87,7 +87,7 @@ void grid::render(const mat4 &MVP) {
 
     constexpr vec3 white { 1.0f, 1.0f, 1.0f };
     _program->use();
-    _program->setUniform(locations::MVP, MVP);
+    _program->setUniform(locations::MVP, PV * glm::translate(_translation));
     _program->setUniform(locations::color, white);
     _vao->draw(GL_LINES);
 }

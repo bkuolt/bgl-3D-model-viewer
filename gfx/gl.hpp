@@ -11,6 +11,10 @@
 #include <glm/gtc/type_ptr.hpp>          // glm::value_ptr()
 #include <glm/gtc/matrix_transform.hpp>  // glm::lookAt(), glm::ortho()
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/transform.hpp>         // glm::rotate()
+#include <glm/gtc/matrix_access.hpp>     
+#include <glm/gtx/rotate_vector.hpp> // roatate
 #include <ostream>
 #include <iomanip>  // std::fixed
 

@@ -166,9 +166,15 @@ void Window::render() {
     on_render(frame_counter.delta());
     SDL_GL_SwapWindow(_window);
 
+#if 0
+    Font font("./assets/Cascadia.ttf", 32);
+    auto text = font.createText("Hallo");
+    text->render();
+#else
     if (changed) {
         std::cout << "\r" << console_color::blue << frame_counter.fps() << " FPS" << std::flush;
     }
+#endif  // 0
 }
 
 SharedWindow createWindow(const std::string &title, bool windowed) {
