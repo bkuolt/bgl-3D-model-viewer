@@ -70,8 +70,6 @@ bgl::Camera::shared_motion motion;
 
 
 void create_camera_motion(bool pressed, Camera::horizontal_direction direction, double angle) {
-    static bool is_pressed = false;
-
     if (pressed) {
         if (motion == nullptr) {
             motion = Scene.camera.createMotion(direction, 85);
@@ -139,8 +137,12 @@ void set_up_scene(const std::filesystem::path &path) {
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+    // enables OpenGL Antialiasing
     glEnable(GL_LINE_SMOOTH);
-    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);  // OpenGL Line Antialiasing
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    glEnable(GL_POLYGON_SMOOTH);
+    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+    glEnable(GL_MULTISAMPLE);
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -164,6 +166,6 @@ void on_render(float delta) noexcept {
     }
 
     const mat4 PV = Scene.camera.getMatrix();
-    Scene.mesh->render(PV);
     Scene.grid->render(PV);
+    Scene.mesh->render(PV);
 }

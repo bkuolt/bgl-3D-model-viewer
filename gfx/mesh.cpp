@@ -71,6 +71,7 @@ Box::Box(GLfloat size)
 
 void Box::render(const mat4 &VP) {
     _program->use();
+    glLineWidth(3);
 
     mat4 M = glm::scale(_dimensions);
     _program->setUniform("MVP", VP * M);

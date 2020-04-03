@@ -12,6 +12,7 @@
 #include <algorithm>  // std::for_each()
 #include <cmath>
 #include <iostream>
+#include <filesystem>
 #include <sstream>    // std::ostringstream
 #include <stdexcept>
 #include <string>
@@ -91,5 +92,30 @@ void grid::render(const mat4 &PV) {
     _program->setUniform(locations::color, white);
     _vao->draw(GL_LINES);
 }
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+#if 0
+void TakeScreenshot() {
+    // GetColorBuffer()
+    // The texture we're going to render to
+    GLuint texture = 0;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1920, 1280, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+
+    // TODO(bkuolt)get tmp filename
+    auto path = "";
+    save_texture(texture, path);
+    
+
+}
+
+#endif  // 0
+
 
 }  // namespace bgl

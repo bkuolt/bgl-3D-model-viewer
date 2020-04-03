@@ -53,6 +53,9 @@ SDL_GLContext create_OpenGL_Context(SDL_Window *window) {
         && !SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE)
         && !SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)
         && !SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24)
+        && !SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1)
+        && !SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 16)
+        &&  SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1")
     };
 
     if (!successfull) {

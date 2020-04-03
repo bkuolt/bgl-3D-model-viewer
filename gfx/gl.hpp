@@ -23,6 +23,7 @@ namespace bgl {
 template<typename T> using tvec2 = glm::tvec2<T>;
 template<typename T> using tvec3 = glm::tvec3<T>;
 
+using ivec2 = tvec2<GLint>;
 using uvec2 = tvec2<GLuint>;
 using vec2 = tvec2<GLfloat>;
 using vec3 = tvec3<GLfloat>;

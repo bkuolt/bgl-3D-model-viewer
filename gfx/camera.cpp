@@ -104,11 +104,9 @@ void camera_motion::update() noexcept {
     if (is_running()) {
         const std::chrono::milliseconds delta { _timer.elapsed() - _timestamp };
         _timestamp = _timer.elapsed();
-        //std::cout << "delta: " << delta.count() << std::endl;
 
-        const float speed = _speed * (delta.count() / 1000.0);
-        //std::cout << " speed: " <<  speed << std::endl;
-        const float angle { std::fmod(glm::radians(speed), M_2_PI) };  // TODO(nach camera verchieben)
+        const GLfloat speed = _speed * (delta.count() / 1000.0);
+        const GLfloat angle { std::fmod(glm::radians(speed), static_cast<GLfloat>(M_2_PI)) };  // TODO(nach camera verchieben)
 
         const vec3 position { glm::rotate(_camera.getPosition(), angle, _camera._up) };
         _camera.setPosition(position);

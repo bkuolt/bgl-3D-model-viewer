@@ -67,9 +67,17 @@
         "variant": "cpp",
         "bit": "cpp",
         "*.ipp": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "valarray": "cpp"
     },
     "C_Cpp.default.intelliSenseMode": "gcc-x64",
     "C_Cpp.default.cStandard": "c11",
-    "C_Cpp.default.cppStandard": "c++20"
+    "C_Cpp.default.cppStandard": "c++20",
+    "C_Cpp.experimentalFeatures": "Enabled",
+    "cSpell.words": [
+        "g",
+        "kuolt",
+        "lbyte",
+        "lsizei"
+    ]
 }
