@@ -9,7 +9,8 @@ LIBS = -lstdc++fs \
 	-lSDL2 -lSDL2_image -lSDL2_ttf \
 	-lassimp  \
 	-lIL \
-	-lGLEW -lGLU -lGL -lGLU
+	-lGLEW -lGLU -lGL -lGLU \
+	-lboost_timer
 
 main.o: main.cpp \
         App.hpp gfx/gfx.hpp
@@ -42,7 +43,8 @@ install:
 		libglew-dev libglm-dev \
 		libsdl2-2.0-0 libsdl2-image-2.0-0 libassimp4 \
 		libdevil-dev \
-		libsdl2-ttf-dev 
+		libsdl2-ttf-dev \
+		install libboost-all-dev
 
 all: demo
 

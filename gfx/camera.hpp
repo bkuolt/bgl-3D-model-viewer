@@ -30,6 +30,7 @@ class Camera {
     mat4 getMatrix() const noexcept;
 
  private:
+    friend class camera_motion;
     void updateProjectionMatrix();
     void updateViewMatrix() noexcept;
 

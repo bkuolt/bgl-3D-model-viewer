@@ -79,4 +79,62 @@ double Camera::getZoom() const noexcept {
     return _zoom;
 }
 
+#if 0
+//////////////////////////////////7
+enum class horizontal_direction { left, right };
+
+void Camera::startRotation(horizontal_direction direction) {
+    //
+}
+#endif  // 0
+
+}  // namespace bgl
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+#include <boost/timer/timer.hpp>
+
+namespace bgl {
+class camera_motion {
+ public:
+    camera_motion(Camera &camera, const vec3 &axis, double speed);
+    void start() noexcept;
+    void stop() noexcept;
+    bool is_running() const noexcept;
+
+    void update() noexcept;
+ private:
+    Camera& _camera;
+    boost::timer::cpu_timer _timer;
+    const vec3 _axis;    // the rotation axis
+    const double _speed;  // [°/s]
+};
+
+camera_motion::camera_motion(Camera &camera, const vec3 &axis, double speed)
+    : _camera { camera }, _axis { axis }, _speed { speed }
+{}
+
+void camera_motion::start() noexcept {
+    _timer.start();
+}
+
+void camera_motion::stop() noexcept {
+    _timer.stop();
+}
+
+bool camera_motion::is_running() const noexcept {
+    return !_timer.is_stopped();
+}
+
+void camera_motion::update() noexcept {
+    if (is_running()) {
+        const std::chrono::nanoseconds ns { _timer.elapsed().user };
+        const auto elapsed { std::chrono::duration_cast<std::chrono::milliseconds>(ns).count() };
+        const float angle { std::fmod(glm::radians(_speed * elapsed), M_2_PI) };
+
+        const vec3 position { glm::rotate(_camera.getPosition(), angle, _camera._up) };
+        _camera.setPosition(position);
+    }
+}
+
 }  // namespace bgl
