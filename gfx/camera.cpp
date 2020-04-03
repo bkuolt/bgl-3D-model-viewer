@@ -79,37 +79,7 @@ double Camera::getZoom() const noexcept {
     return _zoom;
 }
 
-#if 0
-//////////////////////////////////7
-enum class horizontal_direction { left, right };
-
-void Camera::startRotation(horizontal_direction direction) {
-    //
-}
-#endif  // 0
-
-}  // namespace bgl
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-#include <boost/timer/timer.hpp>
-
-namespace bgl {
-class camera_motion {
- public:
-    camera_motion(Camera &camera, const vec3 &axis, double speed);
-    void start() noexcept;
-    void stop() noexcept;
-    bool is_running() const noexcept;
-
-    void update() noexcept;
- private:
-    Camera& _camera;
-    boost::timer::cpu_timer _timer;
-    const vec3 _axis;    // the rotation axis
-    const double _speed;  // [°/s]
-};
-
+/* ----------------------------- Camera Motion ----------------------------- */
 camera_motion::camera_motion(Camera &camera, const vec3 &axis, double speed)
     : _camera { camera }, _axis { axis }, _speed { speed }
 {}
@@ -136,5 +106,12 @@ void camera_motion::update() noexcept {
         _camera.setPosition(position);
     }
 }
+
+#if 1
+Camera::shared_motion Camera::createMotion(horizontal_direction direction, float speed) {
+    const auto motion_speed { (direction == horizontal_direction::left) ? speed : -speed };
+    return std::make_shared<camera_motion>(*this, _up, motion_speed);
+}
+#endif  // 1
 
 }  // namespace bgl

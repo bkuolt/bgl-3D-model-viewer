@@ -4,7 +4,11 @@
 
 #include "gl.hpp"
 
+#include <boost/timer/timer.hpp>
+#include <memory>
+
 namespace bgl {
+class camera_motion;
 
 class Camera {
  public:
@@ -29,6 +33,10 @@ class Camera {
 
     mat4 getMatrix() const noexcept;
 
+    enum class horizontal_direction { left, right };
+    using shared_motion = std::shared_ptr<camera_motion>;
+    shared_motion createMotion(horizontal_direction direction, float speed);
+
  private:
     friend class camera_motion;
     void updateProjectionMatrix();
@@ -41,6 +49,21 @@ class Camera {
 
     mat4 _V;
     mat4 _P;
+};
+
+class camera_motion {
+ public:
+    camera_motion(Camera &camera, const vec3 &axis, double speed);
+    void start() noexcept;
+    void stop() noexcept;
+    bool is_running() const noexcept;
+
+    void update() noexcept;
+ private:
+    Camera& _camera;
+    boost::timer::cpu_timer _timer;
+    const vec3 _axis;    // the rotation axis
+    const double _speed;  // [°/s]
 };
 
 }  // namespace bgl

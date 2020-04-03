@@ -40,4 +40,4 @@ or run `./demo <path-to-your model>` to view your custom models.
 - [glm](https://glm.g-truc.net/0.9.9/index.html)
 - [DevIL](http://openil.sourceforge.net/)
 - SDLttf
-- Boost
+- Boost.Timer
