@@ -14,7 +14,9 @@ class Texture {
  public:
     Texture();
     explicit Texture(GLuint handle);
+    explicit Texture(GLsizei width, GLsizei height);
     explicit Texture(const GLbyte *data, GLsizei width, GLsizei height);
+
     Texture(Texture&&) = delete;
     Texture(const Texture&) = delete;
 

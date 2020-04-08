@@ -2,7 +2,7 @@
 #ifndef GFX_CAMERA_HPP_
 #define GFX_CAMERA_HPP_
 
-#include "gl.hpp"
+#include "gl/gl.hpp"
 
 #include <boost/timer/timer.hpp>
 #include <chrono>

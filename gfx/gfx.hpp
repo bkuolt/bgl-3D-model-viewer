@@ -2,20 +2,18 @@
 #ifndef GFX_GFX_HPP_
 #define GFX_GFX_HPP_
 
-#include "gl.hpp"
-#include "shader.hpp"
-#include "buffer.hpp"
-#include "mesh.hpp"
-
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_video.h>  // SDL_GLContext, SDL_Window
-
-#include <ostream>      // std::ostream
-#include <memory>       // std::shared_ptr
-#include <filesystem>   // std::filesystem::path
+#include "gl/gl.hpp"
+#include "gl/mesh.hpp"
+#include "gl/texture.hpp"
 
 #include "window.hpp"
+
+#include <SDL2/SDL.h>   // SDL basic functionality
+
+#include <filesystem>   // std::filesystem::path
+#include <memory>       // std::shared_ptr
+#include <ostream>      // std::ostream
+
 
 namespace bgl {
 
@@ -68,6 +66,12 @@ using SharedGrid = std::shared_ptr<grid>;
 inline SharedGrid CreateGrid(GLfloat size, size_t num_cells) {
     return std::make_shared<grid>(size, num_cells);
 }
+
+/**
+ * @brief Takes a screenshot and saves it to the current working directory.
+ * @return A @p std::filesystem::path of the taken screenshot.
+ */
+std::filesystem::path TakeScreenshot();
 
 }  // namespace bgl
 

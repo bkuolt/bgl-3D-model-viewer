@@ -158,7 +158,6 @@ void on_render(float delta) noexcept {
     const vec2 rotation_speed { 0.0, 20.0 };  // [°/s]
     Scene.camera.rotate(rotation_speed * delta);
 #endif
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if (motion) {
@@ -168,4 +167,7 @@ void on_render(float delta) noexcept {
     const mat4 PV = Scene.camera.getMatrix();
     Scene.grid->render(PV);
     Scene.mesh->render(PV);
+
+    static bool b = false;
+    if (!b) TakeScreenshot(), b = true;
 }

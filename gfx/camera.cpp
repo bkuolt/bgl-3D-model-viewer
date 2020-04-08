@@ -1,5 +1,5 @@
 // Copyright 2020 Bastian Kuolt
-#include "../App.hpp"
+#include "./../App.hpp"
 #include "camera.hpp"
 
 #include <stdexcept>

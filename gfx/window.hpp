@@ -2,7 +2,7 @@
 #ifndef GFX_WINDOW_HPP_
 #define GFX_WINDOW_HPP_
 
-#include "gl.hpp"
+#include "gl/gl.hpp"
 
 #include <memory>
 #include <string>

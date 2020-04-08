@@ -1,14 +1,14 @@
 // Copyright 2020 Bastian Kuolt
 #include "../App.hpp"
-#include "window.hpp"
 #include "gfx.hpp"
+#include "window.hpp"
 
 #include <SDL2/SDL.h>
 
 #include <iostream>
-#include <utility>   // std::swap()
 #include <set>
 #include <thread>    // std::call_once
+#include <utility>   // std::swap()
 
 namespace bgl {
 
@@ -55,7 +55,7 @@ SDL_GLContext create_OpenGL_Context(SDL_Window *window) {
         && !SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24)
         && !SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1)
         && !SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 16)
-        &&  SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1")
+        &&  SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1")
     };
 
     if (!successfull) {
@@ -169,7 +169,7 @@ void Window::render() {
     on_render(frame_counter.delta());
     SDL_GL_SwapWindow(_window);
 
-#if 0
+#if 0  // TODO(bkuolt): add TTF font support
     Font font("./assets/Cascadia.ttf", 32);
     auto text = font.createText("Hallo");
     text->render();

@@ -1,13 +1,8 @@
 // Copyright 2020 Bastian Kuolt
-#include "../App.hpp"
+#include "./../App.hpp"
+
 #include "gfx.hpp"
 #include "shader.hpp"
-
-
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_video.h>
 
 #include <algorithm>  // std::for_each()
 #include <cmath>
@@ -95,27 +90,29 @@ void grid::render(const mat4 &PV) {
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-#if 0
-void TakeScreenshot() {
-    // GetColorBuffer()
-    // The texture we're going to render to
-    GLuint texture = 0;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1920, 1280, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-
-    // TODO(bkuolt)get tmp filename
-    auto path = "";
-    save_texture(texture, path);
-    
-
+#if 1
+static std::filesystem::path create_tmp_filename() {
+    static std::once_flag seed_set_flag;
+    std::call_once(seed_set_flag, []() { std::srand(std::time(nullptr)); });
+    const auto number { static_cast<unsigned int>(std::rand() % 1'000) };
+    return "tmp" + std::to_string(number);
 }
 
-#endif  // 0
+std::filesystem::path TakeScreenshot() {
+    const SharedTexture texture { GetColorBuffer() };
+
+
+    auto size =  texture->getSize();
+    std::cout << size.x << " " << size.y << std::endl;
+
+
+    const std::filesystem::path path { std::filesystem::current_path() / create_tmp_filename().concat(".png") };
+    std::cout << path << std::endl;
+
+    SaveTexture(texture, path);
+    return path;
+}
+#endif  // 1
 
 
 }  // namespace bgl

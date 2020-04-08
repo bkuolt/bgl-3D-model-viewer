@@ -24,11 +24,12 @@ input.o: input.cpp input.hpp \
 gfx/libgfx.a:
 	@$(MAKE) -C gfx
 
-demo: main.o input.o gfx/libgfx.a
+demo: main.o input.o \
+      gfx/libgfx.a gfx/gl/libgl.a
 	$(CC) -o demo \
 	$(FLAGS) \
 	main.o input.o \
-	-Lgfx -lgfx \
+	-Lgfx -lgfx -Lgfx/gl -lgl  \
 	$(LIBS)
 
 install:
@@ -53,5 +54,6 @@ run: all
 
 clean:
 	@$(MAKE) -C gfx clean
+	@rm -f *.png
 	@rm -f *.o
 	@rm -f demo
