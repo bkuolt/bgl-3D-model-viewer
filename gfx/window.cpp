@@ -168,16 +168,11 @@ void Window::render() {
     const bool changed = frame_counter.count();
     on_render(frame_counter.delta());
     SDL_GL_SwapWindow(_window);
-
-#if 0  // TODO(bkuolt): add TTF font support
-    Font font("./assets/Cascadia.ttf", 32);
-    auto text = font.createText("Hallo");
-    text->render();
-#else
+    
+    // TODO(bkuolt): add TTF font rendering support
     if (changed) {
         std::cout << "\r" << console_color::blue << frame_counter.fps() << " FPS" << std::flush;
     }
-#endif  // 0
 }
 
 SharedWindow createWindow(const std::string &title, bool windowed) {

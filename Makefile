@@ -6,7 +6,7 @@
 CC = g++-8
 FLAGS = -std=c++17 -pthread -Wall -O3
 LIBS = -lstdc++fs \
-	-lSDL2 -lSDL2_image -lSDL2_ttf \
+	-lSDL2 -lSDL2_image \
 	-lassimp  \
 	-lIL \
 	-lGLEW -lGLU -lGL -lGLU \
@@ -32,7 +32,7 @@ demo: main.o input.o \
 	-Lgfx -lgfx -Lgfx/gl -lgl  \
 	$(LIBS)
 
-run: all
+run: demo
 	@./demo ./assets/MedHouse/housemedieval.obj
 
 clean:
