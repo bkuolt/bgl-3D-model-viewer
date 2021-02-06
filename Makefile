@@ -4,7 +4,7 @@
 CC = g++-8
 FLAGS = -std=c++17 -pthread -Wall -O3
 LIBS = -lstdc++fs \
-       -lSDL2 -lSDL2_image \
+       -lSDL2  \
 	   -lassimp  \
 	   -lIL \
 	   -lGLEW -lGLU -lGL -lGLU \
