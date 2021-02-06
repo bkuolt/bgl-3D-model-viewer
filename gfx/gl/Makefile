@@ -1,6 +1,5 @@
-.DEFAULT_GOAL = all
-.PHONY = libgl.la shader.o texture.o mesh.o \
-         all clean
+.DEFAULT_GOAL = libgl.la
+.PHONY = clean
 
 CC = g++-8
 FLAGS = -std=c++17 -pthread -Wall -O3
@@ -16,8 +15,6 @@ mesh.o: mesh.cpp mesh.hpp buffer.hpp
 
 libgl.la: shader.o mesh.o texture.o
 	ar rcs libgl.a *.o
-
-all: libgl.la
 
 clean:
 	@rm -f *.o

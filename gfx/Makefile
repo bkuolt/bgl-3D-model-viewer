@@ -1,8 +1,8 @@
-.DEFAULT_GOAL = all
-.PHONY = all clean
+.DEFAULT_GOAL = libgfx.a
+.PHONY = libgfx.a clean
 
 CC = g++-8
-FLAGS = -std=c++17 -pthread -Wall -O3 -I./gl/
+FLAGS = -std=c++17 -pthread -Wall -O3 -Igl/
 
 gfx.o: gfx.cpp gfx.hpp
 	@$(CC) $(FLAGS) -c gfx.cpp
@@ -16,10 +16,9 @@ window.o: window.cpp window.hpp
 gl/libgl.a:
 	@$(MAKE) -C gl
 
-libgfx.a: camera.o window.o gfx.o
+libgfx.a: gl/libgl.a\
+          camera.o window.o gfx.o
 	ar rcs libgfx.a *.o
-
-all: gl/libgl.a libgfx.a
 
 clean:
 	@$(MAKE) -C gl clean
