@@ -1,4 +1,9 @@
 *.o
 *.la
 *.so
+gfx/**/*.o
+gfx/**/*.la
+gfx/**/*.so
 demo
+.github/
+.vscode/
