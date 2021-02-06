@@ -114,6 +114,8 @@ void initialize_SDL() {
     std::atexit(SDL_Quit);
 }
 
+bool run { false };  // TODO: fix this mess!
+
 }  // namespace
 
 /**
@@ -126,6 +128,7 @@ Window::Window(const std::string &title, bool windowed) {
     _window = create_window(title, windowed);
     _context = create_OpenGL_Context(_window);
     windows.emplace(this);
+    run = true;
 }
 
 Window::Window(Window &&rhs) {
@@ -146,6 +149,10 @@ Window& Window::operator=(Window &&rhs) {
 void Window::swap(Window &rhs) noexcept {
     std::swap(_window, rhs._window);
     std::swap(_context, rhs._context);
+}
+
+void Window::close() noexcept {
+    run = false;
 }
 
 SDL_GLContext Window::getOpenGLContext() noexcept {
@@ -205,7 +212,7 @@ void handle_event(const SDL_Event &event) {
             break;
         case SDL_QUIT:
         case SDL_WINDOWEVENT_CLOSE:
-            App.run = false;
+            run = false;
             break;
     }
 }
@@ -216,7 +223,7 @@ extern std::set<Window*> windows;  // TODO
 
 void loop() {
     SDL_Event event;
-    while (App.run) {
+    while (run) {
         while (SDL_PollEvent(&event)) {
             handle_event(event);
         }
@@ -225,7 +232,10 @@ void loop() {
     }
 
     std::cout << "\r" << console_color::white << std::endl;
-    SDL_DestroyWindow(::App.window->getHandle());  // make sure that the window is destroyed before the context
+
+    for (auto window : windows) {
+        SDL_DestroyWindow(window->getHandle());  // make sure that the window is destroyed before the context
+    }
 }
 
 }  // namespace bgl

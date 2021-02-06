@@ -8,20 +8,33 @@
 #include "gfx/camera.hpp"
 #include "App.hpp"
 
-using namespace bgl;
 
-struct App App;  // declared in App.hpp
+using namespace bgl;
 
 namespace {
 
-void set_up_scene(const std::filesystem::path &path);  // forward declaration
+struct  {
+    bgl::SharedWindow window;
+} App;
+
+struct {
+    SharedMesh mesh;
+    SharedGrid grid;
+    Camera camera;
+} Scene;
+
+bgl::Camera::shared_motion motion;
+
+void set_up_scene(const std::filesystem::path &path);
+void create_camera_motion(bool pressed, Camera::horizontal_direction direction, double angle);
+
 
 void signal_handler(int signal) {
-    App.run = false;
     std::cout << console_color::red << "\rrequested program termination" << std::flush;
+    std::exit(EXIT_FAILURE);
 }
 
-}  // namespace
+}  // anomous namespace
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -48,23 +61,44 @@ int main(int argc, char *argv[]) {
     return EXIT_SUCCESS;
 }
 
-/* ----------------------- Rendering ----------------------- */
+/* 
+-------------------------------------------------------------
+-                        Callbacks                          -
+-------------------------------------------------------------*/
+void on_key(const SDL_KeyboardEvent &event) {
+    switch (event.keysym.scancode) {
+        case SDL_SCANCODE_ESCAPE:
+            App.window->close();
+            break;
 
+        case SDL_SCANCODE_LEFT:
+            create_camera_motion(event.state == SDL_PRESSED, Camera::horizontal_direction::left, 85);
+            break;
+        case SDL_SCANCODE_RIGHT:
+            create_camera_motion(event.state == SDL_PRESSED, Camera::horizontal_direction::right, 85);
+            break;
+        default:
+            // nothing to do yet
+            break;
+    }
+}
+
+void on_render(float delta) noexcept {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    if (motion) {
+        motion->update();
+    }
+
+    const mat4 PV { Scene.camera.getMatrix() };
+    Scene.grid->render(PV);
+    Scene.mesh->render(PV);
+}
+
+
+/* ------------------------- Details --------------------------- */
 namespace {
 
-struct {
-    SharedMesh mesh;
-    SharedGrid grid;
-    Camera camera;
-} Scene;
-
-bgl::Camera::shared_motion motion;
-
-
-}  // namespace
-
-
-/* --------------------- Input Handling -------------------- */
 void create_camera_motion(bool pressed, Camera::horizontal_direction direction, double angle) {
     if (pressed) {
         if (motion == nullptr) {
@@ -77,28 +111,6 @@ void create_camera_motion(bool pressed, Camera::horizontal_direction direction, 
         }
     }
 }
-
-void on_key(const SDL_KeyboardEvent &event) {
-    switch (event.keysym.scancode) {
-        case SDL_SCANCODE_ESCAPE:
-            App.run = false;
-            break;
-
-        case SDL_SCANCODE_LEFT:
-            create_camera_motion(event.state == SDL_PRESSED, Camera::horizontal_direction::left, 85);
-            break;
-        case SDL_SCANCODE_RIGHT:
-            create_camera_motion(event.state == SDL_PRESSED, Camera::horizontal_direction::right, 85);
-            break;
-        default:
-            // nothing to do
-            break;
-    }
-}
-
-/* ------------------------ Rendering ---------------------- */
-
-namespace {
 
 void set_up_scene(const std::filesystem::path &path) {
     Scene.mesh = LoadMesh(path);
@@ -126,20 +138,4 @@ void set_up_scene(const std::filesystem::path &path) {
     on_render(0.0);
 }
 
-}  // namespace
-
-void on_render(float delta) noexcept {
-#if 0
-    const vec2 rotation_speed { 0.0, 20.0 };  // [°/s]
-    Scene.camera.rotate(rotation_speed * delta);
-#endif
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    if (motion) {
-        motion->update();
-    }
-
-    const mat4 PV = Scene.camera.getMatrix();
-    Scene.grid->render(PV);
-    Scene.mesh->render(PV);
-}
+}  // anonymous namespace

@@ -4,21 +4,10 @@
 
 #define DEBUG
 
-#include <chrono>  // const std::chrono::milliseconds
+struct SDL_KeyboardEvent;
 
-#include "gfx/gfx.hpp"  // bgl::SharedWindow, bgl::SharedContext
-
-struct App {
-    bool run = true;
-    bgl::SharedWindow window;
-};
-
-extern struct App App;  // defined in main.cpp
-
-// Input Callbacks
+// Callbacks
 void on_key(const SDL_KeyboardEvent &event);
-
-// Render Callbacks
 void on_render(float delta) noexcept;
 
 #endif  // APP_HPP_

@@ -30,16 +30,8 @@ or run `./demo <path-to-your model>` to view your custom models.
 | Key |  |
 |-----|---|
 | ESC | Terminate |
-
-## Terminal
-| Signal |  |
-|-----|---|
 | SIGINT | Terminate |
 | SIGHUP | Terminate |
-
-## Game Controller
-**TODO**
-
 
 # Tech Stack
 ## OpenGL 4.5 (GLSL 3.0)
@@ -50,8 +42,6 @@ or run `./demo <path-to-your model>` to view your custom models.
 ## Assets
  - [Assimp](http://www.assimp.org/)
  - [DevIL](http://openil.sourceforge.net/)
- - [SDL_image 2.0](https://www.libsdl.org/projects/SDL_image/)
- - [SDL_ttf] (https://www.libsdl.org/projects/SDL_ttf/)
 
  ## Utilities
    - [Boost.Timer](https://www.boost.org/doc/libs/1_72_0/libs/timer/doc/index.html)

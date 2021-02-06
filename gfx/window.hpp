@@ -27,6 +27,7 @@ class Window {
     void show() noexcept;
     void hide() noexcept;
     uvec2 getSize() const noexcept;
+    void close() noexcept;
 
     SDL_GLContext getOpenGLContext() noexcept;
     SDL_Window *getHandle() noexcept;
