@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <set>
+#include <future>
 #include <thread>    // std::call_once
 #include <utility>   // std::swap()
 

@@ -8,6 +8,7 @@
 #include <cmath>
 #include <iostream>
 #include <filesystem>
+#include <mutex>
 #include <sstream>    // std::ostringstream
 #include <stdexcept>
 #include <string>

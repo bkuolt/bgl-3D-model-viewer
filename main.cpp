@@ -2,7 +2,6 @@
 #include <csignal>
 #include <cstdlib>
 #include <iostream>
-#include <map>
 #include <stdexcept>
 
 #include "gfx/gfx.hpp"
@@ -62,13 +61,11 @@ struct {
 
 bgl::Camera::shared_motion motion;
 
-/* --------------------- Input Handling -------------------- */
 
 }  // namespace
 
 
-
-
+/* --------------------- Input Handling -------------------- */
 void create_camera_motion(bool pressed, Camera::horizontal_direction direction, double angle) {
     if (pressed) {
         if (motion == nullptr) {
@@ -81,8 +78,6 @@ void create_camera_motion(bool pressed, Camera::horizontal_direction direction, 
         }
     }
 }
-
-
 
 void on_key(const SDL_KeyboardEvent &event) {
     switch (event.keysym.scancode) {
@@ -100,28 +95,9 @@ void on_key(const SDL_KeyboardEvent &event) {
             // nothing to do
             break;
     }
-
-
-}
-
-void on_button(ps4_button, bool pressed) {
-    std::cout << "game controller button " << (pressed ? "pressed" : "released") << std::endl;
-    // TODO(bkuolt)
-}
-
-void on_motion(const vec2 &lhs, const vec2 &rhs) {
-    std::cout << "dual stick motion [" << lhs << " , " << rhs << "]" << std::endl;
-    // TODO(bkuolt): use left hand side as camera rotation controll
-    // TODO(bkuolt): use right hand side as zoom level controll
-}
-
-void on_trigger(float lhs, float rhs) {
-    std::cout << "trigger [" << lhs << " , " << rhs << "] pressed" << std::endl;
-    // TODO(bkuolt)
 }
 
 /* ------------------------ Rendering ---------------------- */
-
 
 namespace {
 

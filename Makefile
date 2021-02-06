@@ -33,7 +33,7 @@ demo: main.o input.o \
 	$(LIBS)
 
 run: demo
-	@./demo ./assets/MedHouse/housemedieval.obj
+	@./demo ./assets/models/housemedieval.obj
 
 clean:
 	@$(MAKE) -C gfx clean

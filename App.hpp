@@ -17,9 +17,6 @@ struct App {
 extern struct App App;  // defined in main.cpp
 
 // Input Callbacks
-void on_button(bgl::ps4_button, bool pressed);
-void on_motion(const bgl::vec2 &lhs, const bgl::vec2 &rhs);
-void on_trigger(const float lhs, float rhs);
 void on_key(const SDL_KeyboardEvent &event);
 
 // Render Callbacks
