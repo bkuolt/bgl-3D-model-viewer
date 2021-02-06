@@ -62,7 +62,7 @@ Box::Box(const vec3 &dimensions)
     SetAttribute<vec3>(_vao, 2 /*locations::position*/, sizeof(vec3), 0 /* no offset */);
     _vao->unbind();
 
-    _program = LoadProgram("./shaders/wireframe.vs", "./shaders/wireframe.fs");
+    _program = LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs");
 }
 
 Box::Box(GLfloat size)
@@ -308,7 +308,7 @@ Mesh::Mesh(const std::filesystem::path &path) {
     _vbo = createVBO(scene);
     _ibo = createIBO(mesh);
     _vao = createVAO(_vbo, _ibo);
-    _program = LoadProgram("./shaders/main.vs", "./shaders/main.fs");
+    _program = LoadProgram("./assets/shaders/main.vs", "./assets/shaders/main.fs");
 
 
 

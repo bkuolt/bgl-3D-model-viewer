@@ -27,7 +27,7 @@ grid::grid(GLfloat size, std::size_t num_cells)
       _vbo { std::make_shared<VBO>() },
       _ibo { std::make_shared<IBO>() },
       _vao { std::make_shared<VAO>(_vbo, _ibo) },
-      _program(LoadProgram("./shaders/wireframe.vs", "./shaders/wireframe.fs")) {
+      _program(LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs")) {
     create_vbo();
     create_ibo();
     create_vao();
