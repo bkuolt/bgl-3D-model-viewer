@@ -1,5 +1,5 @@
-.DEFAULT_GOAL = all
-.PHONY = install \ gfx/libgfx.a \
+.DEFAULT_GOAL = demo
+.PHONY = gfx/libgfx.a \
          demo \
 		 all run clean
 
@@ -31,23 +31,6 @@ demo: main.o input.o \
 	main.o input.o \
 	-Lgfx -lgfx -Lgfx/gl -lgl  \
 	$(LIBS)
-
-install:
-	sudo apt-get install g++-8
-	sudo add-apt-repository main
-	sudo add-apt-repository universe
-	sudo add-apt-repository restricted
-	sudo add-apt-repository multiverse
-	sudo apt-get install \
-		libsdl2-dev libsdl2-image-dev \
-		libassimp-dev \
-		libglew-dev libglm-dev \
-		libsdl2-2.0-0 libsdl2-image-2.0-0 libassimp4 \
-		libdevil-dev \
-		libsdl2-ttf-dev \
-		install libboost-all-dev
-
-all: demo
 
 run: all
 	@./demo ./assets/MedHouse/housemedieval.obj
