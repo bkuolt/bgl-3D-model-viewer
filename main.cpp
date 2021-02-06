@@ -167,7 +167,4 @@ void on_render(float delta) noexcept {
     const mat4 PV = Scene.camera.getMatrix();
     Scene.grid->render(PV);
     Scene.mesh->render(PV);
-
-    static bool b = false;
-    if (!b) TakeScreenshot(), b = true;
 }
