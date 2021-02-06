@@ -1,12 +1,12 @@
 ![C/C++ CI](https://github.com/bkuolt/bgl-demo/workflows/C/C++%20CI/badge.svg?branch=master)
 
-![alt text](assets/screenshot.png "BGL Tech Demo")
+![alt text](assets/screenshot.png "BGL Engine Tech Demo")
 
-# Installation
+# Installation nad Building
 ```bash
 git clone https://github.com/bkuolt/bgl-demo
 cd bgl-demo
-make install
+./install.sh
 make
 ```
 # Run
