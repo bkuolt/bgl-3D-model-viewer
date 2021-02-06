@@ -17,18 +17,14 @@ main.o: main.cpp \
 	@$(CC) \
 		$(FLAGS) -c main.cpp
 
-input.o: input.cpp input.hpp \
-         App.hpp gfx/gfx.hpp
-	$(CC) $(FLAGS) -c input.cpp
-
 gfx/libgfx.a:
 	@$(MAKE) -C gfx
 
-demo: main.o input.o \
+demo: main.o \
       gfx/libgfx.a gfx/gl/libgl.a
 	$(CC) -o demo \
 	$(FLAGS) \
-	main.o input.o \
+	main.o \
 	-Lgfx -lgfx -Lgfx/gl -lgl  \
 	$(LIBS)
 

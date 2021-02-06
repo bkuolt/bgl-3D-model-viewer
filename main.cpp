@@ -6,7 +6,6 @@
 
 #include "gfx/gfx.hpp"
 #include "gfx/camera.hpp"
-#include "input.hpp"
 #include "App.hpp"
 
 using namespace bgl;

@@ -7,7 +7,6 @@
 #include <chrono>  // const std::chrono::milliseconds
 
 #include "gfx/gfx.hpp"  // bgl::SharedWindow, bgl::SharedContext
-#include "input.hpp"
 
 struct App {
     bool run = true;

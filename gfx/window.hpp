@@ -43,6 +43,11 @@ class Window {
 using SharedWindow = std::shared_ptr<Window>;
 SharedWindow createWindow(const std::string &title = "", bool windowed = false);
 
+/**
+ * @brief The Main Loop
+ */
+void loop();
+
 }  // namespace bgl
 
 #endif  // GFX_WINDOW_HPP_
