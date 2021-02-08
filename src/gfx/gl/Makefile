@@ -13,7 +13,10 @@ texture.o: texture.cpp texture.hpp
 mesh.o: mesh.cpp mesh.hpp buffer.hpp
 	@$(CC) $(FLAGS) -c mesh.cpp
 
-libgl.la: shader.o mesh.o texture.o
+box.o: box.cpp box.hpp
+	@$(CC) $(FLAGS) -c box.cpp
+
+libgl.la: texture.o shader.o mesh.o box.o
 	ar rcs libgl.a *.o
 
 clean:

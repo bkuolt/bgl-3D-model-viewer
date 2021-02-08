@@ -6,36 +6,13 @@
 #include "buffer.hpp"
 #include "shader.hpp"
 #include "texture.hpp"
+#include "box.hpp"
 
 #include <filesystem>
 #include <memory>
 
 
 namespace bgl {
-
-class Box {
- public:
-    using SharedVBO = bgl::SharedVBO<vec3>;
-    using SharedVAO = bgl::SharedVAO<vec3>;
-
-    explicit Box(GLfloat size = 1);
-    explicit Box(const vec3 &dimensions);
-
-    void render(const mat4 &VP);
-    void resize(const vec3 &dimensions);
-
-    const vec3& getSize() const noexcept {
-       return _dimensions;
-    }
-
- private:
-    vec3 _dimensions;
-
-    SharedVBO _vbo;
-    SharedIBO _ibo;
-    SharedVAO _vao;
-    SharedProgram _program;
-};
 
 class Mesh {
  public:
