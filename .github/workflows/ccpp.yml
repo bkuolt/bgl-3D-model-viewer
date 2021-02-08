@@ -17,4 +17,13 @@ jobs:
     - name: Installation Test
       run: ./install.sh
     - name: Build Test
-      run: cd src; make
+      run: cd src; make demo
+
+  run:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Installation Test
+      run: make run
