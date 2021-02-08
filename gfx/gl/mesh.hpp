@@ -10,7 +10,6 @@
 #include <filesystem>
 #include <memory>
 
-#include <assimp/texture.h>  // TODO(bkuolt): remove dependency
 
 namespace bgl {
 
