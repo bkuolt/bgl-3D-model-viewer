@@ -1,6 +1,6 @@
 ![C/C++ CI](https://github.com/bkuolt/bgl-demo/workflows/C/C++%20CI/badge.svg?branch=master)
 
-![alt text](assets/screenshot.png "BGL Engine Tech Demo")
+![alt text](screenshot.png "BGL Engine Tech Demo")
 
 # Installation nad Building
 ```bash
