@@ -5,7 +5,6 @@ sudo add-apt-repository multiverse
 
 sudo apt-get install g++-8
 sudo apt-get install \
-    libsdl2-2.0-0    \
     libassimp4       \
     libsdl2-dev      \
     libassimp-dev    \

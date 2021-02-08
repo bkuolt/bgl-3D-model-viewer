@@ -2,9 +2,5 @@
 *.la
 *.so
 *.a
-gfx/**/*.o
-gfx/**/*.la
-gfx/**/*.so
-gfx/**/*.a
-demo
+src/demo
 TODO
