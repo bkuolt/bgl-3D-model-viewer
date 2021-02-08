@@ -67,12 +67,6 @@ inline SharedGrid CreateGrid(GLfloat size, size_t num_cells) {
     return std::make_shared<grid>(size, num_cells);
 }
 
-/**
- * @brief Takes a screenshot and saves it to the current working directory.
- * @return A @p std::filesystem::path of the taken screenshot.
- */
-std::filesystem::path TakeScreenshot();
-
 }  // namespace bgl
 
 #endif  // GFX_GFX_HPP_

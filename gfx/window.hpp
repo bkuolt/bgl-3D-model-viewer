@@ -24,10 +24,13 @@ class Window {
     Window& operator=(Window &&rhs);
     Window& operator=(const Window&) = delete;
 
+    int exec();
+    void close() noexcept;
+
+
     void show() noexcept;
     void hide() noexcept;
     uvec2 getSize() const noexcept;
-    void close() noexcept;
 
     SDL_GLContext getOpenGLContext() noexcept;
     SDL_Window *getHandle() noexcept;
@@ -39,6 +42,7 @@ class Window {
 
     SDL_Window *_window { nullptr };
     SDL_GLContext _context { nullptr };
+    bool _run { false };
 };
 
 using SharedWindow = std::shared_ptr<Window>;

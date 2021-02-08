@@ -13,10 +13,6 @@ using namespace bgl;
 
 namespace {
 
-struct  {
-    bgl::SharedWindow window;
-} App;
-
 struct {
     SharedMesh mesh;
     SharedGrid grid;
@@ -24,13 +20,14 @@ struct {
 } Scene;
 
 bgl::Camera::shared_motion motion;
+bgl::SharedWindow window;
 
 void set_up_scene(const std::filesystem::path &path);
 void create_camera_motion(bool pressed, Camera::horizontal_direction direction, double angle);
 
 
 void signal_handler(int signal) {
-    std::cout << console_color::red << "\rrequested program termination" << std::flush;
+    std::cout << console_color::red << "\rrequested program termination\n" << std::flush;
     std::exit(EXIT_FAILURE);
 }
 
@@ -48,10 +45,10 @@ int main(int argc, char *argv[]) {
     std::signal(SIGHUP, signal_handler);
 
     try {
-        App.window = createWindow("BGL Model Viewer");
+         window = createWindow("BGL Model Viewer");
         set_up_scene(argv[1]);
-        App.window->show();
-        loop();
+        window->show();
+        return window->exec();
     } catch (const std::exception &exception) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", exception.what(), nullptr);
         std::cout << console_color::red << "error: " << exception.what() << std::endl;
@@ -68,7 +65,7 @@ int main(int argc, char *argv[]) {
 void on_key(const SDL_KeyboardEvent &event) {
     switch (event.keysym.scancode) {
         case SDL_SCANCODE_ESCAPE:
-            App.window->close();
+            if (window) window->close();
             break;
 
         case SDL_SCANCODE_LEFT:

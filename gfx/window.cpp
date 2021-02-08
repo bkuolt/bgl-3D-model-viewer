@@ -9,8 +9,7 @@
 
 #include <iostream>
 #include <set>
-#include <future>
-#include <thread>    // std::call_once
+#include <future>    // std::call_once
 #include <utility>   // std::swap()
 #include <limits>
 #include <memory>
@@ -73,8 +72,7 @@ SDL_GLContext create_OpenGL_Context(SDL_Window *window) {
     SDL_GLContext context { SDL_GL_CreateContext(window) };
     if (context == nullptr) {
         throw std::runtime_error { "could not create OpenGL context" };
-    }
-    if (SDL_GL_SetSwapInterval(0) == -1) {
+    } else if (SDL_GL_SetSwapInterval(0) == -1) {
         throw std::runtime_error { "could not disable vsync" };
     }
 
@@ -114,21 +112,44 @@ void initialize_SDL() {
     std::atexit(SDL_Quit);
 }
 
-bool run { false };  // TODO: fix this mess!
-
-}  // namespace
+/* ------------------- Event Handling ------------------- */
+/**
+ * @brief The currently managed window.
+ * @note Currently there is only support for one window.
+ */
+Window* _current_window = nullptr;  // TODO(bkuolt): Fix this mess
 
 /**
- * @brief A list of all active windows
- */
-std::set<Window*> windows;
+ * @brief Handles all events of all windows.
+*/
+void handle_event(const SDL_Event &event) {
+    switch (event.type) {
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+            on_key(event.key);
+            break;
+        case SDL_JOYAXISMOTION:
+        case SDL_JOYBUTTONDOWN:
+        case SDL_JOYBUTTONUP:
+            // TODO(bkuolt): add gamepad support
+            break;
+        case SDL_QUIT:
+        case SDL_WINDOWEVENT_CLOSE:
+            if (_current_window) _current_window->close();
+            break;
+    }
+}
+
+}  // anonymous namespace
+
 
 Window::Window(const std::string &title, bool windowed) {
     std::call_once(SDL_initialization_flag, &initialize_SDL);
     _window = create_window(title, windowed);
     _context = create_OpenGL_Context(_window);
-    windows.emplace(this);
-    run = true;
+    _run = true;
+
+    _current_window = this;  // TODO(bkuolt)
 }
 
 Window::Window(Window &&rhs) {
@@ -138,7 +159,8 @@ Window::Window(Window &&rhs) {
 Window::~Window() noexcept {
     SDL_DestroyWindow(_window);
     SDL_GL_DeleteContext(_context);
-    windows.erase(this);
+
+    _current_window = nullptr;  // TODO(bkuolt)
 }
 
 Window& Window::operator=(Window &&rhs) {
@@ -152,7 +174,26 @@ void Window::swap(Window &rhs) noexcept {
 }
 
 void Window::close() noexcept {
-    run = false;
+    _run = false;
+}
+
+int Window::exec() {
+    SDL_Event event;
+    while (_run) {
+        while (SDL_PollEvent(&event)) {
+            try {
+                handle_event(event);
+            } catch (const std::exception &error) {
+                std::cerr << error.what();
+                return EXIT_FAILURE;
+            }
+        }
+        render();
+    }
+
+    std::cout << "\r" << console_color::white << std::endl;
+    SDL_DestroyWindow(getHandle());  // TODO(bkuolt): make sure that the window is destroyed before the context
+    return EXIT_SUCCESS;
 }
 
 SDL_GLContext Window::getOpenGLContext() noexcept {
@@ -179,63 +220,18 @@ uvec2 Window::getSize() const noexcept {
 
 void Window::render() {
     static frame_counter frame_counter;
-
-    const bool changed = frame_counter.count();
+    const bool changed { frame_counter.count() };
     on_render(frame_counter.delta());
     SDL_GL_SwapWindow(_window);
-    
-    // TODO(bkuolt): add TTF font rendering support
+
     if (changed) {
+        // TODO(bkuolt): add TTF font rendering support
         std::cout << "\r" << console_color::blue << frame_counter.fps() << " FPS" << std::flush;
     }
 }
 
 SharedWindow createWindow(const std::string &title, bool windowed) {
     return std::make_shared<Window>(title, windowed);
-}
-
-/*-----------------------------------------------------------------------------
-  ----------------------------- Event Handling --------------------------------
-  ----------------------------------------------------------------------------- */
-namespace {
-
-void handle_event(const SDL_Event &event) {
-    switch (event.type) {
-        case SDL_KEYDOWN:
-        case SDL_KEYUP:
-            on_key(event.key);
-            break;
-        case SDL_JOYAXISMOTION:
-        case SDL_JOYBUTTONDOWN:
-        case SDL_JOYBUTTONUP:
-            // TODO
-            break;
-        case SDL_QUIT:
-        case SDL_WINDOWEVENT_CLOSE:
-            run = false;
-            break;
-    }
-}
-
-}  // namespace
-
-extern std::set<Window*> windows;  // TODO
-
-void loop() {
-    SDL_Event event;
-    while (run) {
-        while (SDL_PollEvent(&event)) {
-            handle_event(event);
-        }
-
-        std::for_each(windows.begin(), windows.end(), [] (Window *window) { window->render(); });
-    }
-
-    std::cout << "\r" << console_color::white << std::endl;
-
-    for (auto window : windows) {
-        SDL_DestroyWindow(window->getHandle());  // make sure that the window is destroyed before the context
-    }
 }
 
 }  // namespace bgl

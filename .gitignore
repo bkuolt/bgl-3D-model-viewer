@@ -7,5 +7,4 @@ gfx/**/*.la
 gfx/**/*.so
 gfx/**/*.a
 demo
-.github/
-.vscode/
+TODO
