@@ -1,20 +1,17 @@
 // Copyright 2020 Bastian Kuolt
-#include "../App.hpp"
+#include "../App.hpp"  // TODO(bkuolt)
+
 #include "gfx.hpp"
 #include "window.hpp"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_events.h>
 
-
 #include <iostream>
-#include <set>
 #include <future>    // std::call_once
 #include <utility>   // std::swap()
-#include <limits>
 #include <memory>
 #include <string>
-#include <vector>
 
 
 namespace bgl {

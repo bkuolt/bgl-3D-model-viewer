@@ -51,11 +51,6 @@ SharedTexture LoadTexture(const std::filesystem::path &path);
  */
 void SaveTexture(const SharedTexture &texture, const std::filesystem::path &path);
 
-/**
- * @brief Reads the color buffer and saves it in a Texture.
- */
-SharedTexture GetColorBuffer();
-
 }  // namespace bgl
 
 #endif  // GFX_TEXTURE_HPP_
