@@ -1,5 +1,4 @@
 // Copyright 2020 Bastian Kuolt
-#include "./../App.hpp"
 #include "camera.hpp"
 
 #include <stdexcept>
@@ -10,6 +9,7 @@ namespace bgl {
 namespace {
 
 double calculate_aspect_ratio() {
+#define DEBUG  // TODO(bkuolt)
 #ifdef DEBUG
     return 16.0 / 9.0;
 #else

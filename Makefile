@@ -11,7 +11,7 @@ LIBS = -lstdc++fs \
 	   -lboost_timer
 
 main.o: main.cpp \
-        App.hpp gfx/gfx.hpp gfx/camera.hpp gfx/camera.cpp
+        gfx/gfx.hpp gfx/camera.hpp gfx/camera.cpp
 	@$(CC) $(FLAGS) -c main.cpp
 
 gfx/libgfx.a:

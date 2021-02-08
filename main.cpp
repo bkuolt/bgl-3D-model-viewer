@@ -1,4 +1,4 @@
-// Copyright 2020 Bastian Kuolt
+// Copyright 2021 Bastian Kuolt
 #include <csignal>
 #include <cstdlib>
 #include <iostream>
@@ -6,32 +6,67 @@
 
 #include "gfx/gfx.hpp"
 #include "gfx/camera.hpp"
-#include "App.hpp"
 
 
 using namespace bgl;
 
 namespace {
 
+// forward declarations
+void create_camera_motion(bool pressed, Camera::horizontal_direction direction, double angle);
+void set_up_scene(const std::filesystem::path &path);
+
 struct {
     SharedMesh mesh;
     SharedGrid grid;
     Camera camera;
+    bgl::Camera::shared_motion motion;
 } Scene;
 
-bgl::Camera::shared_motion motion;
-bgl::SharedWindow window;
+class SimpleWindow final : public bgl::Window {
+ public:
+    SimpleWindow(const std::string &title)
+        : bgl::Window { title }
+    {}
 
-void set_up_scene(const std::filesystem::path &path);
-void create_camera_motion(bool pressed, Camera::horizontal_direction direction, double angle);
+ protected:
+    void on_key(const SDL_KeyboardEvent &event) override {
+        switch (event.keysym.scancode) {
+            case SDL_SCANCODE_ESCAPE:
+                close();
+                break;
+            case SDL_SCANCODE_LEFT:
+                create_camera_motion(event.state == SDL_PRESSED, Camera::horizontal_direction::left, 85);
+                break;
+            case SDL_SCANCODE_RIGHT:
+                create_camera_motion(event.state == SDL_PRESSED, Camera::horizontal_direction::right, 85);
+                break;
+            default:
+                // nothing to do yet
+                break;
+        }
+    }
 
+    void on_render(float delta) noexcept override {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        if (Scene.motion) {
+            Scene.motion->update();
+        }
+
+        const mat4 PV { Scene.camera.getMatrix() };
+        Scene.grid->render(PV);
+        Scene.mesh->render(PV);
+    }
+};
 
 void signal_handler(int signal) {
-    std::cout << console_color::red << "\rrequested program termination\n" << std::flush;
+    std::cerr << console_color::red << "\rrequested program termination" << std::endl;
     std::exit(EXIT_FAILURE);
 }
 
 }  // anomous namespace
+
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -45,10 +80,10 @@ int main(int argc, char *argv[]) {
     std::signal(SIGHUP, signal_handler);
 
     try {
-         window = createWindow("BGL Model Viewer");
+        SimpleWindow window { "BGL Model Viewer" };
         set_up_scene(argv[1]);
-        window->show();
-        return window->exec();
+        window.show();
+        return window.exec();
     } catch (const std::exception &exception) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", exception.what(), nullptr);
         std::cout << console_color::red << "error: " << exception.what() << std::endl;
@@ -58,53 +93,20 @@ int main(int argc, char *argv[]) {
     return EXIT_SUCCESS;
 }
 
-/* 
--------------------------------------------------------------
--                        Callbacks                          -
--------------------------------------------------------------*/
-void on_key(const SDL_KeyboardEvent &event) {
-    switch (event.keysym.scancode) {
-        case SDL_SCANCODE_ESCAPE:
-            if (window) window->close();
-            break;
-
-        case SDL_SCANCODE_LEFT:
-            create_camera_motion(event.state == SDL_PRESSED, Camera::horizontal_direction::left, 85);
-            break;
-        case SDL_SCANCODE_RIGHT:
-            create_camera_motion(event.state == SDL_PRESSED, Camera::horizontal_direction::right, 85);
-            break;
-        default:
-            // nothing to do yet
-            break;
-    }
-}
-
-void on_render(float delta) noexcept {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    if (motion) {
-        motion->update();
-    }
-
-    const mat4 PV { Scene.camera.getMatrix() };
-    Scene.grid->render(PV);
-    Scene.mesh->render(PV);
-}
-
 
 /* ------------------------- Details --------------------------- */
+
 namespace {
 
 void create_camera_motion(bool pressed, Camera::horizontal_direction direction, double angle) {
     if (pressed) {
-        if (motion == nullptr) {
-            motion = Scene.camera.createMotion(direction, 85);
+        if (Scene.motion == nullptr) {
+            Scene.motion = Scene.camera.createMotion(direction, 85);
         }
     } else {
-        if (motion) {
-            motion->stop();
-            motion.reset();
+        if (Scene.motion) {
+            Scene.motion->stop();
+            Scene.motion.reset();
         }
     }
 }
@@ -132,7 +134,7 @@ void set_up_scene(const std::filesystem::path &path) {
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
-    on_render(0.0);
+    // on_render(0.0);
 }
 
 }  // anonymous namespace

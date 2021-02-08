@@ -1,6 +1,4 @@
 // Copyright 2020 Bastian Kuolt
-#include "../App.hpp"  // TODO(bkuolt)
-
 #include "gfx.hpp"
 #include "window.hpp"
 
@@ -119,11 +117,11 @@ Window* _current_window = nullptr;  // TODO(bkuolt): Fix this mess
 /**
  * @brief Handles all events of all windows.
 */
-void handle_event(const SDL_Event &event) {
+void handle_event(Window &window, const SDL_Event &event) {
     switch (event.type) {
         case SDL_KEYDOWN:
         case SDL_KEYUP:
-            on_key(event.key);
+            window.on_key(event.key);
             break;
         case SDL_JOYAXISMOTION:
         case SDL_JOYBUTTONDOWN:
@@ -179,7 +177,7 @@ int Window::exec() {
     while (_run) {
         while (SDL_PollEvent(&event)) {
             try {
-                handle_event(event);
+                handle_event(*this, event);
             } catch (const std::exception &error) {
                 std::cerr << error.what();
                 return EXIT_FAILURE;
