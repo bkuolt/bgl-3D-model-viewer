@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <iostream>
 
+
 namespace bgl {
 
 namespace {
@@ -43,13 +44,16 @@ void Camera::updateViewMatrix() noexcept {
 }
 
 void Camera::rotate(const vec2 angle) noexcept {
-    vec3 position =  glm::rotate(getPosition(), glm::radians(angle.y), _up);
+    static vec2 _current_angle {};
+   _current_angle +=  angle;
+    std::cout << "ANgle: " << _current_angle.x << ", " << _current_angle.y << std::endl;
+
+    auto position =  glm::rotate(getPosition(), glm::radians(_current_angle.y), _up);
     setPosition(position);
-    updateViewMatrix();
 }
 
 mat4 Camera::getMatrix() const noexcept {
-    return _P * _V;
+    return _P  *_V;
 }
 
 void Camera::setPosition(const vec3 &position) noexcept {
@@ -78,46 +82,5 @@ const vec3& Camera::getViewCenter() const noexcept {
 double Camera::getZoom() const noexcept {
     return _zoom;
 }
-
-/* ----------------------------- Camera Motion ----------------------------- */
-camera_motion::camera_motion(Camera &camera, const vec3 &axis, double speed)
-    : _camera { camera }, _axis { axis }, _speed { speed }
-{}
-
-void camera_motion::start() noexcept {
-    std::cout << "motion started" << std::endl;
-    _timer.start();
-    _timestamp = std::chrono::milliseconds();
-}
-
-void camera_motion::stop() noexcept {
-    std::cout << "motion stopped" << std::endl;
-    update();
-    _timer.stop();
-}
-
-bool camera_motion::is_running() const noexcept {  // TOO: unnötig
-    return _timer.is_running();
-}
-
-void camera_motion::update() noexcept {
-    if (is_running()) {
-        const std::chrono::milliseconds delta { _timer.elapsed() - _timestamp };
-        _timestamp = _timer.elapsed();
-
-        const GLfloat speed = _speed * (delta.count() / 1000.0);
-        const GLfloat angle { std::fmod(glm::radians(speed), static_cast<GLfloat>(M_2_PI)) };  // TODO(nach camera verchieben)
-
-        const vec3 position { glm::rotate(_camera.getPosition(), angle, _camera._up) };
-        _camera.setPosition(position);
-    }
-}
-
-#if 1
-Camera::shared_motion Camera::createMotion(horizontal_direction direction, float speed) {
-    const auto motion_speed { (direction == horizontal_direction::left) ? -speed : speed };
-    return std::make_shared<camera_motion>(*this, _up, motion_speed);
-}
-#endif  // 1
 
 }  // namespace bgl

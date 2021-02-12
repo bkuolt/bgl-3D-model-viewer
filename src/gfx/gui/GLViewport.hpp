@@ -13,10 +13,11 @@ class GLViewport : public QOpenGLWidget {
  public:
     explicit GLViewport(QWidget *parent);
 
- protected:
+ protected: public:
     void initializeGL() override;
     void resizeGL(int width, int height) override;
     void paintGL() override;
+
 public:
    virtual void on_render(float d) {};
 

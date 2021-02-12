@@ -11,6 +11,7 @@ struct Light {
     vec3 color;
 };
 
+layout (location = 0) uniform mat4 MVP;
 layout (location = 1) uniform bool isTextured;
 layout (location = 2) uniform sampler2D texture;
 layout (location = 3) uniform Light lights[5];

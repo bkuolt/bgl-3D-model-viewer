@@ -38,10 +38,10 @@ void GLViewport::resizeGL(int width, int height) {
 }
 
 void GLViewport::paintGL() {
+    makeCurrent();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // TODO(bkuolt): place draw code from bgl-demo here
     on_render(1);
-
     std::cout << "paintedGL()" << std::endl;
 }
 
