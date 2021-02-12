@@ -10,7 +10,7 @@ CPPFLAGS = -std=c++17 -fPIC    \
            -Wno-endif-labels   \
             $(INCLUDES_QT)     \
            -DQT_NO_KEYWORDS    \
-		   -DUSE_SDL2          \
+		   -DUSE_QT   -fPIC          \
 		   -o3
 
 viewport.o: GLViewport.hpp viewport.cpp

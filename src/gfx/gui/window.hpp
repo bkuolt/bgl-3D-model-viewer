@@ -26,8 +26,8 @@ class Window
 #endif  // USE_QT
 {
  public:
-    explicit Window(const std::string &title = "", bool windowed = true);
-    explicit Window(Window &&);
+    explicit Window(const std::string &title , void (*render_callback)(float delta));
+   // explicit Window(Window &&);
     Window(const Window&) = delete;
     virtual ~Window() noexcept;
 
@@ -51,8 +51,8 @@ class Window
 
 #if defined(USE_SDL2)
     virtual void on_key(const SDL_KeyboardEvent &event) { /* intenionally does nothing */ }
-    virtual void on_render(float delta) noexcept { /* intenionally does nothing */ }
 #endif  // USE_SDL2
+ //   virtual void on_render(float delta) noexcept { /* intenionally does nothing */ }
 
  private:
     void swap(Window &rhs) noexcept;

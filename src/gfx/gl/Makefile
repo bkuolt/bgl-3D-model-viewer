@@ -1,8 +1,8 @@
 .DEFAULT_GOAL = libgl.la
 .PHONY = clean
 
-CC = g++-8
-FLAGS = -std=c++17 -pthread -Wall -O3
+CC = g++
+FLAGS = -std=c++17 -pthread -Wall -fPIC -O3
 
 shader.o: shader.cpp shader.hpp
 	@$(CC) $(FLAGS) -c shader.cpp

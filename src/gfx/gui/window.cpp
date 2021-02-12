@@ -22,6 +22,7 @@ namespace {
 class frame_counter {
  public:
     bool count() noexcept {
+#if defined (USE_SDL2)
         _delta = (SDL_GetTicks() - _timestamp_render) / 1000.0f;
         _timestamp_render = SDL_GetTicks();
         ++_num_frames;
@@ -33,6 +34,9 @@ class frame_counter {
         }
 
         return is_new_second;
+#else 
+        return false;  // TODO(bkuolt)
+#endif
     }
 
     size_t fps() const noexcept {
@@ -44,8 +48,8 @@ class frame_counter {
     }
 
  private:
-    Uint32 _timestamp_fps { 0 };
-    Uint32 _timestamp_render { 0 };
+    uint32_t _timestamp_fps { 0 };
+    uint32_t _timestamp_render { 0 };
     size_t _num_frames { 0 };
     size_t _fps { 0 };
     double _delta { 0.0 };
@@ -142,7 +146,11 @@ void handle_event(Window &window, const SDL_Event &event) {
 
 }  // anonymous namespace
 
-Window::Window(const std::string &title, bool windowed) {
+Window::Window(const std::string &title, void (*render_callback)(float delta))
+#if defined(USE_QT)
+    : _viewport(this, render_callback)
+#endif  // USE_QT
+{
 #if defined(USE_SDL2)
     std::call_once(SDL_initialization_flag, &initialize_SDL);
     _window = create_window(title, windowed);
@@ -151,7 +159,6 @@ Window::Window(const std::string &title, bool windowed) {
 
     _current_window = this;  // TODO(bkuolt)
 #elif defined(USE_QT)
-    : _viewport { this } {
     this->setWindowTitle("BGL Demo");
     this->setFixedSize(1200, 800);
 
@@ -164,9 +171,11 @@ Window::Window(const std::string &title, bool windowed) {
 #endif
 }
 
+/*
 Window::Window(Window &&rhs) {
     swap(rhs);
 }
+*/
 
 Window::~Window() noexcept {
 #if defined(USE_SDL2)
@@ -182,8 +191,12 @@ Window& Window::operator=(Window &&rhs) {
 }
 
 void Window::swap(Window &rhs) noexcept {
+#if defined(USE_SDL2)
     std::swap(_window, rhs._window);
     std::swap(_context, rhs._context);
+#else 
+    // TODO(bkuolt)
+#endif
 }
 
 #if defined(USE_SDL2)
@@ -207,11 +220,11 @@ int Window::exec() {
 }
 #elif defined(USE_QT)
 bool Window::event(QEvent *event) {
+      //  std::cout << "evebt"<< std::endl;
     if (event->type() == QEvent::KeyPress) {
         std::cout << "key pressed" << std::endl;
         return true;
     }
-
     return false;  // TODO(bkuolt): implement
 }
 #endif
@@ -241,23 +254,18 @@ uvec2 Window::getSize() const noexcept {
 #endif
 }
 
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
-
 void Window::render() {
-    static frame_counter frame_counter;
-    const bool changed { frame_counter.count() };
-    on_render(frame_counter.delta());
+  //  static frame_counter frame_counter;
+  //  const bool changed { frame_counter.count() };
+  // on_render(frame_counter.delta());
+    
 #if defined(USE_SDL2)
     SDL_GL_SwapWindow(_window);
-#endif  // USE_SDL2
-
     if (changed) {
         // TODO(bkuolt): add TTF font rendering support
-        std::cout << "\r" << frame_counter.fps() << " FPS" << std::flush;
+          std::cout << "\r" << frame_counter.fps() << " FPS" << std::flush;
     }
+#endif  // 0
 }
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
 
 }  // namespace bgl

@@ -7,14 +7,23 @@
 #include "gfx/gfx.hpp"
 #include "gfx/camera.hpp"
 
+#include <QApplication>
+#include <QOpenGLContext>
 
 using namespace bgl;
 
 namespace {
 
+
+
+
 // forward declarations
 void create_camera_motion(bool pressed, Camera::horizontal_direction direction, double angle);
 void set_up_scene(const std::filesystem::path &path);
+
+
+}  //
+
 
 struct {
     SharedMesh mesh;
@@ -23,13 +32,53 @@ struct {
     bgl::Camera::shared_motion motion;
 } Scene;
 
+
+
+void on_render(float delta)  {
+    std::cout << "on_render()" << std::endl;
+    static bool f = false;
+    if (!f) {
+        set_up_scene("./assets/models/housemedieval.obj");
+        f = true;
+    }
+   // return;
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+
+
+    if (Scene.motion) {
+        Scene.motion->update();
+    }
+
+    const mat4 PV { Scene.camera.getMatrix() };
+    Scene.grid->render(PV);
+  
+  
+    Scene.mesh->render(PV);
+
+}
+
+namespace {
+
+
+
+
+
+
+
+
+
+
 class SimpleWindow final : public bgl::Window {
  public:
     SimpleWindow(const std::string &title)
-        : bgl::Window { title }
+        : bgl::Window( title, on_render )
     {}
 
  protected:
+ #if 0
     void on_key(const SDL_KeyboardEvent &event) override {
         switch (event.keysym.scancode) {
             case SDL_SCANCODE_ESCAPE:
@@ -46,18 +95,8 @@ class SimpleWindow final : public bgl::Window {
                 break;
         }
     }
+#endif  //0
 
-    void on_render(float delta) noexcept override {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        if (Scene.motion) {
-            Scene.motion->update();
-        }
-
-        const mat4 PV { Scene.camera.getMatrix() };
-        Scene.grid->render(PV);
-        Scene.mesh->render(PV);
-    }
 };
 
 void signal_handler(int signal) {
@@ -79,13 +118,19 @@ int main(int argc, char *argv[]) {
     std::signal(SIGINT, signal_handler);
     std::signal(SIGHUP, signal_handler);
 
+        QApplication app (argc, argv);
+
     try {
         SimpleWindow window { "BGL Model Viewer" };
-        set_up_scene(argv[1]);
+
         window.show();
-        return window.exec();
+        //  set_up_scene(argv[1]);
+
+            
+        return app.exec();
+       // return window.exec();
     } catch (const std::exception &exception) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", exception.what(), nullptr);
+     //   SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", exception.what(), nullptr);
         std::cout << console_color::red << "error: " << exception.what() << std::endl;
         return EXIT_FAILURE;
     }

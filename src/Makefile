@@ -1,12 +1,21 @@
 .DEFAULT_GOAL = run
 .PHONY = demo run clean
 
-CC = g++-8
+INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
+	          -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets  \
+			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore     \
+			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL   \
+			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui
+
+CC = g++
 FLAGS = -std=c++17 -pthread \
-	    -DUSE_SDL2 \
-        -Wall -O3 
+	    -DUSE_QT $(INCLUDES_QT) -fPIC \
+		-Wall -O3
+
+# -fPIC is for QT only
+
 LIBS = -lstdc++fs \
-       -lSDL2  \
+       -lQt5Widgets -lQt5Core -lGL \
 	   -lassimp  \
 	   -lIL \
 	   -lGLEW -lGLU -lGL -lGLU \

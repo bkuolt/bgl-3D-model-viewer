@@ -1,8 +1,8 @@
 .DEFAULT_GOAL = libgfx.a
 .PHONY = libgfx.a clean
 
-CC = g++-8
-FLAGS = -std=c++17 -pthread -Wall -O3 -Igl/
+CC = g++
+FLAGS = -std=c++17 -pthread -Wall -fPIC -O3 -Igl/
 
 gfx.o: gfx.cpp gfx.hpp
 	@$(CC) $(FLAGS) -c gfx.cpp
