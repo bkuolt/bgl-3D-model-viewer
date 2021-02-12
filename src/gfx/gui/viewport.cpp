@@ -14,8 +14,8 @@ void on_render(float delta)  ;
 
 namespace bgl {
 
-GLViewport::GLViewport(QWidget *parent,  void (*render_callback)(float delta))
-    : QOpenGLWidget(parent), _render_callback(render_callback)
+GLViewport::GLViewport(QWidget *parent)
+    : QOpenGLWidget(parent)
 {
 
 

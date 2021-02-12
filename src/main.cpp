@@ -10,19 +10,14 @@
 #include <QApplication>
 #include <QOpenGLContext>
 
+
 using namespace bgl;
 
 namespace {
 
-
-
-
 // forward declarations
 void create_camera_motion(bool pressed, Camera::horizontal_direction direction, double angle);
 void set_up_scene(const std::filesystem::path &path);
-
-
-}  //
 
 
 struct {
@@ -33,48 +28,36 @@ struct {
 } Scene;
 
 
+class Viewport final : public bgl::GLViewport {
+ public:
+    explicit Viewport(QWidget *parent)
+        : GLViewport(parent)
+    {}
 
-void on_render(float delta)  {
-    std::cout << "on_render()" << std::endl;
-    static bool f = false;
-    if (!f) {
-        set_up_scene("./assets/models/housemedieval.obj");
-        f = true;
+    void on_render(float delta) override {
+        std::cout << "on_render()" << std::endl;
+        static bool initialized { false };
+        if (!initialized) {
+            set_up_scene("./assets/models/housemedieval.obj");
+            initialized = true;
+        }
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        if (Scene.motion) {
+            Scene.motion->update();
+        }
+
+        const mat4 PV { Scene.camera.getMatrix() };
+        Scene.grid->render(PV);
+        Scene.mesh->render(PV);
     }
-   // return;
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-
-
-    if (Scene.motion) {
-        Scene.motion->update();
-    }
-
-    const mat4 PV { Scene.camera.getMatrix() };
-    Scene.grid->render(PV);
-  
-  
-    Scene.mesh->render(PV);
-
-}
-
-namespace {
-
-
-
-
-
-
-
-
+};
 
 
 class SimpleWindow final : public bgl::Window {
  public:
     SimpleWindow(const std::string &title)
-        : bgl::Window( title, on_render )
+        : bgl::Window(title)
     {}
 
  protected:
@@ -96,7 +79,6 @@ class SimpleWindow final : public bgl::Window {
         }
     }
 #endif  //0
-
 };
 
 void signal_handler(int signal) {
@@ -118,15 +100,14 @@ int main(int argc, char *argv[]) {
     std::signal(SIGINT, signal_handler);
     std::signal(SIGHUP, signal_handler);
 
-        QApplication app (argc, argv);
-
     try {
+        QApplication app (argc, argv);
         SimpleWindow window { "BGL Model Viewer" };
+        Viewport viewport(&window);
 
+        window.setViewport(&viewport);
         window.show();
-        //  set_up_scene(argv[1]);
-
-            
+        // set_up_scene(argv[1]);
         return app.exec();
        // return window.exec();
     } catch (const std::exception &exception) {
@@ -137,7 +118,6 @@ int main(int argc, char *argv[]) {
 
     return EXIT_SUCCESS;
 }
-
 
 /* ------------------------- Details --------------------------- */
 

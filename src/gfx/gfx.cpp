@@ -1,5 +1,5 @@
 // Copyright 2020 Bastian Kuolt
-#include "../gfx.hpp"  //TODO
+#include "gfx.hpp"  //TODO
 
 namespace bgl {
 

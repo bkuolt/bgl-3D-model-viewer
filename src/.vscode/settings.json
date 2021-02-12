@@ -56,6 +56,9 @@
         "typeinfo": "cpp",
         "bit": "cpp",
         "qopenglwidget": "cpp",
-        "qopenglcontext": "cpp"
+        "qopenglcontext": "cpp",
+        "qmainwindow": "cpp",
+        "deque": "cpp",
+        "valarray": "cpp"
     }
 }
