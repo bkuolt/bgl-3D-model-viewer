@@ -11,16 +11,15 @@ namespace bgl {
 
 class GLViewport : public QOpenGLWidget {
  public:
-    explicit GLViewport(QWidget *parent);
+	explicit GLViewport(QWidget *parent);
 
- protected: public:
-    void initializeGL() override;
-    void resizeGL(int width, int height) override;
-    void paintGL() override;
+	protected: public:
+	void initializeGL() override;
+	void resizeGL(int width, int height) override;
+	void paintGL() override;
 
-public:
-   virtual void on_render(float d) {};
-
+ public:
+	virtual void on_render(float delta) { };
 };
 
 }  // namespace bgl

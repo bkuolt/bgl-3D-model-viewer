@@ -46,7 +46,7 @@ void Camera::updateViewMatrix() noexcept {
 void Camera::rotate(const vec2 angle) noexcept {
     static vec2 _current_angle {};
    _current_angle +=  angle;
-    std::cout << "ANgle: " << _current_angle.x << ", " << _current_angle.y << std::endl;
+    // std::cout << "Angle: " << _current_angle.x << ", " << _current_angle.y << std::endl;
 
     auto position =  glm::rotate(getPosition(), glm::radians(_current_angle.y), _up);
     setPosition(position);

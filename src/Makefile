@@ -18,10 +18,7 @@ LIBS = -lstdc++fs \
        -lQt5Widgets -lQt5Core -lGL \
 	   -lassimp  \
 	   -lIL \
-	   -lGLEW -lGLU -lGL -lGLU \
-	   -lboost_timer
-
-
+	   -lGLEW -lGLU -lGL -lGLU
 
 main.o: main.cpp \
         gfx/gfx.hpp gfx/camera.hpp gfx/camera.cpp

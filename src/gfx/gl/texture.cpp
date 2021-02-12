@@ -134,13 +134,13 @@ SharedTexture LoadTexture(const std::filesystem::path &path) {
         throw std::runtime_error { path.string() + " does not exist" };
     }
 
-    const bool could_load { ilLoadImage(path.string().c_str()) };
+    const ILboolean could_load { ilLoadImage(path.string().c_str()) };
     if (!could_load) {
         ilDeleteImage(handle);
         throw std::runtime_error { "could not load image" };
     }
 
-    const bool could_convert { ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE) };
+    const ILboolean could_convert { ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE) };
     // TODO(bkuolt): fix this memory leak ("ilDeleteImage(handle);")"
     if (!could_convert) {
         throw std::runtime_error { "could not convert image" };
@@ -160,7 +160,7 @@ void SaveTexture(const SharedTexture &texture, const std::filesystem::path &path
     const ILuint image { il::GenImage() };
     ilBindImage(image);
     ilTexImage(size.x, size.y, 0, 3, IL_RGB, IL_UNSIGNED_BYTE, pixels.data() );
-    const bool successfull { ilSaveImage(path.string().c_str()) };
+    const ILboolean successfull { ilSaveImage(path.string().c_str()) };
     ilDeleteImage(image);
     if (!successfull) {
         throw std::runtime_error { "could not save image file" };

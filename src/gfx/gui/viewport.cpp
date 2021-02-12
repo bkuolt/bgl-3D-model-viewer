@@ -7,20 +7,15 @@
 
 
 #include <QOpenGLWidget>
-#include "../gl/gl.hpp"
+#include "../gl/gl.hpp"  // TODO(bkuolt)
 #include <iostream>
 
-void on_render(float delta)  ;
 
 namespace bgl {
 
 GLViewport::GLViewport(QWidget *parent)
     : QOpenGLWidget(parent)
-{
-
-
-
-}
+{}
 
 void GLViewport::initializeGL() {
     const GLenum error { glewInit() };
@@ -39,10 +34,8 @@ void GLViewport::resizeGL(int width, int height) {
 
 void GLViewport::paintGL() {
     makeCurrent();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // TODO(bkuolt): place draw code from bgl-demo here
-    on_render(1);
-    std::cout << "paintedGL()" << std::endl;
+    on_render(1.0);
+    // std::cout << "paintedGL()" << std::endl;
 }
 
 }  // namespace bgl

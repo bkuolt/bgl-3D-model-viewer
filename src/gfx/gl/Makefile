@@ -8,7 +8,7 @@ INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL   \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui
 
-FLAGS = -std=c++17 -pthread  $(INCLUDES_QT) -Wall -fPIC -O3
+FLAGS = -std=c++17 $(INCLUDES_QT) -Wall -fPIC -O3
 
 shader.o: shader.cpp shader.hpp
 	@$(CC) $(FLAGS) -c shader.cpp
