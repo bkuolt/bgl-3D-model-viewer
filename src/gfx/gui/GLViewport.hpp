@@ -17,7 +17,7 @@ class GLViewport : public QOpenGLWidget {
     void initializeGL() override;
     void resizeGL(int width, int height) override;
     void paintGL() override;
-
+public:
    virtual void on_render(float d) {};
 
 };

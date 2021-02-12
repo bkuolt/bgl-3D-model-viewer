@@ -47,7 +47,7 @@ class frame_counter {
     uint32_t _timestamp_render { 0 };
     size_t _num_frames { 0 };
     size_t _fps { 0 };
-    double _delta { 0.0 };
+    double _delta { 0.0 }; 
 };
 
 }  // anonymous namespace
@@ -84,15 +84,6 @@ void Window::setViewport(GLViewport *p) {
     _viewport->show();
     this->setCentralWidget(_viewport);
 
-}
-
-bool Window::event(QEvent *event) {
-      //  std::cout << "evebt"<< std::endl;
-    if (event->type() == QEvent::KeyPress) {
-        std::cout << "key pressed" << std::endl;
-        return true;
-    }
-    return false;  // TODO(bkuolt): implement
 }
 
 uvec2 Window::getSize() const noexcept {

@@ -9,6 +9,7 @@
 
 #include <QApplication>
 #include <QOpenGLContext>
+#include <QKeyEvent>
 
 
 using namespace bgl;
@@ -60,25 +61,30 @@ class SimpleWindow final : public bgl::Window {
         : bgl::Window(title)
     {}
 
- protected:
- #if 0
-    void on_key(const SDL_KeyboardEvent &event) override {
-        switch (event.keysym.scancode) {
-            case SDL_SCANCODE_ESCAPE:
-                close();
-                break;
-            case SDL_SCANCODE_LEFT:
-                create_camera_motion(event.state == SDL_PRESSED, Camera::horizontal_direction::left, 85);
-                break;
-            case SDL_SCANCODE_RIGHT:
-                create_camera_motion(event.state == SDL_PRESSED, Camera::horizontal_direction::right, 85);
-                break;
+    bool event(QEvent *event) override {
+        //  std::cout << "evebt"<< std::endl;
+        if (event->type()  == QEvent::KeyPress ||
+            event->type()  == QEvent::KeyRelease) {
+            QKeyEvent* key = reinterpret_cast<QKeyEvent*>(event);
+            switch (key->key()) {
+                case Qt::Key_Escape:
+                    close();
+                    break;
+                case Qt::Key_Left:
+                std::cout << "left" << std::endl;
+                    create_camera_motion(event->type() == QEvent::KeyPress , Camera::horizontal_direction::left, 85);
+                    break;
+                case Qt::Key_Right:
+                    create_camera_motion(event->type() == QEvent::KeyPress , Camera::horizontal_direction::right, 85);
+                    break;
             default:
-                // nothing to do yet
-                break;
+                return false;
+            }
+            return true;
         }
+
+        return false;
     }
-#endif  //0
 };
 
 void signal_handler(int signal) {
@@ -101,17 +107,16 @@ int main(int argc, char *argv[]) {
     std::signal(SIGHUP, signal_handler);
 
     try {
-        QApplication app (argc, argv);
+        QApplication app(argc, argv);
         SimpleWindow window { "BGL Model Viewer" };
-        Viewport viewport(&window);
+        Viewport viewport { &window };
 
         window.setViewport(&viewport);
         window.show();
-        // set_up_scene(argv[1]);
         return app.exec();
        // return window.exec();
     } catch (const std::exception &exception) {
-     //   SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", exception.what(), nullptr);
+        // TODO(bkuolt): show message box
         std::cout << console_color::red << "error: " << exception.what() << std::endl;
         return EXIT_FAILURE;
     }
