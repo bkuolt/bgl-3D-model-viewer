@@ -16,16 +16,13 @@ using namespace bgl;
 
 namespace {
 
-// forward declarations
-void create_camera_motion(bool pressed, Camera::horizontal_direction direction, double angle);
+// forward declaration
 void set_up_scene(const std::filesystem::path &path);
-
 
 struct {
     SharedMesh mesh;
     SharedGrid grid;
     Camera camera;
-    bgl::Camera::shared_motion motion;
 } Scene;
 
 
@@ -44,10 +41,6 @@ class Viewport final : public bgl::GLViewport {
         }
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        if (Scene.motion) {
-            Scene.motion->update();
-        }
-
         const mat4 PV { Scene.camera.getMatrix() };
         Scene.grid->render(PV);
         Scene.mesh->render(PV);
@@ -59,32 +52,46 @@ class SimpleWindow final : public bgl::Window {
  public:
     SimpleWindow(const std::string &title)
         : bgl::Window(title)
-    {}
+    {
+	}
 
     bool event(QEvent *event) override {
         //  std::cout << "evebt"<< std::endl;
-        if (event->type()  == QEvent::KeyPress ||
-            event->type()  == QEvent::KeyRelease) {
+        if (event->type()  == QEvent::KeyPress) {
             QKeyEvent* key = reinterpret_cast<QKeyEvent*>(event);
             switch (key->key()) {
                 case Qt::Key_Escape:
                     close();
                     break;
                 case Qt::Key_Left:
-                std::cout << "left" << std::endl;
-                    create_camera_motion(event->type() == QEvent::KeyPress , Camera::horizontal_direction::left, 85);
+
+                    std::cout << "left" << std::endl;
+				    Scene.camera.rotate(vec2(0, -0.5));
+
+					 _viewport->makeCurrent();
+		            _viewport->update();
+
+                  //  create_camera_motion(event->type() == QEvent::KeyPress , Camera::horizontal_direction::left, 85);
                     break;
                 case Qt::Key_Right:
-                    create_camera_motion(event->type() == QEvent::KeyPress , Camera::horizontal_direction::right, 85);
+				    std::cout << "right" << std::endl;
+				    Scene.camera.rotate(vec2(0, 0.5));
+
+					 _viewport->makeCurrent();
+		            _viewport->update();
+
+                 //   create_camera_motion(event->type() == QEvent::KeyPress , Camera::horizontal_direction::right, 85);
                     break;
             default:
-                return false;
+                return QMainWindow::event(event);
             }
-            return true;
+
+		//	return true;
         }
 
-        return false;
+        return QMainWindow::event(event);
     }
+
 };
 
 void signal_handler(int signal) {
@@ -127,19 +134,6 @@ int main(int argc, char *argv[]) {
 /* ------------------------- Details --------------------------- */
 
 namespace {
-
-void create_camera_motion(bool pressed, Camera::horizontal_direction direction, double angle) {
-    if (pressed) {
-        if (Scene.motion == nullptr) {
-            Scene.motion = Scene.camera.createMotion(direction, 85);
-        }
-    } else {
-        if (Scene.motion) {
-            Scene.motion->stop();
-            Scene.motion.reset();
-        }
-    }
-}
 
 void set_up_scene(const std::filesystem::path &path) {
     Scene.mesh = LoadMesh(path);

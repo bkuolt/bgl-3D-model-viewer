@@ -227,14 +227,23 @@ std::cout << "texta"<<std::endl;
 
 }
 
-void Mesh::render(const mat4 &MVP) {
+void Mesh::render(const mat4 &_MVP) {
+    static int i = 0;
+    ++i;
+    std::cout << "---> " << i << std::endl;
+
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    std::cout << "Mesh::render() " << _program << std::endl;
+    std::cout << "Mesh::render() " << std::endl
+              << vec3(_MVP[0]) << ", "
+                  << vec3(_MVP[1]) << ", "
+                  << vec3(_MVP[2]) << std::endl;
 
     _program->use();
-    _program->setUniform(AttributLocations::MVP, MVP);
 
     setUpLightning(_program);
+    //program->setUniform(AttributLocations::MVP, MVP);
+    _program->setUniform("MVP", _MVP);
+
 
     const GLuint isTextured { _texture != nullptr };
     _program->setUniform("isTextured", isTextured);
@@ -243,7 +252,7 @@ void Mesh::render(const mat4 &MVP) {
     }
 
     _vao->draw();
-    _box.render(MVP);
+    _box.render(_MVP);
 }
 
 }  // namespace bgl
