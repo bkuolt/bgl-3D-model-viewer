@@ -10,18 +10,19 @@ gfx.o: gfx.cpp gfx.hpp
 camera.o: camera.cpp camera.hpp
 	@$(CC) $(FLAGS) -c camera.cpp
 
-window.o: window.cpp window.hpp
-	@$(CC) $(FLAGS) -c window.cpp
-
 gl/libgl.a:
 	@$(MAKE) -C gl
+
+gui/libgui.a:
 	@$(MAKE) -C gui
 
-libgfx.a: gl/libgl.a\
-          camera.o window.o gfx.o
+libgfx.a: gl/libgl.a   \
+          gui/libgui.a \
+          camera.o gfx.o
 	ar rcs libgfx.a *.o
 
 clean:
 	@$(MAKE) -C gl clean
+	@$(MAKE) -C gui clean
 	@rm -f *.o
 	@rm -f *.a

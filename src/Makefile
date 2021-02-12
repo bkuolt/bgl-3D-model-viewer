@@ -17,11 +17,13 @@ main.o: main.cpp \
 gfx/libgfx.a:
 	@$(MAKE) -C gfx
 
-demo: main.o gfx/libgfx.a gfx/gl/libgl.a
+demo: main.o gfx/libgfx.a gfx/gl/libgl.a gfx/gui/libgui.a  # TODO: simplify
 	$(CC) -o demo \
 	$(FLAGS) \
 	main.o \
-	-Lgfx -lgfx -Lgfx/gl -lgl  \
+	-Lgfx -lgfx     \
+	-Lgfx/gl -lgl   \
+	-Lgfx/gui -lgui \
 	$(LIBS)
 
 run: demo

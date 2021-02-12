@@ -6,7 +6,7 @@
 #include "gl/mesh.hpp"
 #include "gl/texture.hpp"
 
-#include "window.hpp"
+#include "gui/window.hpp"
 
 #include <SDL2/SDL.h>   // SDL basic functionality
 

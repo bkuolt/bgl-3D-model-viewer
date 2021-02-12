@@ -1,28 +1,25 @@
-.DEFAULT_GOAL = bgl
-.PHONY = run clean run
+.DEFAULT_GOAL = libgui.a
+.PHONY = clean
 
 INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
 	          -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets  \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore     \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL
 
-LIBS_QT = -lQt5Widgets -lQt5Core -lGL
-CPPFLAGS = -std=c++17 -fPIC $(INCLUDES_QT) -DQT_NO_KEYWORDS -o3
-LDFLAGS = -lstdc++fs -lstdc++ $(LIBS_QT)
-
-
-main.o: main.cpp
-	g++ $(CPPFLAGS) -c main.cpp -o main.o
+CPPFLAGS = -std=c++17 -fPIC    \
+           -Wno-endif-labels   \
+            $(INCLUDES_QT)     \
+           -DQT_NO_KEYWORDS -o3
 
 viewport.o: GLViewport.hpp viewport.cpp
 	g++ $(CPPFLAGS) -c viewport.cpp -o viewport.o
 
-bgl: main.o viewport.o
-	g++ -o bgl main.o viewport.o $(LIBS_QT) $(LDFLAGS) 
+window.o: window.hpp window.cpp
+	g++ $(CPPFLAGS) -c window.cpp -o window.o
 
-run: bgl
-	@./bgl
+libgui.a: window.o viewport.o
+	ar rcs libgui.a *.o
 
 clean:
 	@rm -f *.o
-	@rm -f bgl
+	@rm -f *.a

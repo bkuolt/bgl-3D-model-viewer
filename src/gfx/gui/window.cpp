@@ -1,9 +1,13 @@
-// Copyright 2020 Bastian Kuolt
-#include "gfx.hpp"
+// Copyright 2021 Bastian Kuolt
+#include "../gfx.hpp"  // TODO
 #include "window.hpp"
 
+#if defined (USE_SDL2)
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_events.h>
+#else  if defined(USE_QT)
+#include <QEvent>  // QEvent::KeyPress
+#endif  // USE_SDL2
 
 #include <iostream>
 #include <future>    // std::call_once
@@ -15,7 +19,6 @@
 namespace bgl {
 
 namespace {
-
 class frame_counter {
  public:
     bool count() noexcept {
@@ -47,6 +50,32 @@ class frame_counter {
     size_t _fps { 0 };
     double _delta { 0.0 };
 };
+}  // anonymous namespace
+
+
+#if defined(USE_QT)
+Window::Window()
+    : _viewport { this } {
+    this->setWindowTitle("BGL Demo");
+    this->setFixedSize(1200, 800);
+
+    // creates GL context
+    _viewport.resize(1200, 800);
+    _viewport.show();
+    this->setCentralWidget(&_viewport);
+
+    this->show();
+}
+
+bool Window::event(QEvent *event) {
+    if (event->type() == QEvent::KeyPress) {
+        std::cout << "key pressed" << std::endl;
+        return true;
+    }
+
+    return false;  // TODO(bkuolt): implement
+}
+#elif defined(USE_SDL2)
 
 SDL_GLContext create_OpenGL_Context(SDL_Window *window) {
     const bool successfull {
@@ -135,8 +164,6 @@ void handle_event(Window &window, const SDL_Event &event) {
     }
 }
 
-}  // anonymous namespace
-
 
 Window::Window(const std::string &title, bool windowed) {
     std::call_once(SDL_initialization_flag, &initialize_SDL);
@@ -224,9 +251,6 @@ void Window::render() {
         std::cout << "\r" << console_color::blue << frame_counter.fps() << " FPS" << std::flush;
     }
 }
-
-SharedWindow createWindow(const std::string &title, bool windowed) {
-    return std::make_shared<Window>(title, windowed);
-}
+#endif  // USE_SDL2
 
 }  // namespace bgl
