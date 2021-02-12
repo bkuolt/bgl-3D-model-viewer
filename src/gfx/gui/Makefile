@@ -9,7 +9,9 @@ INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
 CPPFLAGS = -std=c++17 -fPIC    \
            -Wno-endif-labels   \
             $(INCLUDES_QT)     \
-           -DQT_NO_KEYWORDS -o3
+           -DQT_NO_KEYWORDS    \
+		   -DUSE_SDL2          \
+		   -o3
 
 viewport.o: GLViewport.hpp viewport.cpp
 	g++ $(CPPFLAGS) -c viewport.cpp -o viewport.o

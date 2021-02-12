@@ -2,13 +2,17 @@
 .PHONY = demo run clean
 
 CC = g++-8
-FLAGS = -std=c++17 -pthread -Wall -O3
+FLAGS = -std=c++17 -pthread \
+	    -DUSE_SDL2 \
+        -Wall -O3 
 LIBS = -lstdc++fs \
        -lSDL2  \
 	   -lassimp  \
 	   -lIL \
 	   -lGLEW -lGLU -lGL -lGLU \
 	   -lboost_timer
+
+
 
 main.o: main.cpp \
         gfx/gfx.hpp gfx/camera.hpp gfx/camera.cpp

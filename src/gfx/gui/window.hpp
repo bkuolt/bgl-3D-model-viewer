@@ -2,21 +2,14 @@
 #ifndef GUI_WINDOW_HPP_
 #define GUI_WINDOW_HPP_
 
-//////////////////////////////////////
-//////////////////////////////////////
-#define USE_SDL2  // TODO(bkuolt): make configurable with compile flag
-// USE_QT
-//////////////////////////////////////
-//////////////////////////////////////
-
-#include "../gl/gl.hpp"  // TODO()
+#include "../gl/gl.hpp"  // TODO(bkuolt): fix this
 
 #include <memory>
 #include <string>
 
 #if defined(USE_SDL2)
-#include <SDL2/SDL_video.h>  // SDL_GLContext, SDL_Window
-#include <SDL2/SDL_events.h>
+#include <SDL2/SDL_video.h>   // SDL_GLContext, SDL_Window
+#include <SDL2/SDL_events.h>  // SDL_KeyboardEvent
 #elif defined(USE_QT)
 #include <QMainWindow>
 #include "GLViewport.hpp"
@@ -33,7 +26,7 @@ class Window
 #endif  // USE_QT
 {
  public:
-    explicit Window(const std::string &title, bool windowed = true);
+    explicit Window(const std::string &title = "", bool windowed = true);
     explicit Window(Window &&);
     Window(const Window&) = delete;
     virtual ~Window() noexcept;
@@ -41,23 +34,19 @@ class Window
     Window& operator=(Window &&rhs);
     Window& operator=(const Window&) = delete;
 
-#if defined(USE_QT)
-	Window();
+#if defined(USE_SDL2)
+    void close() noexcept;
+    void show() noexcept;
+    void hide() noexcept;
+#endif  // USE_SDL2
+
+#if defined(USE_SDL2)
+    int exec();
+#elif defined(USE_QT)
 	bool event(QEvent *event) override;
 #endif  // USE_QT
 
-    int exec();
-    void close() noexcept;
-
-    void show() noexcept;
-    void hide() noexcept;
     uvec2 getSize() const noexcept;
-
-#if defined(USE_SDL2)
-    SDL_GLContext getOpenGLContext() noexcept;
-    SDL_Window *getHandle() noexcept;
-#endif  // USE_SDL2
-
     void render();
 
 #if defined(USE_SDL2)
@@ -69,14 +58,13 @@ class Window
     void swap(Window &rhs) noexcept;
 
 #if defined(USE_SDL2)
+    bool _run { false };
     SDL_Window *_window { nullptr };
     SDL_GLContext _context { nullptr };
 #elif  defined(USE_QT)
 	GLViewport _viewport;
 	// TODO(bkuolt): handle events
 #endif
-
-    bool _run { false };
 };
 
 }  // namespace bgl

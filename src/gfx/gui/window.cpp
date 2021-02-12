@@ -1,5 +1,4 @@
 // Copyright 2021 Bastian Kuolt
-#include "../gfx.hpp"  // TODO
 #include "window.hpp"
 
 #if defined (USE_SDL2)
@@ -19,6 +18,7 @@
 namespace bgl {
 
 namespace {
+
 class frame_counter {
  public:
     bool count() noexcept {
@@ -50,33 +50,8 @@ class frame_counter {
     size_t _fps { 0 };
     double _delta { 0.0 };
 };
-}  // anonymous namespace
 
-
-#if defined(USE_QT)
-Window::Window()
-    : _viewport { this } {
-    this->setWindowTitle("BGL Demo");
-    this->setFixedSize(1200, 800);
-
-    // creates GL context
-    _viewport.resize(1200, 800);
-    _viewport.show();
-    this->setCentralWidget(&_viewport);
-
-    this->show();
-}
-
-bool Window::event(QEvent *event) {
-    if (event->type() == QEvent::KeyPress) {
-        std::cout << "key pressed" << std::endl;
-        return true;
-    }
-
-    return false;  // TODO(bkuolt): implement
-}
-#elif defined(USE_SDL2)
-
+#if defined(USE_SDL2)
 SDL_GLContext create_OpenGL_Context(SDL_Window *window) {
     const bool successfull {
            !SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4)
@@ -163,15 +138,30 @@ void handle_event(Window &window, const SDL_Event &event) {
             break;
     }
 }
+#endif  // USE_SDL2
 
+}  // anonymous namespace
 
 Window::Window(const std::string &title, bool windowed) {
+#if defined(USE_SDL2)
     std::call_once(SDL_initialization_flag, &initialize_SDL);
     _window = create_window(title, windowed);
     _context = create_OpenGL_Context(_window);
     _run = true;
 
     _current_window = this;  // TODO(bkuolt)
+#elif defined(USE_QT)
+    : _viewport { this } {
+    this->setWindowTitle("BGL Demo");
+    this->setFixedSize(1200, 800);
+
+    // creates GL context
+    _viewport.resize(1200, 800);
+    _viewport.show();
+    this->setCentralWidget(&_viewport);
+
+    this->show();
+#endif
 }
 
 Window::Window(Window &&rhs) {
@@ -179,10 +169,11 @@ Window::Window(Window &&rhs) {
 }
 
 Window::~Window() noexcept {
+#if defined(USE_SDL2)
     SDL_DestroyWindow(_window);
     SDL_GL_DeleteContext(_context);
-
     _current_window = nullptr;  // TODO(bkuolt)
+#endif  // USE_SDL2
 }
 
 Window& Window::operator=(Window &&rhs) {
@@ -195,10 +186,7 @@ void Window::swap(Window &rhs) noexcept {
     std::swap(_context, rhs._context);
 }
 
-void Window::close() noexcept {
-    _run = false;
-}
-
+#if defined(USE_SDL2)
 int Window::exec() {
     SDL_Event event;
     while (_run) {
@@ -213,19 +201,23 @@ int Window::exec() {
         render();
     }
 
-    std::cout << "\r" << console_color::white << std::endl;
-    SDL_DestroyWindow(getHandle());  // TODO(bkuolt): make sure that the window is destroyed before the context
+    std::cout << "\r" << std::endl;
+    SDL_DestroyWindow(_window);  // TODO(bkuolt): make sure that the window is destroyed before the context
     return EXIT_SUCCESS;
 }
+#elif defined(USE_QT)
+bool Window::event(QEvent *event) {
+    if (event->type() == QEvent::KeyPress) {
+        std::cout << "key pressed" << std::endl;
+        return true;
+    }
 
-SDL_GLContext Window::getOpenGLContext() noexcept {
-    return _context;
+    return false;  // TODO(bkuolt): implement
 }
+#endif
 
-SDL_Window *Window::getHandle() noexcept {
-    return _window;
-}
 
+#if defined(USE_SDL2)
 void Window::show() noexcept {
     SDL_ShowWindow(_window);
 }
@@ -234,23 +226,38 @@ void Window::hide() noexcept {
     SDL_HideWindow(_window);
 }
 
+void Window::close() noexcept {
+    _run = false;
+}
+#endif  // USE_SDL2
+
 uvec2 Window::getSize() const noexcept {
+#if defined(USE_SDL2)
     int width, height;
     SDL_GetWindowSize(_window, &width, &height);
     return { width, height };
+#elif defined(USE_QT)
+    return { size().width(), size().height() };
+#endif
 }
+
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
 
 void Window::render() {
     static frame_counter frame_counter;
     const bool changed { frame_counter.count() };
     on_render(frame_counter.delta());
+#if defined(USE_SDL2)
     SDL_GL_SwapWindow(_window);
+#endif  // USE_SDL2
 
     if (changed) {
         // TODO(bkuolt): add TTF font rendering support
-        std::cout << "\r" << console_color::blue << frame_counter.fps() << " FPS" << std::flush;
+        std::cout << "\r" << frame_counter.fps() << " FPS" << std::flush;
     }
 }
-#endif  // USE_SDL2
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
 
 }  // namespace bgl
