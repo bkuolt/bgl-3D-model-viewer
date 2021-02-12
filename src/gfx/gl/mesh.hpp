@@ -8,13 +8,16 @@
 #include "texture.hpp"
 #include "box.hpp"
 
+#include <iostream>
 #include <filesystem>
 #include <memory>
+#include <string>
 
 
 namespace bgl {
 
-class Mesh {
+class 
+Mesh {
  public:
     explicit Mesh(const std::filesystem::path &path);
     virtual ~Mesh() = default;
@@ -35,8 +38,11 @@ class Mesh {
 
 using SharedMesh = std::shared_ptr<Mesh>;
 
-inline SharedMesh LoadMesh(const std::filesystem::path &path) {
-    return std::make_shared<Mesh>(path);
+inline SharedMesh LoadMesh(const std::string &path) {
+   std::cout << "LoadMesh()" << std::endl;
+     auto r = std::shared_ptr<bgl::Mesh>(new bgl::Mesh(path));
+   std::cout << "Done loading" << std::endl;
+   return r;
 }
 
 }  // namespace bgl

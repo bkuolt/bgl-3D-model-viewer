@@ -1,6 +1,6 @@
+*.db
 *.o
-*.la
-*.so
 *.a
-src/demo
+*.la
 TODO
+bgl

@@ -1,14 +1,27 @@
 .DEFAULT_GOAL = run
 .PHONY = demo run clean
 
-CC = g++-8
-FLAGS = -std=c++17 -pthread -Wall -O3
+INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
+	          -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets  \
+			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore     \
+			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL   \
+			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui
+
+CC = g++
+FLAGS = -std=c++17 -pthread \
+	    -DUSE_QT $(INCLUDES_QT) -fPIC \
+		-Wall -O3
+
+# -fPIC is for QT only
+
 LIBS = -lstdc++fs \
-       -lSDL2  \
+       -lQt5Widgets -lQt5Core -lGL \
 	   -lassimp  \
 	   -lIL \
 	   -lGLEW -lGLU -lGL -lGLU \
 	   -lboost_timer
+
+
 
 main.o: main.cpp \
         gfx/gfx.hpp gfx/camera.hpp gfx/camera.cpp
@@ -17,11 +30,13 @@ main.o: main.cpp \
 gfx/libgfx.a:
 	@$(MAKE) -C gfx
 
-demo: main.o gfx/libgfx.a gfx/gl/libgl.a
+demo: main.o gfx/libgfx.a gfx/gl/libgl.a gfx/gui/libgui.a  # TODO: simplify
 	$(CC) -o demo \
 	$(FLAGS) \
 	main.o \
-	-Lgfx -lgfx -Lgfx/gl -lgl  \
+	-Lgfx -lgfx     \
+	-Lgfx/gl -lgl   \
+	-Lgfx/gui -lgui \
 	$(LIBS)
 
 run: demo

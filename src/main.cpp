@@ -7,6 +7,10 @@
 #include "gfx/gfx.hpp"
 #include "gfx/camera.hpp"
 
+#include <QApplication>
+#include <QOpenGLContext>
+#include <QKeyEvent>
+
 
 using namespace bgl;
 
@@ -16,6 +20,7 @@ namespace {
 void create_camera_motion(bool pressed, Camera::horizontal_direction direction, double angle);
 void set_up_scene(const std::filesystem::path &path);
 
+
 struct {
     SharedMesh mesh;
     SharedGrid grid;
@@ -23,33 +28,22 @@ struct {
     bgl::Camera::shared_motion motion;
 } Scene;
 
-class SimpleWindow final : public bgl::Window {
+
+class Viewport final : public bgl::GLViewport {
  public:
-    SimpleWindow(const std::string &title)
-        : bgl::Window { title }
+    explicit Viewport(QWidget *parent)
+        : GLViewport(parent)
     {}
 
- protected:
-    void on_key(const SDL_KeyboardEvent &event) override {
-        switch (event.keysym.scancode) {
-            case SDL_SCANCODE_ESCAPE:
-                close();
-                break;
-            case SDL_SCANCODE_LEFT:
-                create_camera_motion(event.state == SDL_PRESSED, Camera::horizontal_direction::left, 85);
-                break;
-            case SDL_SCANCODE_RIGHT:
-                create_camera_motion(event.state == SDL_PRESSED, Camera::horizontal_direction::right, 85);
-                break;
-            default:
-                // nothing to do yet
-                break;
+    void on_render(float delta) override {
+        std::cout << "on_render()" << std::endl;
+        static bool initialized { false };
+        if (!initialized) {
+            set_up_scene("./assets/models/housemedieval.obj");
+            initialized = true;
         }
-    }
 
-    void on_render(float delta) noexcept override {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
         if (Scene.motion) {
             Scene.motion->update();
         }
@@ -57,6 +51,39 @@ class SimpleWindow final : public bgl::Window {
         const mat4 PV { Scene.camera.getMatrix() };
         Scene.grid->render(PV);
         Scene.mesh->render(PV);
+    }
+};
+
+
+class SimpleWindow final : public bgl::Window {
+ public:
+    SimpleWindow(const std::string &title)
+        : bgl::Window(title)
+    {}
+
+    bool event(QEvent *event) override {
+        //  std::cout << "evebt"<< std::endl;
+        if (event->type()  == QEvent::KeyPress ||
+            event->type()  == QEvent::KeyRelease) {
+            QKeyEvent* key = reinterpret_cast<QKeyEvent*>(event);
+            switch (key->key()) {
+                case Qt::Key_Escape:
+                    close();
+                    break;
+                case Qt::Key_Left:
+                std::cout << "left" << std::endl;
+                    create_camera_motion(event->type() == QEvent::KeyPress , Camera::horizontal_direction::left, 85);
+                    break;
+                case Qt::Key_Right:
+                    create_camera_motion(event->type() == QEvent::KeyPress , Camera::horizontal_direction::right, 85);
+                    break;
+            default:
+                return false;
+            }
+            return true;
+        }
+
+        return false;
     }
 };
 
@@ -80,19 +107,22 @@ int main(int argc, char *argv[]) {
     std::signal(SIGHUP, signal_handler);
 
     try {
+        QApplication app(argc, argv);
         SimpleWindow window { "BGL Model Viewer" };
-        set_up_scene(argv[1]);
+        Viewport viewport { &window };
+
+        window.setViewport(&viewport);
         window.show();
-        return window.exec();
+        return app.exec();
+       // return window.exec();
     } catch (const std::exception &exception) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", exception.what(), nullptr);
+        // TODO(bkuolt): show message box
         std::cout << console_color::red << "error: " << exception.what() << std::endl;
         return EXIT_FAILURE;
     }
 
     return EXIT_SUCCESS;
 }
-
 
 /* ------------------------- Details --------------------------- */
 
