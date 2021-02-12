@@ -17,11 +17,13 @@ gl/libgl.a:
 	@$(MAKE) -C gl
 	@$(MAKE) -C gui
 
-libgfx.a: gl/libgl.a\
+libgfx.a: gl/libgl.a  \
+          gl/libgui.a \
           camera.o window.o gfx.o
 	ar rcs libgfx.a *.o
 
 clean:
 	@$(MAKE) -C gl clean
+	@$(MAKE) -C gui clean
 	@rm -f *.o
 	@rm -f *.a
