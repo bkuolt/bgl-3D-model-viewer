@@ -8,7 +8,7 @@ INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui
 
 CPPFLAGS = -std=c++17 -fPIC   \
-           -Wno-endif-labels  \
+           -Wno-endif-labels -Wall \
             $(INCLUDES_QT)    \
            -DQT_NO_KEYWORDS   \
 		   -DUSE_QT -fPIC     \

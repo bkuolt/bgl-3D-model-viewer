@@ -40,15 +40,7 @@ bool IsTextured(const aiScene *scene) {
 SharedVBO<Vertex> createVBO(const aiScene *scene) {
     static_assert(std::is_same<ai_real, float>::value);
     const aiMesh &mesh = *scene->mMeshes[0];
-
-
-
-std::cout << "mesh.mNumVertices: " << mesh.mNumVertices << std::endl;
-
-
     auto vbo = std::shared_ptr<VertexBuffer<Vertex>>( new VertexBuffer<Vertex>(mesh.mNumVertices) );
-std::cout << "mesh.mNumVertices: " << mesh.mNumVertices << std::endl;
-
 
     vbo->bind();
     Vertex *buffer = vbo->map();
@@ -182,33 +174,19 @@ const aiScene* importScene(const std::filesystem::path &path) {
 /* ------------------------------- Mesh -------------------------------- */
 
 Mesh::Mesh(const std::filesystem::path &path) {
-
-std::cout << "texta"<<std::endl << std::flush;
-//return;
-
-#if 0
     if (!std::filesystem::exists(path)) {
         std::ostringstream oss;
         oss << "the file " << std::quoted(path.string()) << " does not exist";
         throw std::runtime_error { oss.str() };
     }
-#endif  //0
 
     const aiScene *scene = importScene(path);
     const aiMesh &mesh = getMesh(scene);
 
-std::cout << "1"<<std::endl;
-
     _vbo = createVBO(scene);
-
-std::cout << "2"<<std::endl;
     _ibo = createIBO(mesh);
     _vao = createVAO(_vbo, _ibo);
     _program = LoadProgram("./assets/shaders/main.vs", "./assets/shaders/main.fs");
-
-
-
-std::cout << "texta"<<std::endl;
 
     glm::tvec3<bounding_box> bounds = get_bounds(mesh);
     _box.resize({
@@ -216,34 +194,20 @@ std::cout << "texta"<<std::endl;
         bounds.y.max -  bounds.y.min,
         bounds.z.max -  bounds.z.min });
 
-std::cout << "texta"<<std::endl;
-#if 1
     if (IsTextured(scene)) {
         _texture = loadTexture(path.parent_path(), scene);
     }
-
- #endif  //0
-
-
 }
 
 void Mesh::render(const mat4 &_MVP) {
-    static int i = 0;
-    ++i;
-    std::cout << "---> " << i << std::endl;
+    // std::cout << "Mesh::render() " << std::endl
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    std::cout << "Mesh::render() " << std::endl
-              << vec3(_MVP[0]) << ", "
-                  << vec3(_MVP[1]) << ", "
-                  << vec3(_MVP[2]) << std::endl;
-
     _program->use();
 
     setUpLightning(_program);
-    //program->setUniform(AttributLocations::MVP, MVP);
+    // program->setUniform(AttributLocations::MVP, MVP);
     _program->setUniform("MVP", _MVP);
-
 
     const GLuint isTextured { _texture != nullptr };
     _program->setUniform("isTextured", isTextured);

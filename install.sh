@@ -11,7 +11,6 @@ sudo apt-get install \
     libassimp-dev    \
     libglew-dev      \
     libglm-dev       \
-    libdevil-dev     \
-    libboost-all-dev libboost-timer-dev
+    libdevil-dev
 
 sudo apt-get install qt5-default
