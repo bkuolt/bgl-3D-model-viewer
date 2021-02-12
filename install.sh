@@ -13,3 +13,5 @@ sudo apt-get install \
     libglm-dev       \
     libdevil-dev     \
     libboost-all-dev libboost-timer-dev
+
+sudo apt-get install qt5-default

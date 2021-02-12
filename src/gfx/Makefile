@@ -15,6 +15,7 @@ window.o: window.cpp window.hpp
 
 gl/libgl.a:
 	@$(MAKE) -C gl
+	@$(MAKE) -C gui
 
 libgfx.a: gl/libgl.a\
           camera.o window.o gfx.o
