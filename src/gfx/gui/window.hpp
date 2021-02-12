@@ -4,11 +4,11 @@
 
 #include "../gl/gl.hpp"  // TODO(bkuolt): fix this
 
-#include <memory>
+//#include <memory>
 #include <string>
 
 #include <QMainWindow>
-#include "GLViewport.hpp"
+#include "viewport.hpp"
 
 
 namespace bgl {
@@ -20,7 +20,8 @@ class Window : public QMainWindow {
  public:
     explicit Window(const std::string &title);
 
-    // TODO(bkuolt): explicit Window(Window &&);
+	// TODO(bkuolt): not movable, not copyable, destructor
+
     Window(const Window&) = delete;
     virtual ~Window() noexcept;
 
@@ -29,14 +30,13 @@ class Window : public QMainWindow {
 
     uvec2 getSize() const noexcept;
     void render();
-    void setViewport(GLViewport *p);
+    void setViewport(Viewport *p);
 
  protected:
-	GLViewport *_viewport { nullptr };
+	Viewport *_viewport { nullptr };
 
  private:
     void swap(Window &rhs) noexcept;
-	// TODO(bkuolt): handle events
 };
 
 }  // namespace bgl

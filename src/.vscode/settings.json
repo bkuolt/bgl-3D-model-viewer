@@ -59,6 +59,7 @@
         "qopenglcontext": "cpp",
         "qmainwindow": "cpp",
         "deque": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "bitset": "cpp"
     }
 }

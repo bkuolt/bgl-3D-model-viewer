@@ -1,5 +1,5 @@
 /**
- * @file viewport.cpp
+ * @file viewport.hpp
  * @brief A simple OpenGL Qt Viewport
  */
 #ifndef BGL_VIEWPORT_HPP_
@@ -9,17 +9,18 @@
 
 namespace bgl {
 
-class GLViewport : public QOpenGLWidget {
+class Viewport : public QOpenGLWidget {
  public:
-	explicit GLViewport(QWidget *parent);
+	explicit Viewport(QWidget *parent);
+	// TODO(bkuolt): not movable, not copyable, destructor
 
-	protected: public:
+ protected:
 	void initializeGL() override;
 	void resizeGL(int width, int height) override;
 	void paintGL() override;
 
- public:
-	virtual void on_render(float delta) { };
+ private:
+	virtual void on_render(float delta);
 };
 
 }  // namespace bgl

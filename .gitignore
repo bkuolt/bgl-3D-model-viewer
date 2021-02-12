@@ -2,5 +2,7 @@
 *.o
 *.a
 *.la
+gfx/.vscode/
+gfx/.vscode/**
 TODO
 bgl
