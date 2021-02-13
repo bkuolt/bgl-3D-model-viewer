@@ -12,9 +12,10 @@
 #include <QKeyEvent>
 
 
-using namespace bgl;
 
 namespace {
+
+using namespace bgl;
 
 // forward declaration
 void set_up_scene(const std::filesystem::path &path);
@@ -26,11 +27,12 @@ struct {
 } Scene;
 
 
-class Viewport : public bgl::GLViewport {
+class GLViewport final : public Viewport {
  public:
-	explicit Viewport(QWidget *parent)
-		: GLViewport(parent)
-	{}
+	explicit GLViewport(QWidget *parent)
+		: Viewport(parent)
+	{}  
+	// TODO(bkuolt): not movable, not copyable, destructor
 
 	void on_render(float delta) override {
 		static bool initialized { false };
@@ -51,6 +53,8 @@ class SimpleWindow final : public bgl::Window {
  public:
 	explicit SimpleWindow(const std::string &title)
 		: bgl::Window(title) {}
+
+	// TODO(bkuolt): not movable, not copyable, destructor
 
 	bool event(QEvent *event) override {
 		if (event->type()  == QEvent::KeyPress) {
@@ -105,7 +109,7 @@ int main(int argc, char *argv[]) {
 	try {
 		QApplication app(argc, argv);
 		SimpleWindow window { "BGL Model Viewer" };
-		Viewport viewport { &window };
+		GLViewport viewport { &window };
 
 		window.setViewport(&viewport);
 		window.show();
@@ -119,7 +123,6 @@ int main(int argc, char *argv[]) {
 	return EXIT_SUCCESS;
 }
 
-/* ------------------------- Details --------------------------- */
 
 namespace {
 

@@ -2,7 +2,6 @@
 .PHONY = libgfx.a clean
 
 CC = g++
-
 INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
 	          -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets  \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore     \

@@ -14,7 +14,7 @@ CPPFLAGS = -std=c++17 -fPIC   \
 		   -DUSE_QT -fPIC     \
 		   -o3
 
-viewport.o: GLViewport.hpp viewport.cpp
+viewport.o: viewport.hpp viewport.cpp
 	g++ $(CPPFLAGS) -c viewport.cpp -o viewport.o
 
 window.o: window.hpp window.cpp

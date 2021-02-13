@@ -8,10 +8,9 @@ INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui
 
 CC = g++
-FLAGS = -std=c++17 -pthread \
-	    -DUSE_QT $(INCLUDES_QT) -fPIC \
+FLAGS = -std=c++17 -pthread            \
+	    -DUSE_QT $(INCLUDES_QT) -fPIC  \
 		-Wall -O3
-
 # -fPIC is for QT only
 
 LIBS = -lstdc++fs \
@@ -20,22 +19,21 @@ LIBS = -lstdc++fs \
 	   -lIL \
 	   -lGLEW -lGLU -lGL -lGLU
 
-main.o: main.cpp \
-        gfx/gfx.hpp gfx/camera.hpp gfx/camera.cpp
+main.o: main.cpp
 	@$(CC) $(FLAGS) -c main.cpp
 
 gfx/libgfx.a:
 	@$(MAKE) -C gfx
 
-demo: main.o gfx/libgfx.a gfx/gl/libgl.a gfx/gui/libgui.a  # TODO: simplify
-	$(CC) -o demo \
-	$(FLAGS) \
-	main.o \
+demo: main.o gfx/libgfx.a
+	$(CC) -o demo   \
+	$(FLAGS)        \
+	main.o          \
 	-Lgfx -lgfx     \
 	-Lgfx/gl -lgl   \
 	-Lgfx/gui -lgui \
 	$(LIBS)
-
+ 
 run: demo
 	@./demo ./assets/models/housemedieval.obj
 
