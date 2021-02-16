@@ -1,5 +1,5 @@
 .DEFAULT_GOAL = libgl.la
-.PHONY = clean
+.PHONY = libgl.la clean
 
 CC = g++
 INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
@@ -10,7 +10,7 @@ INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
 
 FLAGS = -std=c++17 $(INCLUDES_QT) -Wall -fPIC -O3
 
-mesh.o: mesh.cpp mesh.hpp buffer.hpp
+mesh.o: mesh.cpp mesh.hpp
 	@$(CC) $(FLAGS) -c mesh.cpp
 
 box.o: box.cpp box.hpp

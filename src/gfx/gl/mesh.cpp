@@ -49,15 +49,16 @@ bool IsTextured(const aiScene *scene) {
     return !textures.empty();
 }
 
-SharedVBO<Vertex> createVBO(const aiScene *scene) {
+std::shared_ptr<QOpenGLBuffer> createVBO(const aiScene *scene) {
     static_assert(std::is_same<ai_real, float>::value);
     const aiMesh &mesh = *scene->mMeshes[0];
-    auto vbo = std::shared_ptr<VertexBuffer<Vertex>>( new VertexBuffer<Vertex>(mesh.mNumVertices) );
 
+    auto vbo { std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::VertexBuffer) };
+    vbo->allocate(sizeof(Vertex) * mesh.mNumVertices);
     vbo->bind();
-    Vertex *buffer = vbo->map();
 
-    const bool is_textured = IsTextured(scene);
+    const auto buffer { reinterpret_cast<Vertex*>(vbo->map(QOpenGLBuffer::WriteOnly)) };
+    const bool is_textured { IsTextured(scene) };
     for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
         buffer[vertex_index].normal = vec3 { mesh.mNormals[vertex_index].x, mesh.mNormals[vertex_index].y, mesh.mNormals[vertex_index].z };
         buffer[vertex_index].position = vec3 { mesh.mVertices[vertex_index].x, mesh.mVertices[vertex_index].y, mesh.mVertices[vertex_index].z };
@@ -72,17 +73,16 @@ SharedVBO<Vertex> createVBO(const aiScene *scene) {
 
     // TODO(bkuolt): rethink "normalize_vertex_positionsnormalize_vertex_positions(mesh, buffer);""
     vbo->unmap();
-
     std::cout << "created a vbo with " << vbo->size() << " vertices" << std::endl;
     return vbo;
 }
 
-SharedIBO createIBO(const aiMesh &mesh) {
-    const GLsizei size = mesh.mNumFaces * 3;
-    auto ibo = std::make_shared<IndexBuffer>(size);
-
+std::shared_ptr<QOpenGLBuffer> createIBO(const aiMesh &mesh) {
+    auto ibo { std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::IndexBuffer) };
+    ibo->allocate(sizeof(GLuint) * mesh.mNumFaces * 3);
     ibo->bind();
-    auto buffer = ibo->map();
+    
+    auto buffer { reinterpret_cast<GLuint*>(ibo->map(QOpenGLBuffer::WriteOnly)) };
     for (auto i = 0u; i < mesh.mNumFaces; ++i) {
         switch (mesh.mFaces[i].mNumIndices) {
             case 3:
@@ -99,16 +99,22 @@ SharedIBO createIBO(const aiMesh &mesh) {
     return ibo;
 }
 
+
 enum AttributLocations : GLuint { MVP = 0, Position = 8, Normal, TexCoord, Texture };
 
-SharedVAO<Vertex> createVAO(const SharedVBO<Vertex> &vbo, const SharedIBO &ibo) {
-    auto vao = std::make_shared<VertexArray<Vertex>>(vbo, ibo);
-    const auto stride = sizeof(Vertex);
+
+std::shared_ptr<QOpenGLVertexArrayObject> createVAO(const std::shared_ptr<QOpenGLBuffer> &vbo,
+                                                    const std::shared_ptr<QOpenGLBuffer> &ibo) {
+    auto vao { std::make_shared<QOpenGLVertexArrayObject>() };
     vao->bind();
+
+    vbo->bind();
+    ibo->bind();
+    const auto stride = sizeof(Vertex);
+
     SetAttribute<vec3>(vao, AttributLocations::Position, stride, offsetof(Vertex, position));
     SetAttribute<vec3>(vao, AttributLocations::Normal, stride, offsetof(Vertex, normal));
     SetAttribute<vec2>(vao, AttributLocations::TexCoord, stride, offsetof(Vertex, texcoords));
-    vao->unbind();
     return vao;
 }
 
@@ -236,7 +242,12 @@ void Mesh::render(const mat4 &_MVP) {
         _program->setUniformValue("texture", textureUnit);
     }
 
-    _vao->draw();
+    _vao->bind();
+    glDrawElements(GL_TRIANGLES,  _ibo->size() / sizeof(GLuint) * 3, GL_UNSIGNED_INT, nullptr);
+    if (glGetError() != GL_NO_ERROR) {
+        throw std::runtime_error { "glDrawElements() failed" };
+    }
+
     _box.render(_MVP);
 }
 

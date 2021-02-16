@@ -54,9 +54,14 @@ static constexpr std::array<uvec2, 12> box_indices {{
 
 Box::Box(const vec3 &dimensions)
     : _dimensions { dimensions },
+
+//////////////////////////////////////////////
+//////////////////////////////////////////////
       _vbo { std::make_shared<VertexBuffer<vec3>>() },
       _ibo { std::make_shared<IndexBuffer>() },
       _vao { std::make_shared<VertexArray<vec3>>(_vbo, _ibo) } {
+
+
     // create vbo
     _vbo->resize(box_vertices.size());
     std::copy(box_vertices.begin(), box_vertices.end(), _vbo->map());
@@ -72,6 +77,10 @@ Box::Box(const vec3 &dimensions)
     _vao->bind();
     SetAttribute<vec3>(_vao, 2 /*locations::position*/, sizeof(vec3), 0 /* no offset */);
     _vao->unbind();
+
+//////////////////////////////////////////////
+//////////////////////////////////////////////
+
 
     _program = LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs");
 }
@@ -92,9 +101,13 @@ void Box::render(const mat4 &VP) {
     const vec3 color { 1.0, 0.0, 0.0 }; /* red */
     _program->setUniformValue("color", color.x, color.y, color.z);
 
+
     _vao->bind();
+//////////////////////////////////////////////
+//////////////////////////////////////////////
     _vao->draw(GL_LINES);
-    _vao->unbind();
+//////////////////////////////////////////////
+//////////////////////////////////////////////
 }
 
 void Box::resize(const vec3 &dimensions) {

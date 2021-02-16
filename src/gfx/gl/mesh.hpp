@@ -3,12 +3,13 @@
 #define GFX_MESH_HPP
 
 #include "gl.hpp"
-#include "buffer.hpp"
+#include "box.hpp"
 
 #include <QOpenGLTexture>
 #include <QOpenGLShaderProgram>
+#include <QOpenGLBuffer>
+#include <QOpenGLVertexArrayObject>
 
-#include "box.hpp"
 
 #include <iostream>
 #include <filesystem>
@@ -18,6 +19,11 @@
 
 namespace bgl {
 
+struct Vertex {
+    vec3 position;
+    vec3 normal;
+    vec2 texcoords;
+};
 
 class 
 Mesh {
@@ -31,12 +37,12 @@ Mesh {
     }
 
  private:
-    SharedVBO<Vertex> _vbo;
-    SharedIBO _ibo;
-    SharedVAO<Vertex> _vao;
-    std::shared_ptr<QOpenGLTexture> _texture;
-    std::shared_ptr<QOpenGLShaderProgram> _program;
-    Box _box;
+   std::shared_ptr<QOpenGLVertexArrayObject> _vao;
+   std::shared_ptr<QOpenGLBuffer> _vbo;
+   std::shared_ptr<QOpenGLBuffer> _ibo;
+   std::shared_ptr<QOpenGLTexture> _texture;
+   std::shared_ptr<QOpenGLShaderProgram> _program;
+   Box _box;
 };
 
 using SharedMesh = std::shared_ptr<Mesh>;

@@ -3,11 +3,14 @@
 #define GL_BOX_HPP_
 
 #include "gl.hpp"
-#include "buffer.hpp"
-
 
 #include <QOpenGLShaderProgram>
+#include <QOpenGLBuffer>
+#include <QOpenGLVertexArrayObject>
+
 #include <assimp/mesh.h>  // TODO(bkuolt)
+#include <memory>
+
 
 namespace bgl {
 
@@ -31,15 +34,13 @@ class Box final {
     }
 
  private:
-    using SharedVBO = bgl::SharedVBO<vec3>;
-    using SharedVAO = bgl::SharedVAO<vec3>;
+   vec3 _dimensions;
 
-    vec3 _dimensions;
+   std::shared_ptr<QOpenGLVertexArrayObject> _vao;
+   std::shared_ptr<QOpenGLBuffer> _vbo;
+   std::shared_ptr<QOpenGLBuffer> _ibo;
 
-    SharedVBO _vbo;
-    SharedIBO _ibo;
-    SharedVAO _vao;
-    std::shared_ptr<QOpenGLShaderProgram> _program;
+   std::shared_ptr<QOpenGLShaderProgram> _program;
 };
 
 }  // namespace bgl
