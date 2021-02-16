@@ -2,8 +2,12 @@
 *.o
 *.a
 *.la
+.vscode/
 src/gfx/.vscode/
 src/gfx/.vscode/**
 src/gfx/.vscode
+gfx/gl/.vscode/
+gfx/gl/.vscode/**
 TODO
+src/TODO
 bgl

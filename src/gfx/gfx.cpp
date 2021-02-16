@@ -1,5 +1,6 @@
 // Copyright 2020 Bastian Kuolt
 #include "gfx.hpp"  //TODO
+#include <QMatrix4x4>
 
 namespace bgl {
 
@@ -69,9 +70,11 @@ void grid::render(const mat4 &PV) {
     // TODO(bkuolt): adjust OpenGL line rendering settings
 
     constexpr vec3 white { 1.0f, 1.0f, 1.0f };
-    _program->use();
-    _program->setUniform(locations::MVP, PV * glm::translate(_translation));
-    _program->setUniform(locations::color, white);
+    _program->bind();
+
+    QMatrix4x4 matrix(glm::value_ptr(PV * glm::translate(_translation))); 
+    _program->setUniformValue(locations::MVP, matrix.transposed());
+    _program->setUniformValue(locations::color, white.x, white.y, white.z );
     _vao->draw(GL_LINES);
 }
 

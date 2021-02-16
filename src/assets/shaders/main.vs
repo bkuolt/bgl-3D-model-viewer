@@ -1,5 +1,5 @@
-// Copyright 2020 Bastian Kuolt
 #version 450 core
+// Copyright 2020 Bastian Kuolt
 
 struct Light {
     bool used;
@@ -18,6 +18,8 @@ layout (location = 10) in vec2 texcoords;
 
 out vec3 pixelNormal;
 out vec2 pixelTexCoord;
+
+out gl_PerVertex { vec4 gl_Position; };
 
 void main() {
     gl_Position = MVP * vec4(position, 1.0);

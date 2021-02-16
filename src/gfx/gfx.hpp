@@ -16,6 +16,8 @@
 
 namespace bgl {
 
+std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs);
+
 #ifdef __linux
 namespace console_color {
     constexpr char blue[] = "\x1B[34m";
@@ -57,7 +59,7 @@ class grid final {
     SharedVBO _vbo;
     SharedIBO _ibo;
     SharedVAO _vao;
-    SharedProgram _program;
+    std::shared_ptr<QOpenGLShaderProgram> _program;
 };
 
 using SharedGrid = std::shared_ptr<grid>;

@@ -5,9 +5,14 @@
 #include <iostream>
 #include <list>
 #include <string>
+#include <filesystem>
+
+#include <QMatrix4x4>
 
 
 namespace bgl {
+
+std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs);
 
 glm::tvec3<bounding_box> get_bounds(const aiMesh &mesh) noexcept {
     glm::tvec3<bounding_box> bounds;
@@ -76,12 +81,16 @@ Box::Box(GLfloat size)
 {}
 
 void Box::render(const mat4 &VP) {
-    _program->use();
+    _program->bind();
     glLineWidth(3);
 
     mat4 M = glm::scale(_dimensions);
-    _program->setUniform("MVP", VP * M);
-    _program->setUniform("color", vec3 { 1.0, 0.0, 0.0 } /* red */);
+   
+    QMatrix4x4 matrix(glm::value_ptr(VP * M));
+    _program->setUniformValue("MVP", matrix.transposed());
+
+    const vec3 color { 1.0, 0.0, 0.0 }; /* red */
+    _program->setUniformValue("color", color.x, color.y, color.z);
 
     _vao->bind();
     _vao->draw(GL_LINES);

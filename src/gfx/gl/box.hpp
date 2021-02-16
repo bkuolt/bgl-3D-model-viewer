@@ -4,8 +4,9 @@
 
 #include "gl.hpp"
 #include "buffer.hpp"
-#include "shader.hpp"
 
+
+#include <QOpenGLShaderProgram>
 #include <assimp/mesh.h>  // TODO(bkuolt)
 
 namespace bgl {
@@ -38,7 +39,7 @@ class Box final {
     SharedVBO _vbo;
     SharedIBO _ibo;
     SharedVAO _vao;
-    SharedProgram _program;
+    std::shared_ptr<QOpenGLShaderProgram> _program;
 };
 
 }  // namespace bgl

@@ -13,9 +13,19 @@
 #include <string>
 
 #include <QImage>
+#include <QMatrix4x4>
 
 
 namespace bgl {
+
+// TODO(bkuolt): move to in gfx.cpp
+std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs) {
+    const auto program { std::make_shared<QOpenGLShaderProgram>() };
+    program->addShaderFromSourceFile(QOpenGLShader::Vertex, vs.string().c_str());
+    program->addShaderFromSourceFile(QOpenGLShader::Fragment, fs.string().c_str());
+    program->link();
+    return program;
+}
 
 namespace {
 
@@ -120,21 +130,22 @@ std::shared_ptr<QOpenGLTexture> LoadTexture(const std::filesystem::path &base_pa
 
 /* ------------------------ Lighting ----------------------------------- */
 
-void setUpLightning(const SharedProgram &program) {
+
+void setUpLightning(std::shared_ptr<QOpenGLShaderProgram> program) {
     constexpr GLsizei maxLightNum = 5;
     static constexpr struct Light {
         vec3 direction { -1.0, -1.0, -1.0 };
         vec3 color { 0.0, 1.0, 1.0 };
     } light;
 
-    program->setUniform("lights[0].used", true);
-    program->setUniform("lights[0].direction", light.direction);
-    program->setUniform("lights[0].color", light.color);
+    program->setUniformValue("lights[0].used", true);
+    program->setUniformValue("lights[0].direction", light.direction.x, light.direction.y, light.direction.z);
+    program->setUniformValue("lights[0].color", light.color.x, light.color.y, light.color.z);
 
     for (auto i = 1u; i < maxLightNum; ++i) {
         std::ostringstream name;
         name << "lights[" << i << "].used";
-        program->setUniform(name.str(), false);
+        program->setUniformValue(name.str().c_str(), false);
     }
 
     // TODO(bkuolt): spearate world uniforms and model uniforms
@@ -190,6 +201,7 @@ Mesh::Mesh(const std::filesystem::path &path) {
     _vbo = createVBO(scene);
     _ibo = createIBO(mesh);
     _vao = createVAO(_vbo, _ibo);
+
     _program = LoadProgram("./assets/shaders/main.vs", "./assets/shaders/main.fs");
 
     glm::tvec3<bounding_box> bounds = get_bounds(mesh);
@@ -205,21 +217,23 @@ Mesh::Mesh(const std::filesystem::path &path) {
 
 void Mesh::render(const mat4 &_MVP) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    _program->use();
+    _program->bind();
 
     setUpLightning(_program);
     // program->setUniform(AttributLocations::MVP, MVP);
-    _program->setUniform("MVP", _MVP);
+    
+    QMatrix4x4 matrix(glm::value_ptr(_MVP));
+    _program->setUniformValue("MVP", matrix.transposed());
 
     const GLuint isTextured { _texture != nullptr };
-    _program->setUniform("isTextured", isTextured);
+    _program->setUniformValue("isTextured", isTextured);
 
     if (isTextured) {
         const GLuint textureUnit { 0 };  // TODO(bkuolt): add support for more than one texture
 
         glActiveTexture(GL_TEXTURE0 + textureUnit);
         _texture->bind();
-        glUniform1i(_program->getLocation("texture"), textureUnit);
+        _program->setUniformValue("texture", textureUnit);
     }
 
     _vao->draw();

@@ -4,9 +4,9 @@
 
 #include "gl.hpp"
 #include "buffer.hpp"
-#include "shader.hpp"
 
 #include <QOpenGLTexture>
+#include <QOpenGLShaderProgram>
 
 #include "box.hpp"
 
@@ -35,7 +35,7 @@ Mesh {
     SharedIBO _ibo;
     SharedVAO<Vertex> _vao;
     std::shared_ptr<QOpenGLTexture> _texture;
-    SharedProgram _program;
+    std::shared_ptr<QOpenGLShaderProgram> _program;
     Box _box;
 };
 
