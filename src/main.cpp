@@ -9,9 +9,7 @@
 
 #undef Q_CC_GNU  //  removes "#warning To use GLEW with Qt, do not include <qopengl.h> or <QOpenGLFunctions> after glew.h"
 #include <QApplication>
-#include <QOpenGLContext>
 #include <QKeyEvent>
-
 
 
 namespace {

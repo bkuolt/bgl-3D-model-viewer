@@ -1,5 +1,6 @@
+#version 330 core
 // Copyright 2020 Bastian Kuolt
-#version 330 core  // gl_FragColor
+
 #extension GL_ARB_explicit_uniform_location : require
 
 layout (location = 0) uniform mat4 MVP;

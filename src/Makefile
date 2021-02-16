@@ -14,7 +14,7 @@ FLAGS = -std=c++17 -pthread            \
 # -fPIC is for QT only
 
 LIBS = -lstdc++fs \
-       -lQt5Widgets -lQt5Core -lQt5Gui -lGL \
+       -lQt5Widgets -lQt5Core -lQt5Gui -lQt5OpenGL -lGL \
 	   -lassimp  \
 	   -lGLEW -lGLU -lGL -lGLU
 	

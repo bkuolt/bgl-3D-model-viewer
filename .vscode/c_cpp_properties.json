@@ -4,8 +4,10 @@
             "name": "Linux",
             "includePath": [
                 "${default}",
+                "${env:Root}/",
                 "/usr/include/x86_64-linux-gnu/qt5/**",
-                "/usr/include/x86_64-linux-gnu/c++/8/**"
+                "/usr/include/x86_64-linux-gnu/c++/8/**",
+                "/usr/include/linux"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/g++",

@@ -13,9 +13,19 @@
 #include <string>
 
 #include <QImage>
+#include <QMatrix4x4>
 
 
 namespace bgl {
+
+// TODO(bkuolt): move to in gfx.cpp
+std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs) {
+    const auto program { std::make_shared<QOpenGLShaderProgram>() };
+    program->addShaderFromSourceFile(QOpenGLShader::Vertex, vs.string().c_str());
+    program->addShaderFromSourceFile(QOpenGLShader::Fragment, fs.string().c_str());
+    program->link();
+    return program;
+}
 
 namespace {
 
@@ -39,15 +49,21 @@ bool IsTextured(const aiScene *scene) {
     return !textures.empty();
 }
 
-SharedVBO<Vertex> createVBO(const aiScene *scene) {
+std::shared_ptr<QOpenGLBuffer> createVBO(const aiScene *scene) {
     static_assert(std::is_same<ai_real, float>::value);
     const aiMesh &mesh = *scene->mMeshes[0];
-    auto vbo = std::shared_ptr<VertexBuffer<Vertex>>( new VertexBuffer<Vertex>(mesh.mNumVertices) );
 
+    auto vbo { std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::VertexBuffer) }; 
+    
+    vbo->create();
     vbo->bind();
-    Vertex *buffer = vbo->map();
+    vbo->allocate(sizeof(Vertex) * mesh.mNumVertices);
 
-    const bool is_textured = IsTextured(scene);
+    auto buffer { reinterpret_cast<Vertex*>(vbo->map(QOpenGLBuffer::ReadWrite)) };
+    std::cout << "p= "<< buffer << std::endl;
+    std::cout << "232"<< std::endl;
+
+    const bool is_textured { IsTextured(scene) };
     for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
         buffer[vertex_index].normal = vec3 { mesh.mNormals[vertex_index].x, mesh.mNormals[vertex_index].y, mesh.mNormals[vertex_index].z };
         buffer[vertex_index].position = vec3 { mesh.mVertices[vertex_index].x, mesh.mVertices[vertex_index].y, mesh.mVertices[vertex_index].z };
@@ -62,17 +78,17 @@ SharedVBO<Vertex> createVBO(const aiScene *scene) {
 
     // TODO(bkuolt): rethink "normalize_vertex_positionsnormalize_vertex_positions(mesh, buffer);""
     vbo->unmap();
-
     std::cout << "created a vbo with " << vbo->size() << " vertices" << std::endl;
     return vbo;
 }
 
-SharedIBO createIBO(const aiMesh &mesh) {
-    const GLsizei size = mesh.mNumFaces * 3;
-    auto ibo = std::make_shared<IndexBuffer>(size);
-
+std::shared_ptr<QOpenGLBuffer> createIBO(const aiMesh &mesh) {
+    auto ibo { std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::IndexBuffer) };
+    ibo->create();
     ibo->bind();
-    auto buffer = ibo->map();
+    ibo->allocate(sizeof(GLuint) * mesh.mNumFaces * 3);
+    
+    auto buffer { reinterpret_cast<GLuint*>(ibo->map(QOpenGLBuffer::WriteOnly)) };
     for (auto i = 0u; i < mesh.mNumFaces; ++i) {
         switch (mesh.mFaces[i].mNumIndices) {
             case 3:
@@ -91,14 +107,18 @@ SharedIBO createIBO(const aiMesh &mesh) {
 
 enum AttributLocations : GLuint { MVP = 0, Position = 8, Normal, TexCoord, Texture };
 
-SharedVAO<Vertex> createVAO(const SharedVBO<Vertex> &vbo, const SharedIBO &ibo) {
-    auto vao = std::make_shared<VertexArray<Vertex>>(vbo, ibo);
-    const auto stride = sizeof(Vertex);
+std::shared_ptr<VertexArrayObject> createVAO(const std::shared_ptr<QOpenGLBuffer> &vbo,
+                                                    const std::shared_ptr<QOpenGLBuffer> &ibo) {
+    auto vao { std::make_shared<VertexArrayObject>() };
+    vao->create();
     vao->bind();
-    SetAttribute<vec3>(vao, AttributLocations::Position, stride, offsetof(Vertex, position));
-    SetAttribute<vec3>(vao, AttributLocations::Normal, stride, offsetof(Vertex, normal));
-    SetAttribute<vec2>(vao, AttributLocations::TexCoord, stride, offsetof(Vertex, texcoords));
-    vao->unbind();
+
+    vbo->bind();
+    ibo->bind();
+    const auto stride = sizeof(Vertex);
+    vao->setAttribute<vec3>(AttributLocations::Position, stride, offsetof(Vertex, position));
+    vao->setAttribute<vec3>(AttributLocations::Normal, stride, offsetof(Vertex, normal));
+    vao->setAttribute<vec2>(AttributLocations::TexCoord, stride, offsetof(Vertex, texcoords));
     return vao;
 }
 
@@ -120,21 +140,22 @@ std::shared_ptr<QOpenGLTexture> LoadTexture(const std::filesystem::path &base_pa
 
 /* ------------------------ Lighting ----------------------------------- */
 
-void setUpLightning(const SharedProgram &program) {
+
+void setUpLightning(std::shared_ptr<QOpenGLShaderProgram> program) {
     constexpr GLsizei maxLightNum = 5;
     static constexpr struct Light {
         vec3 direction { -1.0, -1.0, -1.0 };
         vec3 color { 0.0, 1.0, 1.0 };
     } light;
 
-    program->setUniform("lights[0].used", true);
-    program->setUniform("lights[0].direction", light.direction);
-    program->setUniform("lights[0].color", light.color);
+    program->setUniformValue("lights[0].used", true);
+    program->setUniformValue("lights[0].direction", light.direction.x, light.direction.y, light.direction.z);
+    program->setUniformValue("lights[0].color", light.color.x, light.color.y, light.color.z);
 
     for (auto i = 1u; i < maxLightNum; ++i) {
         std::ostringstream name;
         name << "lights[" << i << "].used";
-        program->setUniform(name.str(), false);
+        program->setUniformValue(name.str().c_str(), false);
     }
 
     // TODO(bkuolt): spearate world uniforms and model uniforms
@@ -177,7 +198,7 @@ const aiScene* importScene(const std::filesystem::path &path) {
 
 /* ------------------------------- Mesh -------------------------------- */
 
-Mesh::Mesh(const std::filesystem::path &path) {
+Mesh::Mesh(const std::filesystem::path &path) {std::cout << "(1)"<< std::endl;
     if (!std::filesystem::exists(path)) {
         std::ostringstream oss;
         oss << "the file " << std::quoted(path.string()) << " does not exist";
@@ -190,6 +211,7 @@ Mesh::Mesh(const std::filesystem::path &path) {
     _vbo = createVBO(scene);
     _ibo = createIBO(mesh);
     _vao = createVAO(_vbo, _ibo);
+
     _program = LoadProgram("./assets/shaders/main.vs", "./assets/shaders/main.fs");
 
     glm::tvec3<bounding_box> bounds = get_bounds(mesh);
@@ -201,28 +223,36 @@ Mesh::Mesh(const std::filesystem::path &path) {
     if (IsTextured(scene)) {
         _texture = LoadTexture(path.parent_path(), scene);
     }
+
 }
 
 void Mesh::render(const mat4 &_MVP) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    _program->use();
+    _program->bind();
 
     setUpLightning(_program);
     // program->setUniform(AttributLocations::MVP, MVP);
-    _program->setUniform("MVP", _MVP);
+    
+    QMatrix4x4 matrix(glm::value_ptr(_MVP));
+    _program->setUniformValue("MVP", matrix.transposed());
 
     const GLuint isTextured { _texture != nullptr };
-    _program->setUniform("isTextured", isTextured);
+    _program->setUniformValue("isTextured", isTextured);
 
     if (isTextured) {
         const GLuint textureUnit { 0 };  // TODO(bkuolt): add support for more than one texture
 
         glActiveTexture(GL_TEXTURE0 + textureUnit);
         _texture->bind();
-        glUniform1i(_program->getLocation("texture"), textureUnit);
+        _program->setUniformValue("texture", textureUnit);
     }
 
-    _vao->draw();
+    _vao->bind();
+    _vbo->bind();
+    _ibo->bind();
+
+    _vao->draw(GL_TRIANGLES, _ibo->size() / sizeof(GLuint) * 3);
+
     _box.render(_MVP);
 }
 

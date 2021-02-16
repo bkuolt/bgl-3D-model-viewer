@@ -5,9 +5,14 @@
 #include <iostream>
 #include <list>
 #include <string>
+#include <filesystem>
+
+#include <QMatrix4x4>
 
 
 namespace bgl {
+
+std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs);
 
 glm::tvec3<bounding_box> get_bounds(const aiMesh &mesh) noexcept {
     glm::tvec3<bounding_box> bounds;
@@ -49,24 +54,31 @@ static constexpr std::array<uvec2, 12> box_indices {{
 
 Box::Box(const vec3 &dimensions)
     : _dimensions { dimensions },
-      _vbo { std::make_shared<VertexBuffer<vec3>>() },
-      _ibo { std::make_shared<IndexBuffer>() },
-      _vao { std::make_shared<VertexArray<vec3>>(_vbo, _ibo) } {
+      _vao { std::make_shared<VertexArrayObject>() },
+      _vbo { std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::VertexBuffer) },
+      _ibo { std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::IndexBuffer) }
+{
     // create vbo
-    _vbo->resize(box_vertices.size());
-    std::copy(box_vertices.begin(), box_vertices.end(), _vbo->map());
+    _vbo->create();
+    _vbo->bind();
+    _vbo->allocate(box_vertices.size() * sizeof(vec3));
+    std::copy(box_vertices.begin(), box_vertices.end(), reinterpret_cast<vec3*>(_vbo->map(QOpenGLBuffer::WriteOnly)));
     _vbo->unmap();
 
     // create ibo
-    _ibo->resize(box_indices.size() * 2);
-    uvec2 *buffer = reinterpret_cast<uvec2*>(_ibo->map());
+    _ibo->create();
+    _ibo->bind();
+    _ibo->allocate(box_indices.size() * 2 * sizeof(GLuint));
+    uvec2 *buffer = reinterpret_cast<uvec2*>(_ibo->map(QOpenGLBuffer::WriteOnly));
     std::copy(box_indices.begin(), box_indices.end(), buffer);
     _ibo->unmap();
 
     // create vao
+    _vao->create();
     _vao->bind();
-    SetAttribute<vec3>(_vao, 2 /*locations::position*/, sizeof(vec3), 0 /* no offset */);
-    _vao->unbind();
+    _ibo->bind();
+    _vbo->bind();
+    _vao->setAttribute<vec3>(2 /*locations::position*/, 0 /* no stride */, 0 /* no offset */);
 
     _program = LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs");
 }
@@ -76,16 +88,22 @@ Box::Box(GLfloat size)
 {}
 
 void Box::render(const mat4 &VP) {
-    _program->use();
+    _program->bind();
     glLineWidth(3);
 
     mat4 M = glm::scale(_dimensions);
-    _program->setUniform("MVP", VP * M);
-    _program->setUniform("color", vec3 { 1.0, 0.0, 0.0 } /* red */);
+   
+    QMatrix4x4 matrix(glm::value_ptr(VP * M));
+    _program->bind();
+    _program->setUniformValue("MVP", matrix.transposed());
+
+    const vec3 color { 1.0, 0.0, 0.0 }; /* red */
+    _program->setUniformValue("color", color.x, color.y, color.z);
 
     _vao->bind();
-    _vao->draw(GL_LINES);
-    _vao->unbind();
+    _ibo->bind();   // TODO: VAO should automatically bind
+    _vbo->bind();
+    _vao->draw(GL_LINES, box_indices.size() * 2);
 }
 
 void Box::resize(const vec3 &dimensions) {

@@ -1,5 +1,6 @@
 // Copyright 2020 Bastian Kuolt
 #include "gfx.hpp"  //TODO
+#include <QMatrix4x4>
 
 namespace bgl {
 
@@ -10,9 +11,9 @@ enum locations { MVP = 0 , color, position };
 grid::grid(GLfloat size, std::size_t num_cells)
     : _cell_size { size },
       _num_cells { num_cells },
-      _vbo { std::make_shared<VBO>() },
-      _ibo { std::make_shared<IBO>() },
-      _vao { std::make_shared<VAO>(_vbo, _ibo) },
+      _vao { std::make_shared<VertexArrayObject>() },
+      _vbo { std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::VertexBuffer) },
+      _ibo { std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::IndexBuffer) },
       _program(LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs")) {
     create_vbo();
     create_ibo();
@@ -25,8 +26,11 @@ void grid::create_vbo() {
     const float size = _num_cells * _cell_size;
     const vec3 T { size / 2.0f, 0.0f, size / 2.0f };
 
-    _vbo->resize(_num_cells * _num_cells);
-    vec3 *buffer = _vbo->map();
+    _vbo->create();
+    _vbo->bind();
+    _vbo->allocate(sizeof(vec3) * _num_cells * _num_cells);
+
+    vec3 *buffer = reinterpret_cast<vec3*>(_vbo->map(QOpenGLBuffer::WriteOnly));
     for (auto z = 0u; z < _num_cells; ++z) {
         for (auto x = 0u; x < _num_cells; ++x) {
             buffer[get_index(x, z)] = vec3 { x * _cell_size, 0.0, z * _cell_size } - T;
@@ -39,10 +43,12 @@ void grid::create_ibo() {
     auto get_index = [&](int x, int z) { return (_num_cells * z) + x; };
 
     const size_t num_triangles { 2 * _num_cells * _num_cells + 4 };
-    _ibo->resize(num_triangles * 3 /* vertices */);
+    _ibo->create();
+    _ibo->bind();
+    _ibo->allocate(num_triangles * 3 * sizeof(GLuint) /* vertices */);
 
     using uvec2 = glm::tvec2<GLuint>;
-    uvec2 *buffer = reinterpret_cast<uvec2*>(_ibo->map());
+    uvec2 *buffer = reinterpret_cast<uvec2*>(_ibo->map(QOpenGLBuffer::WriteOnly));
 
     for (auto z = 0u; z < _num_cells - 1; ++z) {
         for (auto x = 0u; x < _num_cells - 1; ++x) {
@@ -57,9 +63,12 @@ void grid::create_ibo() {
 }
 
 void grid::create_vao() {
+    _vao->create();
     _vao->bind();
-    SetAttribute<vec3>(_vao, locations::position, sizeof(vec3), 0 /* no offset */);
-    _vao->unbind();
+    _vao->setAttribute<vec3>(locations::position, sizeof(vec3), 0 /* no offset */);
+
+    _ibo->bind();
+    _vbo->bind();
 }
 
 void grid::render(const mat4 &PV) {
@@ -69,10 +78,16 @@ void grid::render(const mat4 &PV) {
     // TODO(bkuolt): adjust OpenGL line rendering settings
 
     constexpr vec3 white { 1.0f, 1.0f, 1.0f };
-    _program->use();
-    _program->setUniform(locations::MVP, PV * glm::translate(_translation));
-    _program->setUniform(locations::color, white);
-    _vao->draw(GL_LINES);
+    _program->bind();
+
+    QMatrix4x4 matrix(glm::value_ptr(PV * glm::translate(_translation))); 
+    _program->setUniformValue(locations::MVP, matrix.transposed());
+    _program->setUniformValue(locations::color, white.x, white.y, white.z );
+
+    _vao->bind();
+    _ibo->bind();
+    _vbo->bind();
+    _vao->draw(GL_LINES, _ibo->size() / 4);
 }
 
 }  // namespace bgl

@@ -68,7 +68,10 @@
         "bit": "cpp",
         "*.ipp": "cpp",
         "filesystem": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "qopenglbuffer": "cpp",
+        "qopenglvertexarrayobject": "cpp",
+        "qopenglshaderprogram": "cpp"
     },
     "C_Cpp.default.intelliSenseMode": "gcc-x64",
     "C_Cpp.default.cStandard": "c11",

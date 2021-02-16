@@ -11,6 +11,7 @@
 #include <ctime>     // std::clock()
 
 
+
 namespace bgl {
 
 namespace {
@@ -54,9 +55,21 @@ class frame_counter final {
 }  // anonymous namespace
 
 
+
+
 Viewport::Viewport(QWidget *parent)
-    : QOpenGLWidget(parent)
-{}
+    : QOpenGLWidget( parent)
+{
+
+
+
+	//QGLContext context(glFormat);
+		
+	//this->context()->setFormat(glFormat);
+//	this->update();
+
+
+}
 
 void Viewport::initializeGL() {
     const GLenum error { glewInit() };

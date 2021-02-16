@@ -16,6 +16,8 @@
 
 namespace bgl {
 
+std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs);
+
 #ifdef __linux
 namespace console_color {
     constexpr char blue[] = "\x1B[34m";
@@ -28,15 +30,11 @@ namespace console_color {
 
 #endif  // __linux
 
+
+
+// TODO(bkuolt): move to separate header
 class grid final {
  public:
-    using Vertex = vec3;
-    using VBO = bgl::VertexBuffer<Vertex>;
-    using VAO = VertexArray<Vertex>;
-
-    using SharedVBO = bgl::SharedVBO<Vertex>;
-    using SharedVAO = bgl::SharedVAO<Vertex>;
-
     explicit grid(GLfloat size, std::size_t num_cells);
     void render(const mat4 &MVP);
 
@@ -54,10 +52,10 @@ class grid final {
     void create_ibo();
     void create_vao();
 
-    SharedVBO _vbo;
-    SharedIBO _ibo;
-    SharedVAO _vao;
-    SharedProgram _program;
+   std::shared_ptr<VertexArrayObject> _vao;
+   std::shared_ptr<QOpenGLBuffer> _vbo;
+   std::shared_ptr<QOpenGLBuffer> _ibo;
+    std::shared_ptr<QOpenGLShaderProgram> _program;
 };
 
 using SharedGrid = std::shared_ptr<grid>;

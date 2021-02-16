@@ -7,6 +7,7 @@
 git clone https://github.com/bkuolt/bgl-demo
 cd bgl-demo
 ./install.sh
+cd src
 make
 ```
 # Run
@@ -35,14 +36,10 @@ or run `./demo <path-to-your model>` to view your custom models.
 
 # Tech Stack
 ## OpenGL 4.5 (GLSL 3.0)
- - Mesa3D
+ - OpenGL
  - [GLEW](http://glew.sourceforge.net/)
- - [SDL 2.0](https://www.libsdl.org/download-2.0.php)
+ - [Qt 5]()
 
-## Assets
+## Assetsand Math
  - [Assimp](http://www.assimp.org/)
- - [DevIL](http://openil.sourceforge.net/)
-
- ## Utilities
-   - [Boost.Timer](https://www.boost.org/doc/libs/1_72_0/libs/timer/doc/index.html)
-   - [glm](https://glm.g-truc.net/0.9.9/index.html)
+  - [glm](https://glm.g-truc.net/0.9.9/index.html) 
