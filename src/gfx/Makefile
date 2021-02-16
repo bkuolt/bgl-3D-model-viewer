@@ -10,25 +10,27 @@ INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
 
 FLAGS = -std=c++17 -pthread $(INCLUDES_QT) -Wall -fPIC -O3 -Igl/
 
-gfx.o: gfx.cpp gfx.hpp
+gfx.o: gfx.cpp gfx.hpp gl.hpp
 	@$(CC) $(FLAGS) -c gfx.cpp
 
 camera.o: camera.cpp camera.hpp
 	@$(CC) $(FLAGS) -c camera.cpp
 
-gl/libgl.a:
-	@$(MAKE) -C gl
+mesh.o: mesh.cpp mesh.hpp
+	@$(CC) $(FLAGS) -c mesh.cpp
+
+box.o: box.cpp box.hpp
+	@$(CC) $(FLAGS) -c box.cpp
 
 gui/libgui.a:
 	@$(MAKE) -C gui
 
-libgfx.a: gl/libgl.a   \
-          gui/libgui.a \
-          camera.o gfx.o
+libgfx.a: mesh.o box.o   \
+          camera.o gfx.o \
+		  gui/libgui.a  
 	ar rcs libgfx.a *.o
 
 clean:
-	@$(MAKE) -C gl clean
 	@$(MAKE) -C gui clean
 	@rm -f *.o
 	@rm -f *.a

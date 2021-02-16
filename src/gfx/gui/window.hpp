@@ -2,7 +2,7 @@
 #ifndef GUI_WINDOW_HPP_
 #define GUI_WINDOW_HPP_
 
-#include "../gl/gl.hpp"  // TODO(bkuolt): fix this
+#include "../gl.hpp"  // TODO(bkuolt): fix this
 
 //#include <memory>
 #include <string>

@@ -2,8 +2,8 @@
 #ifndef GFX_GFX_HPP_
 #define GFX_GFX_HPP_
 
-#include "gl/gl.hpp"
-#include "gl/mesh.hpp"
+#include "gl.hpp"
+#include "mesh.hpp"
 
 #include "gui/window.hpp"
 

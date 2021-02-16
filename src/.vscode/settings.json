@@ -4,6 +4,8 @@
         "qglcontext": "cpp",
         "qsurfaceformat": "cpp",
         "qopenglcontext": "cpp",
-        "stdexcept": "cpp"
+        "stdexcept": "cpp",
+        "qmainwindow": "cpp",
+        "iostream": "cpp"
     }
 }

@@ -2,7 +2,7 @@
 #ifndef GFX_CAMERA_HPP_
 #define GFX_CAMERA_HPP_
 
-#include "gl/gl.hpp"
+#include "gl.hpp"
 
 
 namespace bgl {

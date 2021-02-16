@@ -1,5 +1,5 @@
 .DEFAULT_GOAL = libgui.a
-.PHONY = clean
+.PHONY = libgui.a clean
 
 INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
 	          -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets  \

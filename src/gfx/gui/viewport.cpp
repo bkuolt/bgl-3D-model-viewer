@@ -2,11 +2,10 @@
  * @file viewport.cpp
  * @brief A simple OpenGL Qt Viewport
  */
-#include "../gl/gl.hpp"
+#include "../gl.hpp"
 #include "viewport.hpp"
 
 #include <QOpenGLWidget>
-#include "../gl/gl.hpp"  // TODO(bkuolt)
 #include <iostream>
 #include <ctime>     // std::clock()
 

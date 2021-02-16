@@ -1,5 +1,5 @@
 .DEFAULT_GOAL = run
-.PHONY = demo run clean
+.PHONY = demo gfx/libgfx.a run clean
 
 INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
 	          -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets  \
@@ -29,7 +29,6 @@ demo: main.o gfx/libgfx.a
 	$(FLAGS)        \
 	main.o          \
 	-Lgfx -lgfx     \
-	-Lgfx/gl -lgl   \
 	-Lgfx/gui -lgui \
 	$(LIBS)
  
