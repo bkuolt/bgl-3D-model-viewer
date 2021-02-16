@@ -3,7 +3,6 @@
 #define GFX_SHADER_HPP_
 
 #include "gl.hpp"
-#include "texture.hpp"
 
 #include <filesystem>
 #include <memory>
@@ -48,7 +47,6 @@ class Program {
 	void setUniform(const std::string &name, GLfloat value);
 	void setUniform(const std::string &name, const vec3 &vector);
 	void setUniform(const std::string &name, const mat4 &matrix);
-	void setUniform(const std::string &name, const SharedTexture &texture);
 
 	void setUniform(GLuint location, GLuint value);
 	void setUniform(GLuint location, GLfloat value);

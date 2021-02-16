@@ -4,7 +4,6 @@
 
 #include "gl/gl.hpp"
 #include "gl/mesh.hpp"
-#include "gl/texture.hpp"
 
 #include "gui/window.hpp"
 

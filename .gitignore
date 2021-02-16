@@ -2,7 +2,8 @@
 *.o
 *.a
 *.la
-gfx/.vscode/
-gfx/.vscode/**
+src/gfx/.vscode/
+src/gfx/.vscode/**
+src/gfx/.vscode
 TODO
 bgl

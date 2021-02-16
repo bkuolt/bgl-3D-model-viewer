@@ -5,7 +5,6 @@
 #include "gl.hpp"
 #include "buffer.hpp"
 #include "shader.hpp"
-#include "texture.hpp"
 
 #include <assimp/mesh.h>  // TODO(bkuolt)
 

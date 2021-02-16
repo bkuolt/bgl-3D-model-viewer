@@ -12,6 +12,8 @@
 #include <list>
 #include <string>
 
+#include <QImage>
+
 
 namespace bgl {
 
@@ -100,18 +102,20 @@ SharedVAO<Vertex> createVAO(const SharedVBO<Vertex> &vbo, const SharedIBO &ibo) 
     return vao;
 }
 
-SharedTexture loadTexture(const std::filesystem::path &base_path, const aiScene *scene) {
+std::shared_ptr<QOpenGLTexture> LoadTexture(const std::filesystem::path &base_path, const aiScene *scene) {
     std::cout << scene->mNumMaterials << " materials" << std::endl;
 
     for (auto i = 0u; i <  scene->mNumMaterials; ++i) {
         if (scene->mMaterials[i]->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
             aiString path;
             scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &path);
-            return LoadTexture(base_path / path.data);
+
+            QImage image { (base_path / path.data).string().c_str() };
+            return std::make_shared<QOpenGLTexture>(image);
         }
     }
 
-    return {};
+    return {};  // TODO(bkuolt)
 }
 
 /* ------------------------ Lighting ----------------------------------- */
@@ -195,13 +199,11 @@ Mesh::Mesh(const std::filesystem::path &path) {
         bounds.z.max -  bounds.z.min });
 
     if (IsTextured(scene)) {
-        _texture = loadTexture(path.parent_path(), scene);
+        _texture = LoadTexture(path.parent_path(), scene);
     }
 }
 
 void Mesh::render(const mat4 &_MVP) {
-    // std::cout << "Mesh::render() " << std::endl
-
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     _program->use();
 
@@ -211,8 +213,13 @@ void Mesh::render(const mat4 &_MVP) {
 
     const GLuint isTextured { _texture != nullptr };
     _program->setUniform("isTextured", isTextured);
+
     if (isTextured) {
-        _program->setUniform("texture", _texture);
+        const GLuint textureUnit { 0 };  // TODO(bkuolt): add support for more than one texture
+
+        glActiveTexture(GL_TEXTURE0 + textureUnit);
+        _texture->bind();
+        glUniform1i(_program->getLocation("texture"), textureUnit);
     }
 
     _vao->draw();

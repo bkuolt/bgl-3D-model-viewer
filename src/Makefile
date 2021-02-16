@@ -14,11 +14,10 @@ FLAGS = -std=c++17 -pthread            \
 # -fPIC is for QT only
 
 LIBS = -lstdc++fs \
-       -lQt5Widgets -lQt5Core -lGL \
+       -lQt5Widgets -lQt5Core -lQt5Gui -lGL \
 	   -lassimp  \
-	   -lIL \
 	   -lGLEW -lGLU -lGL -lGLU
-
+	
 main.o: main.cpp
 	@$(CC) $(FLAGS) -c main.cpp
 

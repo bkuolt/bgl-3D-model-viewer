@@ -5,7 +5,9 @@
 #include "gl.hpp"
 #include "buffer.hpp"
 #include "shader.hpp"
-#include "texture.hpp"
+
+#include <QOpenGLTexture>
+
 #include "box.hpp"
 
 #include <iostream>
@@ -15,6 +17,7 @@
 
 
 namespace bgl {
+
 
 class 
 Mesh {
@@ -31,7 +34,7 @@ Mesh {
     SharedVBO<Vertex> _vbo;
     SharedIBO _ibo;
     SharedVAO<Vertex> _vao;
-    SharedTexture _texture;
+    std::shared_ptr<QOpenGLTexture> _texture;
     SharedProgram _program;
     Box _box;
 };

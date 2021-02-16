@@ -143,18 +143,6 @@ void Program::setUniform(const std::string &name, const mat4 &matrix) {
     setUniform(getLocation(name), matrix);
 }
 
-void Program::setUniform(const std::string &name, const SharedTexture &texture) {
-    if (texture == nullptr) {
-        throw std::invalid_argument { "invalid texture" };
-    }
-    const GLuint location = getLocation(name);
-    const GLuint textureUnit = 0;  // TODO(bkuolt): add support for more than one texture
-
-    glActiveTexture(GL_TEXTURE0 + textureUnit);
-    texture->bind();
-    glProgramUniform1i(_handle, location, textureUnit);
-}
-
 /* --------------------------------- */
 
 namespace {
