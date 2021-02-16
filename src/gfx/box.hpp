@@ -3,45 +3,24 @@
 #define GL_BOX_HPP_
 
 #include "gl.hpp"
-
-#include <QOpenGLShaderProgram>
-#include <QOpenGLBuffer>
-#include <QOpenGLVertexArrayObject>
-
-#include <assimp/mesh.h>  // TODO(bkuolt)
-#include <memory>
+#include "mesh.hpp"
 
 
 namespace bgl {
 
-struct bounding_box {
-    float min;
-    float max;
-};
-
-glm::tvec3<bounding_box> get_bounds(const aiMesh &mesh) noexcept;
-
-class Box final {
+class Box final : public Mesh {
  public:
-    explicit Box(GLfloat size = 1);
-    explicit Box(const vec3 &dimensions);
+	Box();
+	explicit Box(const BoundingBox &boundingBox);
 
-    void render(const mat4 &VP);
-    void resize(const vec3 &dimensions);
+	void render(const mat4 &VP) override;
 
-    const vec3& getSize() const noexcept {
-       return _dimensions;
-    }
+	void resize(const vec3 &dimensions);   // move to mesh
 
  private:
-   vec3 _dimensions;
-
-   std::shared_ptr<VertexArrayObject> _vao;
-   std::shared_ptr<QOpenGLBuffer> _vbo;
-   std::shared_ptr<QOpenGLBuffer> _ibo;
-
-   std::shared_ptr<QOpenGLShaderProgram> _program;
+	 BoundingBox _boundingBox;
 };
 
 }  // namespace bgl
+
 #endif  // GL_BOX_HPP_

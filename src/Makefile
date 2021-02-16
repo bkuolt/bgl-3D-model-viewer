@@ -1,5 +1,5 @@
 .DEFAULT_GOAL = run
-.PHONY = demo gfx/libgfx.a run clean
+.PHONY = demo gfx/libgfx.so run clean
 
 INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
 	          -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets  \
@@ -7,33 +7,33 @@ INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL   \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui
 
-CC = g++
-FLAGS = -std=c++17 -pthread            \
+FLAGS = -std=c++17  -pthread            \
 	    -DUSE_QT $(INCLUDES_QT) -fPIC  \
-		-Wall -O3
+		-Wall -fPIC   #-O3
 # -fPIC is for QT only
 
 LIBS = -lstdc++fs \
-       -lQt5Widgets -lQt5Core -lQt5Gui -lQt5OpenGL -lGL \
+       -lGL \
+       -lQt5Widgets -lQt5Core -lQt5Gui -lQt5OpenGL  \
 	   -lassimp  \
-	   -lGLEW -lGLU -lGL -lGLU
-	
+	   -lGLU  -lGLU  -ldl
+
 main.o: main.cpp
 	@$(CC) $(FLAGS) -c main.cpp
 
-gfx/libgfx.a:
+gfx/libgfx.so:
 	@$(MAKE) -C gfx
 
-demo: main.o gfx/libgfx.a
-	$(CC) -o demo   \
-	$(FLAGS)        \
-	main.o          \
-	-Lgfx -lgfx     \
-	-Lgfx/gui -lgui \
-	$(LIBS)
- 
+demo: main.o gfx/libgfx.so
+	$(CC) \
+	$(FLAGS)  main.o  \
+	-Lgfx -lgfx  -lstdc++ -ldl $(LIBS) \
+     -o demo   
+	#-Wl,--as-needed -lGLEW
 run: demo
-	@./demo ./assets/models/housemedieval.obj
+	export LD_LIBRARY_PATH=/home/bastian/code/bgl-demo/src/:/home/bastian/code/bgl-demo/src/gfx; \
+	 echo $(LD_LIBRARY_PATH); \
+	./demo ./assets/models/housemedieval.obj
 
 clean:
 	@$(MAKE) -C gfx clean

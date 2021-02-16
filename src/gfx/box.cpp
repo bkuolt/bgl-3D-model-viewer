@@ -12,24 +12,9 @@
 
 namespace bgl {
 
+
 std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs);
 
-glm::tvec3<bounding_box> get_bounds(const aiMesh &mesh) noexcept {
-    glm::tvec3<bounding_box> bounds;
-
-    for (auto i = 0u; i < 3; ++i) {
-        bounds[i].min = 0;
-        bounds[i].max = 0;
-    }
-
-    for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
-        for (auto i = 0u; i < 3; ++i) {
-            bounds[i].min = std::min(bounds[i].min, mesh.mVertices[vertex_index][i]);
-            bounds[i].max = std::max(bounds[i].max, mesh.mVertices[vertex_index][i]);
-        }
-    }
-    return bounds;
-}
 
 
 using uvec2 = glm::tvec2<GLuint>;
@@ -52,12 +37,14 @@ static constexpr std::array<uvec2, 12> box_indices {{
     {0, 4}, {1, 5}, {3, 7}, {2, 6}  // left and right sides
 }};
 
-Box::Box(const vec3 &dimensions)
-    : _dimensions { dimensions },
-      _vao { std::make_shared<VertexArrayObject>() },
-      _vbo { std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::VertexBuffer) },
-      _ibo { std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::IndexBuffer) }
+Box::Box()
 {
+
+    _vao = std::make_shared<VertexArrayObject>();  // TODO: move to Mesh
+    _vbo = std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::VertexBuffer);
+    _ibo = std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::IndexBuffer);
+
+
     // create vbo
     _vbo->create();
     _vbo->bind();
@@ -83,15 +70,19 @@ Box::Box(const vec3 &dimensions)
     _program = LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs");
 }
 
-Box::Box(GLfloat size)
-    : Box({ size, size, size })
-{}
+
+
+Box::Box(const BoundingBox &boundingBox)
+    : Box()
+{   
+     _boundingBox =boundingBox;
+}
 
 void Box::render(const mat4 &VP) {
     _program->bind();
     glLineWidth(3);
 
-    mat4 M = glm::scale(_dimensions);
+    mat4 M = glm::scale(_boundingBox.getSize());
    
     QMatrix4x4 matrix(glm::value_ptr(VP * M));
     _program->bind();
@@ -106,8 +97,5 @@ void Box::render(const mat4 &VP) {
     _vao->draw(GL_LINES, box_indices.size() * 2);
 }
 
-void Box::resize(const vec3 &dimensions) {
-    _dimensions = dimensions;
-}
 
 }  // namespace bgl

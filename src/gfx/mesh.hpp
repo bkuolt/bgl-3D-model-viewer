@@ -3,18 +3,21 @@
 #define GFX_MESH_HPP
 
 #include "gl.hpp"
-#include "box.hpp"
 
-#include <QOpenGLTexture>
+#include <QOpenGLTexture>  // TODO: move to cpp file
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
-
 
 #include <iostream>
 #include <filesystem>
 #include <memory>
 #include <string>
+
+#include "BoundingBox.hpp"
+
+struct aiScene;
+struct aiMesh;
 
 
 namespace bgl {
@@ -25,25 +28,35 @@ struct Vertex {
     vec2 texcoords;
 };
 
-class 
-Mesh {
+
+class Mesh {
  public:
-    explicit Mesh(const std::filesystem::path &path);
-    virtual ~Mesh() = default;
-    void render(const mat4 &MVP);
+   Mesh() {}  // TODO
+   
+   explicit Mesh(const std::filesystem::path &path);
+   virtual ~Mesh() = default;
+   
+   virtual void create();
+   virtual void render(const mat4 &MVP);
 
-    const Box& getBoundingBox() const noexcept {
-       return _box;
-    }
-
+   const BoundingBox& getBoundingBox() const;
 
  private:
+   void createVBO(const aiScene *scene);
+   void createIBO(const aiMesh *mesh);
+   void createVAO();
+   void createShaderProgram();
+
+ protected:
    std::shared_ptr<VertexArrayObject> _vao;
    std::shared_ptr<QOpenGLBuffer> _vbo;
    std::shared_ptr<QOpenGLBuffer> _ibo;
    std::shared_ptr<QOpenGLTexture> _texture;
    std::shared_ptr<QOpenGLShaderProgram> _program;
-   Box _box;
+   
+ private:
+   BoundingBox _bounding_box;
+   const std::filesystem::path _path;
 };
 
 using SharedMesh = std::shared_ptr<Mesh>;
@@ -52,6 +65,7 @@ inline SharedMesh LoadMesh(const std::string &path) {
    std::cout << "LoadMesh()" << std::endl;
      auto r = std::shared_ptr<bgl::Mesh>(new bgl::Mesh(path));
    std::cout << "Done loading" << std::endl;
+   r->create();
    return r;
 }
 

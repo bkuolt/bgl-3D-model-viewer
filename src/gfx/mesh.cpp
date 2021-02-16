@@ -49,78 +49,7 @@ bool IsTextured(const aiScene *scene) {
     return !textures.empty();
 }
 
-std::shared_ptr<QOpenGLBuffer> createVBO(const aiScene *scene) {
-    static_assert(std::is_same<ai_real, float>::value);
-    const aiMesh &mesh = *scene->mMeshes[0];
-
-    auto vbo { std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::VertexBuffer) }; 
-    
-    vbo->create();
-    vbo->bind();
-    vbo->allocate(sizeof(Vertex) * mesh.mNumVertices);
-
-    auto buffer { reinterpret_cast<Vertex*>(vbo->map(QOpenGLBuffer::ReadWrite)) };
-    std::cout << "p= "<< buffer << std::endl;
-    std::cout << "232"<< std::endl;
-
-    const bool is_textured { IsTextured(scene) };
-    for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
-        buffer[vertex_index].normal = vec3 { mesh.mNormals[vertex_index].x, mesh.mNormals[vertex_index].y, mesh.mNormals[vertex_index].z };
-        buffer[vertex_index].position = vec3 { mesh.mVertices[vertex_index].x, mesh.mVertices[vertex_index].y, mesh.mVertices[vertex_index].z };
-    }
-
-    if (is_textured) {
-        for (auto i = 0u; i < mesh.mNumVertices; ++i) {
-            buffer[i].texcoords = vec2 { mesh.mTextureCoords[0][i].x,
-                                         1.0 - mesh.mTextureCoords[0][i].y };
-        }
-    }
-
-    // TODO(bkuolt): rethink "normalize_vertex_positionsnormalize_vertex_positions(mesh, buffer);""
-    vbo->unmap();
-    std::cout << "created a vbo with " << vbo->size() << " vertices" << std::endl;
-    return vbo;
-}
-
-std::shared_ptr<QOpenGLBuffer> createIBO(const aiMesh &mesh) {
-    auto ibo { std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::IndexBuffer) };
-    ibo->create();
-    ibo->bind();
-    ibo->allocate(sizeof(GLuint) * mesh.mNumFaces * 3);
-    
-    auto buffer { reinterpret_cast<GLuint*>(ibo->map(QOpenGLBuffer::WriteOnly)) };
-    for (auto i = 0u; i < mesh.mNumFaces; ++i) {
-        switch (mesh.mFaces[i].mNumIndices) {
-            case 3:
-                std::copy_n(mesh.mFaces[i].mIndices, 3, buffer);
-                buffer += 3;
-                break;
-            default:
-                throw std::runtime_error { "unexpected data" };
-        }
-    }
-    ibo->unmap();
-
-    std::cout << "created an ibo with " << ibo->size() << " indices" << std::endl;
-    return ibo;
-}
-
 enum AttributLocations : GLuint { MVP = 0, Position = 8, Normal, TexCoord, Texture };
-
-std::shared_ptr<VertexArrayObject> createVAO(const std::shared_ptr<QOpenGLBuffer> &vbo,
-                                                    const std::shared_ptr<QOpenGLBuffer> &ibo) {
-    auto vao { std::make_shared<VertexArrayObject>() };
-    vao->create();
-    vao->bind();
-
-    vbo->bind();
-    ibo->bind();
-    const auto stride = sizeof(Vertex);
-    vao->setAttribute<vec3>(AttributLocations::Position, stride, offsetof(Vertex, position));
-    vao->setAttribute<vec3>(AttributLocations::Normal, stride, offsetof(Vertex, normal));
-    vao->setAttribute<vec2>(AttributLocations::TexCoord, stride, offsetof(Vertex, texcoords));
-    return vao;
-}
 
 std::shared_ptr<QOpenGLTexture> LoadTexture(const std::filesystem::path &base_path, const aiScene *scene) {
     std::cout << scene->mNumMaterials << " materials" << std::endl;
@@ -139,7 +68,6 @@ std::shared_ptr<QOpenGLTexture> LoadTexture(const std::filesystem::path &base_pa
 }
 
 /* ------------------------ Lighting ----------------------------------- */
-
 
 void setUpLightning(std::shared_ptr<QOpenGLShaderProgram> program) {
     constexpr GLsizei maxLightNum = 5;
@@ -163,13 +91,13 @@ void setUpLightning(std::shared_ptr<QOpenGLShaderProgram> program) {
 
 /* --------------------------------------------------------------------- */
 
-aiMesh& getMesh(const aiScene *scene) {
+aiMesh* getMesh(const aiScene *scene) {
     if (scene->mNumMeshes == 0) {
         throw std::runtime_error { "model file does not contain any mesh" };
     } else if (scene->mNumMeshes > 1) {
         std::cout << "Warning: found more than one mesh, but only one is supported" << std::endl;
     }
-    return *scene->mMeshes[0];
+    return scene->mMeshes[0];
 }
 
 const aiScene* importScene(const std::filesystem::path &path) {
@@ -194,36 +122,123 @@ const aiScene* importScene(const std::filesystem::path &path) {
     return scene;
 }
 
+BoundingBox GetBoundingBox(const aiMesh *mesh) noexcept {
+    BoundingBox boundingBox;
+
+    for (auto i = 0u; i < 3; ++i) {
+        boundingBox._bounds[i].min = 0;
+        boundingBox._bounds[i].max = 0;
+    }
+
+    for (auto vertex_index = 0u; vertex_index < mesh->mNumVertices; ++vertex_index) {
+        for (auto i = 0u; i < 3; ++i) {
+            boundingBox._bounds[i].min = std::min(boundingBox._bounds[i].min, mesh->mVertices[vertex_index][i]);
+            boundingBox._bounds[i].max = std::max(boundingBox._bounds[i].max, mesh->mVertices[vertex_index][i]);
+        }
+    }
+
+    return boundingBox;
+}
+
 }  // namespace
 
 /* ------------------------------- Mesh -------------------------------- */
 
-Mesh::Mesh(const std::filesystem::path &path) {std::cout << "(1)"<< std::endl;
+Mesh::Mesh(const std::filesystem::path &path)
+    : _path(path) {
     if (!std::filesystem::exists(path)) {
         std::ostringstream oss;
         oss << "the file " << std::quoted(path.string()) << " does not exist";
         throw std::runtime_error { oss.str() };
     }
+}
 
-    const aiScene *scene = importScene(path);
-    const aiMesh &mesh = getMesh(scene);
-
-    _vbo = createVBO(scene);
-    _ibo = createIBO(mesh);
-    _vao = createVAO(_vbo, _ibo);
-
-    _program = LoadProgram("./assets/shaders/main.vs", "./assets/shaders/main.fs");
-
-    glm::tvec3<bounding_box> bounds = get_bounds(mesh);
-    _box.resize({
-        bounds.x.max -  bounds.x.min,
-        bounds.y.max -  bounds.y.min,
-        bounds.z.max -  bounds.z.min });
+void Mesh::create() {
+    const aiScene *scene { importScene(_path) };
+    const aiMesh *mesh { getMesh(scene) };
+    createVBO(scene);
+    createIBO(mesh);
+    createVAO();
+    createShaderProgram();
+ 
+    _bounding_box = GetBoundingBox(mesh);
 
     if (IsTextured(scene)) {
-        _texture = LoadTexture(path.parent_path(), scene);
+        _texture = LoadTexture(_path.parent_path(), scene);
+    }
+}
+
+void Mesh::createVBO(const aiScene *scene) {
+    const aiMesh &mesh = *scene->mMeshes[0];
+
+    _vbo = std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::VertexBuffer);  
+    _vbo->create();
+    _vbo->bind();
+    _vbo->allocate(sizeof(Vertex) * mesh.mNumVertices);
+
+    auto buffer { reinterpret_cast<Vertex*>(_vbo->map(QOpenGLBuffer::ReadWrite)) };
+    std::cout << "p= "<< buffer << std::endl;
+    std::cout << "232"<< std::endl;
+
+    const bool is_textured { IsTextured(scene) };
+    for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
+        buffer[vertex_index].normal = vec3 { mesh.mNormals[vertex_index].x, mesh.mNormals[vertex_index].y, mesh.mNormals[vertex_index].z };
+        buffer[vertex_index].position = vec3 { mesh.mVertices[vertex_index].x, mesh.mVertices[vertex_index].y, mesh.mVertices[vertex_index].z };
     }
 
+    if (is_textured) {
+        for (auto i = 0u; i < mesh.mNumVertices; ++i) {
+            buffer[i].texcoords = vec2 { mesh.mTextureCoords[0][i].x,
+                                         1.0 - mesh.mTextureCoords[0][i].y };
+        }
+    }
+
+    _vbo->unmap();
+    std::cout << "created vbo containing " << _vbo->size() << " vertices" << std::endl;
+}
+
+void Mesh::createIBO(const aiMesh *mesh) {
+    _ibo = std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::IndexBuffer);
+    _ibo->create();
+    _ibo->bind();
+    _ibo->allocate(sizeof(GLuint) * mesh->mNumFaces * 3);
+    
+    auto buffer { reinterpret_cast<GLuint*>(_ibo->map(QOpenGLBuffer::WriteOnly)) };
+    for (auto i = 0u; i < mesh->mNumFaces; ++i) {
+        switch (mesh->mFaces[i].mNumIndices) {
+            case 3:
+                std::copy_n(mesh->mFaces[i].mIndices, 3, buffer);
+                buffer += 3;
+                break;
+            default:
+                throw std::runtime_error { "unexpected data" };
+        }
+    }
+    _ibo->unmap();
+
+    std::cout << "created an IBO containing " << _ibo->size() << " indices" << std::endl;
+}
+
+void Mesh::createVAO() {
+    _vao = std::make_shared<VertexArrayObject>();
+    _vao->create();
+    _vao->bind();
+
+    _ibo->bind();
+    _vbo->bind();
+
+    const auto stride { sizeof(Vertex) };
+    _vao->setAttribute<vec3>(AttributLocations::Position, stride, offsetof(Vertex, position));
+    _vao->setAttribute<vec3>(AttributLocations::Normal, stride, offsetof(Vertex, normal));
+    _vao->setAttribute<vec2>(AttributLocations::TexCoord, stride, offsetof(Vertex, texcoords));
+}
+
+void Mesh::createShaderProgram() {
+    _program = LoadProgram("./assets/shaders/main.vs", "./assets/shaders/main.fs");
+}
+
+const BoundingBox& Mesh::getBoundingBox() const {
+    return _bounding_box;
 }
 
 void Mesh::render(const mat4 &_MVP) {
@@ -252,8 +267,6 @@ void Mesh::render(const mat4 &_MVP) {
     _ibo->bind();
 
     _vao->draw(GL_TRIANGLES, _ibo->size() / sizeof(GLuint) * 3);
-
-    _box.render(_MVP);
 }
 
 }  // namespace bgl

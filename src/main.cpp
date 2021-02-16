@@ -5,9 +5,10 @@
 #include <stdexcept>
 
 #include "gfx/gfx.hpp"
+#include "gfx/box.hpp"
 #include "gfx/camera.hpp"
 
-#undef Q_CC_GNU  //  removes "#warning To use GLEW with Qt, do not include <qopengl.h> or <QOpenGLFunctions> after glew.h"
+//#undef Q_CC_GNU  //  removes "#warning To use GLEW with Qt, do not include <qopengl.h> or <QOpenGLFunctions> after glew.h"
 #include <QApplication>
 #include <QKeyEvent>
 
@@ -23,6 +24,7 @@ struct {
 	SharedMesh mesh;
 	SharedGrid grid;
 	Camera camera;
+	std::shared_ptr<Box> box;
 } Scene;
 
 
@@ -44,6 +46,7 @@ class GLViewport final : public Viewport {
 		const mat4 PV { Scene.camera.getMatrix() };
 		Scene.grid->render(PV);
 		Scene.mesh->render(PV);
+		Scene.box->render(PV);
 	}
 };
 
@@ -129,6 +132,9 @@ void set_up_scene(const std::filesystem::path &path) {
 	Scene.mesh = LoadMesh(path);
 	Scene.camera.setViewCenter({ 0.0, 0.0, 0.0 });
 	Scene.camera.setPosition({ 0.0, 1.0, 2.0 });
+
+	
+	Scene.box = std::make_shared<Box>(Scene.mesh->getBoundingBox());
 
 	Scene.grid = CreateGrid(0.125, 40);
 	const vec3 v { 0.0, -Scene.mesh->getBoundingBox().getSize().y / 2.0, 0.0 };

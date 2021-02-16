@@ -7,18 +7,18 @@ INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL   \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui
 
-CPPFLAGS = -std=c++17 -fPIC   \
+CPPFLAGS = -std=c++17  -fPIC   \
            -Wno-endif-labels -Wall \
             $(INCLUDES_QT)    \
            -DQT_NO_KEYWORDS   \
-		   -DUSE_QT -fPIC     \
-		   -o3
+		   -DUSE_QT -fPIC     
+		   #-o3
 
 viewport.o: viewport.hpp viewport.cpp
-	g++ $(CPPFLAGS) -c viewport.cpp -o viewport.o
+	@$(CC) $(CPPFLAGS) -c viewport.cpp -o viewport.o
 
 window.o: window.hpp window.cpp
-	g++ $(CPPFLAGS) -c window.cpp -o window.o
+	@$(CC) $(CPPFLAGS) -c window.cpp -o window.o
 
 libgui.a: window.o viewport.o
 	ar rcs libgui.a *.o

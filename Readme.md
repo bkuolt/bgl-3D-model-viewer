@@ -1,8 +1,8 @@
 ![C/C++ CI](https://github.com/bkuolt/bgl-demo/workflows/C/C++%20CI/badge.svg?branch=master)
 
-![alt text](screenshot.png "BGL Engine Tech Demo")
+![Screenshot](screenshot.png "BGL Engine Tech Demo")
 
-# Installation nad Building
+# Installation and Building
 ```bash
 git clone https://github.com/bkuolt/bgl-demo
 cd bgl-demo
@@ -10,6 +10,7 @@ cd bgl-demo
 cd src
 make
 ```
+
 # Run
 ```bash
     make run
@@ -35,11 +36,8 @@ or run `./demo <path-to-your model>` to view your custom models.
 | SIGHUP | Terminate |
 
 # Tech Stack
-## OpenGL 4.5 (GLSL 3.0)
- - OpenGL
+ - OpenGL 4.5 (GLSL 3.0)
  - [GLEW](http://glew.sourceforge.net/)
  - [Qt 5]()
-
-## Assetsand Math
  - [Assimp](http://www.assimp.org/)
-  - [glm](https://glm.g-truc.net/0.9.9/index.html) 
+ - [glm](https://glm.g-truc.net/0.9.9/index.html) 

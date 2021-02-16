@@ -33,12 +33,12 @@ namespace console_color {
 
 
 // TODO(bkuolt): move to separate header
-class grid final {
+class grid final : public Mesh {
  public:
     explicit grid(GLfloat size, std::size_t num_cells);
-    void render(const mat4 &MVP);
+    void render(const mat4 &MVP) override;
 
-    void translate(const vec3 &v) {
+    void translate(const vec3 &v) {   // TODO(bkuolt)
         _translation += v;
     }
 
@@ -51,11 +51,6 @@ class grid final {
     void create_vbo();
     void create_ibo();
     void create_vao();
-
-   std::shared_ptr<VertexArrayObject> _vao;
-   std::shared_ptr<QOpenGLBuffer> _vbo;
-   std::shared_ptr<QOpenGLBuffer> _ibo;
-    std::shared_ptr<QOpenGLShaderProgram> _program;
 };
 
 using SharedGrid = std::shared_ptr<grid>;

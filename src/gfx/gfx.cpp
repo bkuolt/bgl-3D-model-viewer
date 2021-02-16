@@ -10,11 +10,13 @@ enum locations { MVP = 0 , color, position };
 
 grid::grid(GLfloat size, std::size_t num_cells)
     : _cell_size { size },
-      _num_cells { num_cells },
-      _vao { std::make_shared<VertexArrayObject>() },
-      _vbo { std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::VertexBuffer) },
-      _ibo { std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::IndexBuffer) },
-      _program(LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs")) {
+      _num_cells { num_cells } {
+     
+    _vao = std::make_shared<VertexArrayObject>();  // TODO: move to Mesh
+    _vbo = std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::VertexBuffer);
+    _ibo = std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::IndexBuffer);
+    _program = LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs");
+
     create_vbo();
     create_ibo();
     create_vao();
