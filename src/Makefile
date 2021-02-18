@@ -18,7 +18,7 @@ LIBS = -lstdc++fs \
 	   -lassimp  \
 	   -lGLU  -lGLU  -ldl
 
-main.o: main.cpp
+main.o: main.cpp window.hpp
 	@$(CC) $(FLAGS) -c main.cpp
 
 gfx/libgfx.so:
