@@ -1,10 +1,10 @@
-// Copyright 2020 Bastian Kuolt
+// Copyright 2021 Bastian Kuolt
 #ifndef GFX_MESH_HPP
 #define GFX_MESH_HPP
 
 #include "gl.hpp"
 
-#include <QOpenGLTexture>  // TODO: move to cpp file
+#include <QOpenGLTexture>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
@@ -12,62 +12,38 @@
 #include <iostream>
 #include <filesystem>
 #include <memory>
-#include <string>
 
 #include "BoundingBox.hpp"
-
-struct aiScene;
-struct aiMesh;
 
 
 namespace bgl {
 
-struct Vertex {
-    vec3 position;
-    vec3 normal;
-    vec2 texcoords;
-};
-
-
-class Mesh {
+class BasicMesh {
  public:
-   Mesh() {}  // TODO
-   
-   explicit Mesh(const std::filesystem::path &path);
-   virtual ~Mesh() = default;
-   
-   virtual void create();
-   virtual void render(const mat4 &MVP);
+	BasicMesh();
+	virtual ~BasicMesh() noexcept = default;
+	virtual void render(const mat4 &MVP) = 0;
 
-   const BoundingBox& getBoundingBox() const;
-
- private:
-   void createVBO(const aiScene *scene);
-   void createIBO(const aiMesh *mesh);
-   void createVAO();
-   void createShaderProgram();
+	void resize(const vec3 &dimensions);
+	const BoundingBox& getBoundingBox() const;
 
  protected:
-   std::shared_ptr<VertexArrayObject> _vao;
-   std::shared_ptr<QOpenGLBuffer> _vbo;
-   std::shared_ptr<QOpenGLBuffer> _ibo;
-   std::shared_ptr<QOpenGLTexture> _texture;
-   std::shared_ptr<QOpenGLShaderProgram> _program;
-   
- private:
-   BoundingBox _bounding_box;
-   const std::filesystem::path _path;
+	std::shared_ptr<QOpenGLBuffer> _vbo;
+	std::shared_ptr<QOpenGLBuffer> _ibo;
+	std::shared_ptr<VertexArrayObject> _vao;
+	std::shared_ptr<QOpenGLTexture> _texture;
+	std::shared_ptr<QOpenGLShaderProgram> _program;
+	BoundingBox _boundingBox;
 };
 
-using SharedMesh = std::shared_ptr<Mesh>;
+class Mesh : public BasicMesh {
+ public:
+   Mesh() = default;
+   explicit Mesh(const std::filesystem::path &path);
+   virtual ~Mesh() = default;
 
-inline SharedMesh LoadMesh(const std::string &path) {
-   std::cout << "LoadMesh()" << std::endl;
-     auto r = std::shared_ptr<bgl::Mesh>(new bgl::Mesh(path));
-   std::cout << "Done loading" << std::endl;
-   r->create();
-   return r;
-}
+   void render(const mat4 &MVP) override;
+};
 
 }  // namespace bgl
 

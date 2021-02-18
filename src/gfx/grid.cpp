@@ -1,20 +1,17 @@
-// Copyright 2020 Bastian Kuolt
-#include "gfx.hpp"  //TODO
+// Copyright 2021 Bastian Kuolt
+#include "grid.hpp"
+#include "gfx.hpp"
+
 #include <QMatrix4x4>
+
 
 namespace bgl {
 
-/* --------------------------- Grid --------------------------- */
-
 enum locations { MVP = 0 , color, position };
 
-grid::grid(GLfloat size, std::size_t num_cells)
+Grid::Grid(GLfloat size, std::size_t num_cells)
     : _cell_size { size },
       _num_cells { num_cells } {
-     
-    _vao = std::make_shared<VertexArrayObject>();  // TODO: move to Mesh
-    _vbo = std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::VertexBuffer);
-    _ibo = std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::IndexBuffer);
     _program = LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs");
 
     create_vbo();
@@ -22,13 +19,12 @@ grid::grid(GLfloat size, std::size_t num_cells)
     create_vao();
 }
 
-void grid::create_vbo() {
+void Grid::create_vbo() {
     auto get_index = [&](int x, int z) -> GLuint { return (_num_cells * z) + x; };
 
     const float size = _num_cells * _cell_size;
     const vec3 T { size / 2.0f, 0.0f, size / 2.0f };
 
-    _vbo->create();
     _vbo->bind();
     _vbo->allocate(sizeof(vec3) * _num_cells * _num_cells);
 
@@ -41,11 +37,10 @@ void grid::create_vbo() {
     _vbo->unmap();
 }
 
-void grid::create_ibo() {
+void Grid::create_ibo() {
     auto get_index = [&](int x, int z) { return (_num_cells * z) + x; };
 
     const size_t num_triangles { 2 * _num_cells * _num_cells + 4 };
-    _ibo->create();
     _ibo->bind();
     _ibo->allocate(num_triangles * 3 * sizeof(GLuint) /* vertices */);
 
@@ -64,8 +59,7 @@ void grid::create_ibo() {
     _ibo->unmap();
 }
 
-void grid::create_vao() {
-    _vao->create();
+void Grid::create_vao() {
     _vao->bind();
     _vao->setAttribute<vec3>(locations::position, sizeof(vec3), 0 /* no offset */);
 
@@ -73,7 +67,11 @@ void grid::create_vao() {
     _vbo->bind();
 }
 
-void grid::render(const mat4 &PV) {
+void Grid::translate(const vec3 &v) {
+    _translation += v;
+}
+
+void Grid::render(const mat4 &PV) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glEnable(GL_LINE_SMOOTH);
     glLineWidth(1);

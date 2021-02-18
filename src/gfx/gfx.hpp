@@ -4,10 +4,7 @@
 
 #include "gl.hpp"
 #include "mesh.hpp"
-
 #include "gui/window.hpp"
-
-#include <SDL2/SDL.h>   // SDL basic functionality
 
 #include <filesystem>   // std::filesystem::path
 #include <memory>       // std::shared_ptr
@@ -29,35 +26,6 @@ namespace console_color {
 }  // namespace console_color
 
 #endif  // __linux
-
-
-
-// TODO(bkuolt): move to separate header
-class grid final : public Mesh {
- public:
-    explicit grid(GLfloat size, std::size_t num_cells);
-    void render(const mat4 &MVP) override;
-
-    void translate(const vec3 &v) {   // TODO(bkuolt)
-        _translation += v;
-    }
-
- private:
-    const GLfloat _cell_size;
-    const std::size_t _num_cells;
-
-    vec3 _translation;
-
-    void create_vbo();
-    void create_ibo();
-    void create_vao();
-};
-
-using SharedGrid = std::shared_ptr<grid>;
-
-inline SharedGrid CreateGrid(GLfloat size, size_t num_cells) {
-    return std::make_shared<grid>(size, num_cells);
-}
 
 }  // namespace bgl
 

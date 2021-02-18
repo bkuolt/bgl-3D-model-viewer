@@ -12,10 +12,9 @@
 
 namespace bgl {
 
-
 std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs);
 
-
+namespace {
 
 using uvec2 = glm::tvec2<GLuint>;
 constexpr std::array<vec3, 8> box_vertices {{
@@ -37,23 +36,16 @@ static constexpr std::array<uvec2, 12> box_indices {{
     {0, 4}, {1, 5}, {3, 7}, {2, 6}  // left and right sides
 }};
 
-Box::Box()
-{
+}  // anonymous namespace
 
-    _vao = std::make_shared<VertexArrayObject>();  // TODO: move to Mesh
-    _vbo = std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::VertexBuffer);
-    _ibo = std::make_shared<QOpenGLBuffer>(QOpenGLBuffer::IndexBuffer);
-
-
+Box::Box() {
     // create vbo
-    _vbo->create();
     _vbo->bind();
     _vbo->allocate(box_vertices.size() * sizeof(vec3));
     std::copy(box_vertices.begin(), box_vertices.end(), reinterpret_cast<vec3*>(_vbo->map(QOpenGLBuffer::WriteOnly)));
     _vbo->unmap();
 
     // create ibo
-    _ibo->create();
     _ibo->bind();
     _ibo->allocate(box_indices.size() * 2 * sizeof(GLuint));
     uvec2 *buffer = reinterpret_cast<uvec2*>(_ibo->map(QOpenGLBuffer::WriteOnly));
@@ -61,7 +53,6 @@ Box::Box()
     _ibo->unmap();
 
     // create vao
-    _vao->create();
     _vao->bind();
     _ibo->bind();
     _vbo->bind();
@@ -70,12 +61,9 @@ Box::Box()
     _program = LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs");
 }
 
-
-
 Box::Box(const BoundingBox &boundingBox)
-    : Box()
-{   
-     _boundingBox =boundingBox;
+    : Box() {   
+     _boundingBox = boundingBox;
 }
 
 void Box::render(const mat4 &VP) {
@@ -96,6 +84,5 @@ void Box::render(const mat4 &VP) {
     _vbo->bind();
     _vao->draw(GL_LINES, box_indices.size() * 2);
 }
-
 
 }  // namespace bgl

@@ -6,6 +6,7 @@
 
 #include "gfx/gfx.hpp"
 #include "gfx/box.hpp"
+#include "gfx/grid.hpp"
 #include "gfx/camera.hpp"
 
 //#undef Q_CC_GNU  //  removes "#warning To use GLEW with Qt, do not include <qopengl.h> or <QOpenGLFunctions> after glew.h"
@@ -21,8 +22,8 @@ using namespace bgl;
 void set_up_scene(const std::filesystem::path &path);
 
 struct {
-	SharedMesh mesh;
-	SharedGrid grid;
+	std::shared_ptr<Mesh> mesh;
+	std::shared_ptr<Grid> grid;
 	Camera camera;
 	std::shared_ptr<Box> box;
 } Scene;
@@ -129,14 +130,14 @@ int main(int argc, char *argv[]) {
 namespace {
 
 void set_up_scene(const std::filesystem::path &path) {
-	Scene.mesh = LoadMesh(path);
+	Scene.mesh = std::make_shared<Mesh>(path);
 	Scene.camera.setViewCenter({ 0.0, 0.0, 0.0 });
 	Scene.camera.setPosition({ 0.0, 1.0, 2.0 });
 
 	
 	Scene.box = std::make_shared<Box>(Scene.mesh->getBoundingBox());
 
-	Scene.grid = CreateGrid(0.125, 40);
+	Scene.grid = std::make_shared<Grid>(0.125, 40);
 	const vec3 v { 0.0, -Scene.mesh->getBoundingBox().getSize().y / 2.0, 0.0 };
 	Scene.grid->translate(v);
 
