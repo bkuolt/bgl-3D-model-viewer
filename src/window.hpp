@@ -54,7 +54,9 @@ class GLViewport final : public Viewport {
  public:
 	explicit GLViewport(QWidget *parent)
 		: Viewport(parent)
-	{}  
+	{}
+
+    virtual ~GLViewport() = default;
 	// TODO(bkuolt): not movable, not copyable, destructor
 
 	void on_render(float delta) override {
@@ -75,13 +77,15 @@ class GLViewport final : public Viewport {
 
 class SimpleWindow final : public bgl::Window {
  public:
+    GLViewport _viewport;
+
 	explicit SimpleWindow(const std::string &title)
-		: bgl::Window(title) {
-        static GLViewport viewport { this };
-		this->setViewport(&viewport);
+		: bgl::Window(title), _viewport(this) {
+		this->setViewport(&_viewport);
         this->show();
     }
 
+    virtual ~SimpleWindow() noexcept = default;
 	// TODO(bkuolt): not movable, not copyable, destructor
 
 	bool event(QEvent *event) override {
@@ -97,6 +101,7 @@ class SimpleWindow final : public bgl::Window {
 		switch (event->key()) {
 			case Qt::Key_Escape:
 				close();
+                return true;
 				break;
 			case Qt::Key_Left:
 				Scene.camera.rotate(vec2(0, -0.5));
@@ -108,8 +113,8 @@ class SimpleWindow final : public bgl::Window {
 			return QMainWindow::event(event);
 		}
 
-		_viewport->makeCurrent();
-		_viewport->update();
+		_viewport.makeCurrent();
+		_viewport.update();
 		return true;
 	}
 };

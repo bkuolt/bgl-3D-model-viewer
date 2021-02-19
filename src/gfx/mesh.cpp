@@ -35,8 +35,6 @@ struct Vertex {
     vec2 texcoords;
 };
 
-enum AttributLocations : GLuint { MVP = 0, Position = 8, Normal, TexCoord, Texture };
-
 /**
  * @brief Checks whether a scene is textured.
  * @note A scene is considered textured if it has at least one diffuse map.
@@ -71,28 +69,6 @@ std::shared_ptr<QOpenGLTexture> LoadTexture(const std::filesystem::path &base_pa
     }
 
     return {};  // TODO(bkuolt)
-}
-
-/* --------------------------- Lighting ----------------------------------- */
-
-void setupLighting(std::shared_ptr<QOpenGLShaderProgram> program) {
-    constexpr GLsizei maxLightNum = 5;
-    static constexpr struct Light {
-        vec3 direction { -1.0, -1.0, -1.0 };
-        vec3 color { 0.0, 1.0, 1.0 };
-    } light;
-
-    program->setUniformValue("lights[0].used", true);
-    program->setUniformValue("lights[0].direction", light.direction.x, light.direction.y, light.direction.z);
-    program->setUniformValue("lights[0].color", light.color.x, light.color.y, light.color.z);
-
-    for (auto i = 1u; i < maxLightNum; ++i) {
-        std::ostringstream name;
-        name << "lights[" << i << "].used";
-        program->setUniformValue(name.str().c_str(), false);
-    }
-
-    // TODO(bkuolt): spearate world uniforms and model uniforms
 }
 
 /* --------------------------------------------------------------------- */
@@ -196,20 +172,35 @@ void createIBO(std::shared_ptr<QOpenGLBuffer> ibo, const aiMesh *mesh) {
     std::cout << "created an IBO containing " << ibo->size() << " indices" << std::endl;
 }
 	
-void createVAO(std::shared_ptr<VertexArrayObject> vao,
+void createVAO(std::shared_ptr<QOpenGLShaderProgram> program,
+               std::shared_ptr<VertexArrayObject> vao,
                std::shared_ptr<QOpenGLBuffer> vbo, std::shared_ptr<QOpenGLBuffer> ibo) {
     vao->bind();
     ibo->bind();
     vbo->bind();
 
     const auto stride { sizeof(Vertex) };
-    vao->setAttribute<vec3>(AttributLocations::Position, stride, offsetof(Vertex, position));
-    vao->setAttribute<vec3>(AttributLocations::Normal, stride, offsetof(Vertex, normal));
-    vao->setAttribute<vec2>(AttributLocations::TexCoord, stride, offsetof(Vertex, texcoords));
+    vao->setAttribute<vec3>(program->attributeLocation("position"), stride, offsetof(Vertex, position));
+    vao->setAttribute<vec3>(program->attributeLocation("normal"), stride, offsetof(Vertex, normal));
+    vao->setAttribute<vec2>(program->attributeLocation("texcoords"), stride, offsetof(Vertex, texcoords));
 }
 
 std::shared_ptr<QOpenGLShaderProgram> createShaderProgram() {
     return LoadProgram("./assets/shaders/main.vs", "./assets/shaders/main.fs");
+}
+
+/* --------------------------- Lighting ----------------------------------- */
+
+void setupLighting(std::shared_ptr<QOpenGLShaderProgram> program) {
+    static constexpr struct DirectionalLight {
+        vec3 direction { -1.0, -1.0, -1.0 };
+        vec3 diffuse { 0.0, 1.0, 1.0 };
+        vec3 ambient { 0.2f, 0.2f, 0.2f };
+    } light;
+
+    program->setUniformValue("light.direction", light.direction.x, light.direction.y, light.direction.z);
+    program->setUniformValue("light.diffuse", light.diffuse.x, light.diffuse.y, light.diffuse.z);
+    program->setUniformValue("light.ambient", light.ambient.x, light.ambient.y, light.ambient.z);
 }
 
 }  // namespace
@@ -247,8 +238,8 @@ Mesh::Mesh(const std::filesystem::path &path) {
     const aiMesh *mesh { getMesh(scene) };
     createVBO(_vbo, scene);
     createIBO(_ibo, mesh);
-    createVAO(_vao, _vbo, _ibo);
     _program = createShaderProgram();
+    createVAO(_program, _vao, _vbo, _ibo);
     _boundingBox = GetBoundingBox(mesh);
 
     if (IsTextured(scene)) {
@@ -258,21 +249,21 @@ Mesh::Mesh(const std::filesystem::path &path) {
 
 void Mesh::render(const mat4 &_MVP) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    
     _program->bind();
-
     setupLighting(_program);
     QMatrix4x4 matrix(glm::value_ptr(_MVP));
     _program->setUniformValue("MVP", matrix.transposed());
 
     const GLuint isTextured { _texture != nullptr };
-    _program->setUniformValue("isTextured", isTextured);
+    _program->setUniformValue("material.isTextured", isTextured);
 
     if (isTextured) {
         const GLuint textureUnit { 0 };  // TODO(bkuolt): add support for more than one texture
 
         glActiveTexture(GL_TEXTURE0 + textureUnit);
         _texture->bind();
-        _program->setUniformValue("texture", textureUnit);
+        _program->setUniformValue("material.texture", textureUnit);
     }
 
     _vao->bind();
