@@ -18,6 +18,15 @@
 
 namespace bgl {
 
+struct Material {
+    vec3 diffuse;
+    vec3 ambient;
+    vec3 specular;
+	float shininess;
+	std::shared_ptr<QOpenGLTexture> texture;
+	// TODO: add more properties;
+};
+
 class BasicMesh {
  public:
 	BasicMesh();
@@ -31,9 +40,10 @@ class BasicMesh {
 	std::shared_ptr<QOpenGLBuffer> _vbo;
 	std::shared_ptr<QOpenGLBuffer> _ibo;
 	std::shared_ptr<VertexArrayObject> _vao;
-	std::shared_ptr<QOpenGLTexture> _texture;
 	std::shared_ptr<QOpenGLShaderProgram> _program;
+
 	BoundingBox _boundingBox;
+	Material _material;
 };
 
 class Mesh : public BasicMesh {

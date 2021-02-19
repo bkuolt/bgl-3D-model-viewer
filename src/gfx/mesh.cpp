@@ -71,6 +71,14 @@ std::shared_ptr<QOpenGLTexture> LoadTexture(const std::filesystem::path &base_pa
     return {};  // TODO(bkuolt)
 }
 
+Material loadMaterial(const aiScene *scene, const std::filesystem::path &path) {
+    Material material;
+    if (IsTextured(scene)) {
+        material.texture = LoadTexture(path.parent_path(), scene);
+    }
+    return material;
+}
+
 /* --------------------------------------------------------------------- */
 
 aiMesh* getMesh(const aiScene *scene) {
@@ -191,6 +199,10 @@ std::shared_ptr<QOpenGLShaderProgram> createShaderProgram() {
 
 /* --------------------------- Lighting ----------------------------------- */
 
+inline QVector3D to_qt(const glm::vec3 &v) noexcept {
+    return { v.x, v.y, v.z };
+}
+
 void setupLighting(std::shared_ptr<QOpenGLShaderProgram> program) {
     static constexpr struct DirectionalLight {
         vec3 direction { -1.0, -1.0, -1.0 };
@@ -198,9 +210,26 @@ void setupLighting(std::shared_ptr<QOpenGLShaderProgram> program) {
         vec3 ambient { 0.2f, 0.2f, 0.2f };
     } light;
 
-    program->setUniformValue("light.direction", light.direction.x, light.direction.y, light.direction.z);
-    program->setUniformValue("light.diffuse", light.diffuse.x, light.diffuse.y, light.diffuse.z);
-    program->setUniformValue("light.ambient", light.ambient.x, light.ambient.y, light.ambient.z);
+    program->setUniformValue("light.direction", to_qt(light.direction));
+    program->setUniformValue("light.diffuse", to_qt(light.diffuse));
+    program->setUniformValue("light.ambient", to_qt(light.ambient));
+}
+
+void setupMaterial(std::shared_ptr<QOpenGLShaderProgram> program, const Material &material) {
+    // texturing
+    const GLuint isTextured { material.texture != nullptr };
+    program->setUniformValue("material.isTextured", isTextured);
+    if (isTextured) {
+        const GLuint textureUnit { 0 };  // TODO(bkuolt): add support for more than one texture
+        glActiveTexture(GL_TEXTURE0 + textureUnit);
+        material.texture->bind();
+        program->setUniformValue("material.texture", textureUnit);
+    }
+
+    program->setUniformValue("material.ambient", to_qt(material.ambient));
+    program->setUniformValue("material.diffuse", to_qt(material.diffuse));
+    program->setUniformValue("material.specular", to_qt(material.specular));
+    program->setUniformValue("material.shininess", material.shininess);
 }
 
 }  // namespace
@@ -241,36 +270,28 @@ Mesh::Mesh(const std::filesystem::path &path) {
     _program = createShaderProgram();
     createVAO(_program, _vao, _vbo, _ibo);
     _boundingBox = GetBoundingBox(mesh);
-
-    if (IsTextured(scene)) {
-        _texture = LoadTexture(path.parent_path(), scene);
-    }
+    _material = loadMaterial(scene, path);
 }
 
 void Mesh::render(const mat4 &_MVP) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     
     _program->bind();
-    setupLighting(_program);
-    QMatrix4x4 matrix(glm::value_ptr(_MVP));
-    _program->setUniformValue("MVP", matrix.transposed());
+    // TODO: for each material {
+        setupMaterial(_program, _material);
+        // TODO: for each light {
+            setupLighting(_program);
 
-    const GLuint isTextured { _texture != nullptr };
-    _program->setUniformValue("material.isTextured", isTextured);
+            const QMatrix4x4 matrix { glm::value_ptr(_MVP) };
+            _program->setUniformValue("MVP", matrix.transposed());
 
-    if (isTextured) {
-        const GLuint textureUnit { 0 };  // TODO(bkuolt): add support for more than one texture
-
-        glActiveTexture(GL_TEXTURE0 + textureUnit);
-        _texture->bind();
-        _program->setUniformValue("material.texture", textureUnit);
-    }
-
-    _vao->bind();
-    _vbo->bind();
-    _ibo->bind();
-
-    _vao->draw(GL_TRIANGLES, _ibo->size() / sizeof(GLuint) * 3);
+            _vao->bind();
+            _vbo->bind();
+            _ibo->bind();
+            _vao->draw(GL_TRIANGLES, _ibo->size() / sizeof(GLuint) * 3);
+        // }
+    // }
 }
+
 
 }  // namespace bgl

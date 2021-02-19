@@ -71,9 +71,7 @@ void Box::render(const mat4 &VP) {
     glLineWidth(3);
 
     mat4 M = glm::scale(_boundingBox.getSize());
-   
     QMatrix4x4 matrix(glm::value_ptr(VP * M));
-    _program->bind();
     _program->setUniformValue("MVP", matrix.transposed());
 
     const vec3 color { 1.0, 0.0, 0.0 }; /* red */
