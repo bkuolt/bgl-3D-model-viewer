@@ -7,6 +7,7 @@
 //#undef Q_CC_GNU  //  removes "#warning To use GLEW with Qt, do not include <qopengl.h> or <QOpenGLFunctions> after glew.h"
 #include <QApplication>
 #include <QKeyEvent>
+#include <QOpenGLFramebufferObject>
 
 
 namespace bgl {
@@ -60,6 +61,15 @@ class GLViewport final : public Viewport {
 	// TODO(bkuolt): not movable, not copyable, destructor
 
 	void on_render(float delta) override {
+	    static QSize size { 1280, 720 };
+
+		QOpenGLFramebufferObjectFormat format;
+		format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+		format.setMipmap(false);
+		format.setSamples(0);
+
+	    static QOpenGLFramebufferObject fbo(size, format);   // !!!!!!!!!!!!!!!!!!!!!
+
 		static bool initialized { false };
 		if (!initialized) {
 			set_up_scene("./assets/models/housemedieval.obj");  // TODO(bkuolt)
@@ -71,6 +81,24 @@ class GLViewport final : public Viewport {
 		Scene.grid->render(PV);
 		Scene.mesh->render(PV);
 		Scene.box->render(PV);
+
+
+        std::cout << "fbo valid:" << fbo.isValid() << std::endl;
+
+        fbo.bind();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		Scene.grid->render(PV);
+		Scene.mesh->render(PV);
+		Scene.box->render(PV);
+
+        std::cout << fbo.isValid() << std::endl;
+        auto image = fbo.toImage();
+        image.save("/home/bastian/screeny.png");
+        std::cout << "screenshot size: " << image.width() << "x" << image.height() << std::endl;
+        //init = true;
+
+        fbo.release();
+		
 	}
 };
 
