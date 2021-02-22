@@ -39,3 +39,4 @@ clean:
 	@$(MAKE) -C gfx clean
 	@rm -f *.o
 	@rm -f demo
+	@rm -f screenshot.png

@@ -8,6 +8,7 @@
 #include <QApplication>
 #include <QKeyEvent>
 #include <QOpenGLFramebufferObject>
+#include <QFileInfo>
 
 
 namespace bgl {
@@ -60,16 +61,7 @@ class GLViewport final : public Viewport {
     virtual ~GLViewport() = default;
 	// TODO(bkuolt): not movable, not copyable, destructor
 
-	void on_render(float delta) override {
-	    static QSize size { 1280, 720 };
-
-		QOpenGLFramebufferObjectFormat format;
-		format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-		format.setMipmap(false);
-		format.setSamples(0);
-
-	    static QOpenGLFramebufferObject fbo(size, format);   // !!!!!!!!!!!!!!!!!!!!!
-
+	void on_render(float delta = 1.0) override {
 		static bool initialized { false };
 		if (!initialized) {
 			set_up_scene("./assets/models/housemedieval.obj");  // TODO(bkuolt)
@@ -81,24 +73,26 @@ class GLViewport final : public Viewport {
 		Scene.grid->render(PV);
 		Scene.mesh->render(PV);
 		Scene.box->render(PV);
+	}
 
+	void takeScreenshot() {
+		makeCurrent();
+		QOpenGLFramebufferObjectFormat format;
+		format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+		format.setMipmap(false);
+		format.setSamples(0);
 
-        std::cout << "fbo valid:" << fbo.isValid() << std::endl;
+	    static QOpenGLFramebufferObject fbo( QSize { this->width(), this->height() }, format);   // !!!!!!!!!!!!!!!!!!!!!
 
         fbo.bind();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		Scene.grid->render(PV);
-		Scene.mesh->render(PV);
-		Scene.box->render(PV);
+		on_render();
+        const QImage image { fbo.toImage() };
+        fbo.release(); 
 
-        std::cout << fbo.isValid() << std::endl;
-        auto image = fbo.toImage();
-        image.save("/home/bastian/screeny.png");
-        std::cout << "screenshot size: " << image.width() << "x" << image.height() << std::endl;
-        //init = true;
-
-        fbo.release();
-		
+		const QString path { QFileInfo("./screenshot.png").absoluteFilePath() };
+        image.save(path);
+        std::cout << "caputered screenshot (" << image.width() << "x" << image.height() << ")" << std::endl;
 	}
 };
 
@@ -136,6 +130,9 @@ class SimpleWindow final : public bgl::Window {
 				break;
 			case Qt::Key_Right:
 				Scene.camera.rotate(vec2(0, 0.5));
+				break;
+			case Qt::Key_P:
+				_viewport.takeScreenshot();
 				break;
 		default:
 			return QMainWindow::event(event);

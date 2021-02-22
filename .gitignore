@@ -4,6 +4,7 @@
 *.la
 *.so
 .vscode/
+src/screenshot.png
 src/gfx/.vscode/
 src/gfx/.vscode/**
 src/gfx/.vscode
