@@ -269,6 +269,73 @@ const BoundingBox& BasicMesh::getBoundingBox() const {
     return _boundingBox;
 }
 
+
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+
+void DrawQuad() {
+    constexpr GLuint indices[] { 0, 1, 2, 3};
+    constexpr QVector2D vertices[] { 
+        { -1.0, -1.0 },
+        { -1.0,  1.0 },
+        {  1.0,  1.0 },
+        {  1.0, -1.0 }
+    };
+
+    static QOpenGLShaderProgram program;
+    static QOpenGLBuffer ibo(QOpenGLBuffer::Type::IndexBuffer);
+    static QOpenGLBuffer vbo(QOpenGLBuffer::Type::VertexBuffer);
+    static QOpenGLVertexArrayObject vao;
+    static bool initialized { false };
+
+    if (!initialized) {
+        program.create();
+        program.addShaderFromSourceFile(QOpenGLShader::Vertex, "./assets/shaders/quad.vs");
+        program.addShaderFromSourceFile(QOpenGLShader::Fragment, "./assets/shaders/quad.fs");
+        if (!program.link()) {
+            throw std::runtime_error { "could not link QOpenGLShaderProgram" };
+        }
+
+        if (!ibo.create() || !vbo.create() || !vao.create()) {
+            throw std::runtime_error { "could not create QOpenGLBuffer" };
+        }
+    
+        // TODO: vao
+        vao.bind();
+        vbo.bind();
+        ibo.bind();
+    
+        vbo.allocate(&vertices, sizeof(vertices));  // !<----------------
+        ibo.allocate(&indices, sizeof(indices));
+
+        const int location { program.attributeLocation("vertex") };
+        std::cout << "loc vertex: " << location << std::endl;
+        glEnableVertexAttribArray(location);
+        glVertexAttribPointer(location, 2, GL_FLOAT, GL_FALSE, 0 /* stride*/, 0 /** offset*/);
+
+        initialized = true;
+    }
+
+	glDisable(GL_CULL_FACE);
+
+    program.bind();
+    program.setUniformValue("color", QVector3D { 1.0, 0.0, 0.0} /* red */);
+    vao.bind();
+    ibo.bind();  // TODO: should not be necessary
+    vbo.bind();  // TODO: should not be necessary
+    glDrawElements(GL_QUADS, 4, GL_UNSIGNED_INT, nullptr);  // GL_QUADS is  deprecated
+
+    if (glGetError() != GL_NO_ERROR) {
+        throw std::runtime_error { "glDrawElements() failed" };
+    }
+
+    program.release();
+}
+
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+
+
 /* ------------------------------ Mesh --------------------------------- */
 
 Mesh::Mesh(const std::filesystem::path &path) {
@@ -284,6 +351,12 @@ Mesh::Mesh(const std::filesystem::path &path) {
 
 void Mesh::render(const mat4 &_MVP) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+#if 0
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    DrawQuad();
+    return;
+#endif  // 0
 
     _program->bind();
     // TODO: for each material {
