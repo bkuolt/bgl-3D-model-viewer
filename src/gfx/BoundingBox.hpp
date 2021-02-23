@@ -1,4 +1,3 @@
-// Copyright 2021 Bastian Kuolt
 #ifndef GFX_BOUNDING_BOX_HPP
 #define GFX_BOUNDING_BOX_HPP
 

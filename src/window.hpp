@@ -1,4 +1,3 @@
-// Copyright 2021 Bastian Kuolt
 #include "gfx/gfx.hpp"
 #include "gfx/box.hpp"
 #include "gfx/grid.hpp"
@@ -68,11 +67,27 @@ class GLViewport final : public Viewport {
 			initialized = true;
 		}
 
+	/* ------------------- First Pass -------------- */
+		QOpenGLFramebufferObjectFormat format;
+		format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+		format.setMipmap(false);
+		format.setSamples(0);  // TODO: recherche
+	    static QOpenGLFramebufferObject fbo( QSize { this->width(), this->height() }, format);   // !!!!!!!!!!!!!!!!!!!!!
+        fbo.bind();
+
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		const mat4 PV { Scene.camera.getMatrix() };
 		Scene.grid->render(PV);
 		Scene.mesh->render(PV);
 		Scene.box->render(PV);
+
+        const GLuint textureID { fbo.texture() };
+        fbo.release(); 
+
+		/* ------------------- Second Pass -------------- */
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    	DrawQuad(textureID);
 	}
 
 	void takeScreenshot() {

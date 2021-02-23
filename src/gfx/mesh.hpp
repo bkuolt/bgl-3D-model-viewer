@@ -1,4 +1,3 @@
-// Copyright 2021 Bastian Kuolt
 #ifndef GFX_MESH_HPP
 #define GFX_MESH_HPP
 
@@ -45,6 +44,8 @@ class BasicMesh {
 	BoundingBox _boundingBox;
 	Material _material;
 };
+
+void DrawQuad(GLuint textureID);
 
 class Mesh : public BasicMesh {
  public:

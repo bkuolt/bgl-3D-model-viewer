@@ -1,5 +1,5 @@
 #version 450 core
-// Copyright 2020 Bastian Kuolt
+
 uniform mat4 MVP;
 
 uniform struct Light {

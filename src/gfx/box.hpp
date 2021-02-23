@@ -1,4 +1,3 @@
-// Copyright 2021 Bastian Kuolt
 #ifndef GL_BOX_HPP_
 #define GL_BOX_HPP_
 

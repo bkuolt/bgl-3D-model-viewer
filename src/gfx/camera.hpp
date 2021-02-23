@@ -1,4 +1,3 @@
-// Copyright 2020 Bastian Kuolt
 #ifndef GFX_CAMERA_HPP_
 #define GFX_CAMERA_HPP_
 

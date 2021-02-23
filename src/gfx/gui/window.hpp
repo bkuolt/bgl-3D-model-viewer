@@ -1,4 +1,3 @@
-// Copyright 2020 Bastian Kuolt
 #ifndef GUI_WINDOW_HPP_
 #define GUI_WINDOW_HPP_
 

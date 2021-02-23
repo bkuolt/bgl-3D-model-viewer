@@ -1,4 +1,3 @@
-// Copyright 2021 Bastian Kuolt
 #include "box.hpp"
 
 #include <algorithm>

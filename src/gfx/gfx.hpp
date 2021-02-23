@@ -1,4 +1,3 @@
-// Copyright 2020 Bastian Kuolt
 #ifndef GFX_GFX_HPP_
 #define GFX_GFX_HPP_
 

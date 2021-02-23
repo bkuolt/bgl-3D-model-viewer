@@ -4,8 +4,8 @@
 
 # Installation and Building
 ```bash
-git clone https://github.com/bkuolt/bgl-demo
-cd bgl-demo
+git clone https://github.com/bkuolt/bgl-3D-model-viewer
+cd bgl-3D-model-viewer
 ./install.sh
 cd src
 make
@@ -40,4 +40,4 @@ or run `./demo <path-to-your model>` to view your custom models.
  - [GLEW](http://glew.sourceforge.net/)
  - [Qt 5]()
  - [Assimp](http://www.assimp.org/)
- - [glm](https://glm.g-truc.net/0.9.9/index.html) 
+ - [glm](https://glm.g-truc.net/0.9.9/index.html)

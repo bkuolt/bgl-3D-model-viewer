@@ -1,5 +1,4 @@
 #version 450 core
-// Copyright 2020 Bastian Kuolt
 
 layout (location = 0) uniform mat4 MVP;
 layout (location = 1) uniform vec3 color;
