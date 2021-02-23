@@ -4,23 +4,21 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "gfx/gfx.hpp"
 #include "window.hpp"
-#include <QApplication>
 
-using namespace bgl;
+#include <QApplication>
+#include <QMessageBox>
 
 
 static void signal_handler(int signal) {
-	std::cerr << console_color::red << "\rrequested program termination" << std::endl;
 	std::exit(EXIT_FAILURE);
 }
 
 int main(int argc, char *argv[]) {
+	QApplication app(argc, argv);
+
 	if (argc != 2) {
-		std::cout << console_color::red << "usage: "
-				  << console_color::white << "./bgl "
-				  << console_color::blue << "<path-to-model>" << std::endl;
+		QMessageBox::warning(nullptr, "Invalid Usage", "Usage: demo <path-to-model>");
 		return EXIT_FAILURE;
 	}
 
@@ -28,13 +26,11 @@ int main(int argc, char *argv[]) {
 	std::signal(SIGHUP, signal_handler);
 
 	try {
-		QApplication app(argc, argv);
-		SimpleWindow window { "BGL Model Viewer" };
+		bgl::SimpleWindow window { "BGL Model Viewer" };
 		window.show();
 		return app.exec();
 	} catch (const std::exception &exception) {
-		// TODO(bkuolt): show message box
-		std::cout << console_color::red << "error: " << exception.what() << std::endl;
+		QMessageBox::critical(nullptr, "Error", exception.what());
 		return EXIT_FAILURE;
 	}
 

@@ -194,7 +194,7 @@ void createVAO(std::shared_ptr<QOpenGLShaderProgram> program,
 }
 
 std::shared_ptr<QOpenGLShaderProgram> createShaderProgram() {
-    return LoadProgram("./assets/shaders/main.vs", "./assets/shaders/main.fs");
+    return LoadProgram("./gfx/shaders/main.vs", "./gfx/shaders/main.fs");
 }
 
 /* --------------------------- Lighting ----------------------------------- */
@@ -269,79 +269,6 @@ const BoundingBox& BasicMesh::getBoundingBox() const {
     return _boundingBox;
 }
 
-
-////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////
-
-void DrawQuad(GLuint textureID) {
-    constexpr GLuint indices[] { 0, 1, 2, 3};
-    constexpr QVector2D vertices[] { 
-        { -1.0, -1.0 },
-        { -1.0,  1.0 },
-        {  1.0,  1.0 },
-        {  1.0, -1.0 }
-    };
-
-    static QOpenGLShaderProgram program;
-    static QOpenGLBuffer ibo(QOpenGLBuffer::Type::IndexBuffer);
-    static QOpenGLBuffer vbo(QOpenGLBuffer::Type::VertexBuffer);
-    static QOpenGLVertexArrayObject vao;
-    static bool initialized { false };
-
-    if (!initialized) {
-        program.create();
-        program.addShaderFromSourceFile(QOpenGLShader::Vertex, "./assets/shaders/quad.vs");
-        program.addShaderFromSourceFile(QOpenGLShader::Fragment, "./assets/shaders/quad.fs");
-        if (!program.link()) {
-            throw std::runtime_error { "could not link QOpenGLShaderProgram" };
-        }
-
-        if (!ibo.create() || !vbo.create() || !vao.create()) {
-            throw std::runtime_error { "could not create QOpenGLBuffer" };
-        }
-    
-        // TODO: vao
-        vao.bind();
-        vbo.bind();
-        ibo.bind();
-    
-        vbo.allocate(&vertices, sizeof(vertices));  // !<----------------
-        ibo.allocate(&indices, sizeof(indices));
-
-        const int location { program.attributeLocation("vertex") };
-        std::cout << "loc vertex: " << location << std::endl;
-        glEnableVertexAttribArray(location);
-        glVertexAttribPointer(location, 2, GL_FLOAT, GL_FALSE, 0 /* stride*/, 0 /** offset*/);
-
-        initialized = true;
-    }
-
-	glDisable(GL_CULL_FACE);
-
-    const int textureUnit= 4;
-    glActiveTexture(GL_TEXTURE0 + textureUnit);
-    glEnable(GL_TEXTURE_2D) ;   // be applied per texture unit
-    glBindTexture(GL_TEXTURE_2D, textureID);
-
-
-    program.bind();
-    program.setUniformValue("texture", textureUnit);
-    vao.bind();
-    ibo.bind();  // TODO: should not be necessary
-    vbo.bind();  // TODO: should not be necessary
-    glDrawElements(GL_QUADS, 4, GL_UNSIGNED_INT, nullptr);  // GL_QUADS is  deprecated
-
-    if (glGetError() != GL_NO_ERROR) {
-        throw std::runtime_error { "glDrawElements() failed" };
-    }
-
-    program.release();
-}
-
-////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////
-
-
 /* ------------------------------ Mesh --------------------------------- */
 
 Mesh::Mesh(const std::filesystem::path &path) {
@@ -359,9 +286,9 @@ void Mesh::render(const mat4 &_MVP) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     _program->bind();
-    // TODO: for each material {
+    // for each material {
         setupMaterial(_program, _material);
-        // TODO: for each light {
+        // for each light {
             setupLighting(_program);
 
             const QMatrix4x4 matrix { glm::value_ptr(_MVP) };
@@ -375,6 +302,9 @@ void Mesh::render(const mat4 &_MVP) {
     // }
 
     _program->release();
+    _vao->release();
+    _vbo->release();
+    _ibo->release();
 }
 
 

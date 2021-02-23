@@ -9,7 +9,6 @@
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
 
-#include <iostream>
 #include <filesystem>
 #include <memory>
 
@@ -24,7 +23,7 @@ struct Material {
     vec3 specular;
 	float shininess;
 	std::shared_ptr<QOpenGLTexture> texture;
-	// TODO: add more properties;
+	// TODO(bkuolt): add more properties
 };
 
 class BasicMesh {
@@ -46,15 +45,13 @@ class BasicMesh {
 	Material _material;
 };
 
-void DrawQuad(GLuint textureID);
-
 class Mesh : public BasicMesh {
  public:
-   Mesh() = default;
-   explicit Mesh(const std::filesystem::path &path);
-   virtual ~Mesh() = default;
+	Mesh() = default;
+	explicit Mesh(const std::filesystem::path &path);
+	virtual ~Mesh() = default;
 
-   void render(const mat4 &MVP) override;
+	void render(const mat4 &MVP) override;
 };
 
 }  // namespace bgl

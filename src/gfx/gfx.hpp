@@ -5,6 +5,7 @@
 #include "gl.hpp"
 #include "mesh.hpp"
 #include "gui/window.hpp"
+#include "gui/viewport.hpp"
 
 #include <filesystem>   // std::filesystem::path
 #include <memory>       // std::shared_ptr

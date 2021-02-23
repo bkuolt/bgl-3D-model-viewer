@@ -12,7 +12,7 @@ enum locations { MVP = 0 , color, position };
 Grid::Grid(GLfloat size, std::size_t num_cells)
     : _cell_size { size },
       _num_cells { num_cells } {
-    _program = LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs");
+    _program = LoadProgram("./gfx/shaders/wireframe.vs", "./gfx/shaders/wireframe.fs");
 
     create_vbo();
     create_ibo();
@@ -80,14 +80,19 @@ void Grid::render(const mat4 &PV) {
     constexpr vec3 white { 1.0f, 1.0f, 1.0f };
     _program->bind();
 
-    QMatrix4x4 matrix(glm::value_ptr(PV * glm::translate(_translation))); 
+    const QMatrix4x4 matrix { glm::value_ptr(PV * glm::translate(_translation)) };
     _program->setUniformValue(locations::MVP, matrix.transposed());
-    _program->setUniformValue(locations::color, white.x, white.y, white.z );
+    _program->setUniformValue(locations::color, white.x, white.y, white.z);
 
     _vao->bind();
     _ibo->bind();
     _vbo->bind();
     _vao->draw(GL_LINES, _ibo->size() / 4);
+
+    _program->release();
+    _vao->release();
+    _ibo->release();
+    _vbo->release();
 }
 
 }  // namespace bgl

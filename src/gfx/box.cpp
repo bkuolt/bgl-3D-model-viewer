@@ -58,11 +58,11 @@ Box::Box() {
     _vbo->bind();
     _vao->setAttribute<vec3>(2 /*locations::position*/, 0 /* no stride */, 0 /* no offset */);
 
-    _program = LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs");
+    _program = LoadProgram("./gfx/shaders/wireframe.vs", "./gfx/shaders/wireframe.fs");
 }
 
 Box::Box(const BoundingBox &boundingBox)
-    : Box() {   
+    : Box() {
      _boundingBox = boundingBox;
 }
 
@@ -78,9 +78,14 @@ void Box::render(const mat4 &VP) {
     _program->setUniformValue("color", color.x, color.y, color.z);
 
     _vao->bind();
-    _ibo->bind();   // TODO: VAO should automatically bind
+    _ibo->bind();
     _vbo->bind();
     _vao->draw(GL_LINES, box_indices.size() * 2);
+
+    _program->release();
+    _vao->release();
+    _ibo->release();
+    _vbo->release();
 }
 
 }  // namespace bgl
