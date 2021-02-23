@@ -46,6 +46,8 @@ class BasicMesh {
 	Material _material;
 };
 
+void DrawQuad(GLuint textureID);
+
 class Mesh : public BasicMesh {
  public:
    Mesh() = default;

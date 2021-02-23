@@ -273,7 +273,7 @@ const BoundingBox& BasicMesh::getBoundingBox() const {
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 
-void DrawQuad() {
+void DrawQuad(GLuint textureID) {
     constexpr GLuint indices[] { 0, 1, 2, 3};
     constexpr QVector2D vertices[] { 
         { -1.0, -1.0 },
@@ -318,8 +318,14 @@ void DrawQuad() {
 
 	glDisable(GL_CULL_FACE);
 
+    const int textureUnit= 4;
+    glActiveTexture(GL_TEXTURE0 + textureUnit);
+    glEnable(GL_TEXTURE_2D) ;   // be applied per texture unit
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+
     program.bind();
-    program.setUniformValue("color", QVector3D { 1.0, 0.0, 0.0} /* red */);
+    program.setUniformValue("texture", textureUnit);
     vao.bind();
     ibo.bind();  // TODO: should not be necessary
     vbo.bind();  // TODO: should not be necessary
@@ -351,12 +357,6 @@ Mesh::Mesh(const std::filesystem::path &path) {
 
 void Mesh::render(const mat4 &_MVP) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-#if 0
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    DrawQuad();
-    return;
-#endif  // 0
 
     _program->bind();
     // TODO: for each material {
