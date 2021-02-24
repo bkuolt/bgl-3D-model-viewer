@@ -36,26 +36,6 @@ struct Vertex {
     vec2 texcoords;
 };
 
-/**
- * @brief Checks whether a scene is textured.
- * @note A scene is considered textured if it has at least one diffuse map.
- */
-bool IsTextured(const aiScene *scene) {
-    std::list<std::filesystem::path> textures;
-    for (auto i = 0u; i < scene->mNumMaterials; ++i) {
-        if (scene->mMaterials[i]->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
-            aiString path;
-            scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &path);
-            textures.push_back(path.data);
-        }
-    }
-
-    if (textures.size() > 1) {
-        std::cout << "Warning: Found more than one diffuse map, but only one is supported" << std::endl;
-    }
-    return !textures.empty();
-}
-
 /////////////////////////////////////////////////
 ///////////////////// WIP ///////////////////////
 /////////////////////////////////////////////////
@@ -73,14 +53,19 @@ static float get_shininess(const aiMaterial &material) {
 }
 
 static std::shared_ptr<QOpenGLTexture> get_texture(const aiMaterial &material, aiTextureType type, const std::filesystem::path &base_path) {
-    if (material.GetTextureCount(type) > 0) {
+    const unsigned int texture_count { material.GetTextureCount(type) };
+    if (texture_count >= 1) {
         aiString path;
         material.GetTexture(type, 0, &path);
         QImage image { (base_path / path.data).string().c_str() };
+
         std::cout << "loading " << (base_path / path.data).string().c_str() << std::endl;
+        if (texture_count > 1) {
+            std::cout << "warning: found more textures than expected" << std::endl;
+        }
+
         return std::make_shared<QOpenGLTexture>(image);
     }
-    // TODO(bkuolt): handle other cases
 
     return {};
 }
@@ -93,7 +78,10 @@ Material load_material(const aiMaterial &material, const std::filesystem::path &
         .emissive = get_color(material,  AI_MATKEY_COLOR_EMISSIVE),
         .shininess = get_shininess(material),
         .textures {
-            .diffuse = get_texture(material, aiTextureType_DIFFUSE, base_path)
+            .diffuse = get_texture(material, aiTextureType_DIFFUSE, base_path),
+            .ambient = get_texture(material, aiTextureType_AMBIENT, base_path),
+            .specular = get_texture(material, aiTextureType_SPECULAR, base_path),
+            .emissive = get_texture(material, aiTextureType_EMISSIVE, base_path)
         }
     };
 }
@@ -175,18 +163,17 @@ void createVBO(std::shared_ptr<QOpenGLBuffer> vbo, const aiScene *scene) {
 
     auto buffer { reinterpret_cast<Vertex*>(vbo->map(QOpenGLBuffer::ReadWrite)) };
 
-    const bool is_textured { IsTextured(scene) };
+
     for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
         buffer[vertex_index].normal = vec3 { mesh.mNormals[vertex_index].x, mesh.mNormals[vertex_index].y, mesh.mNormals[vertex_index].z };
         buffer[vertex_index].position = vec3 { mesh.mVertices[vertex_index].x, mesh.mVertices[vertex_index].y, mesh.mVertices[vertex_index].z };
     }
 
-    if (is_textured) {
-        for (auto i = 0u; i < mesh.mNumVertices; ++i) {
-            buffer[i].texcoords = vec2 { mesh.mTextureCoords[0][i].x,
-                                         1.0 - mesh.mTextureCoords[0][i].y };
-        }
+    for (auto i = 0u; i < mesh.mNumVertices; ++i) {
+        buffer[i].texcoords = vec2 { mesh.mTextureCoords[0][i].x,
+                                     1.0 - mesh.mTextureCoords[0][i].y };
     }
+
 
     vbo->unmap();
     std::cout << "created vbo containing " << vbo->size() << " vertices" << std::endl;
@@ -296,7 +283,13 @@ const BoundingBox& BasicMesh::getBoundingBox() const {
 
 Mesh::Mesh(const std::filesystem::path &path) {
     const aiScene *scene { importScene(path) };
+    if (scene->mNumMeshes == 0) {
+        throw std::runtime_error { "empty model" };
+    }
+
+    std::cout << "loading" << scene->mNumMeshes << " meshes" << std::endl;
     const aiMesh *mesh { getMesh(scene) };
+
     createVBO(_vbo, scene);
     createIBO(_ibo, mesh);
     _program = createShaderProgram();

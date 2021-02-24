@@ -62,7 +62,7 @@ class GLViewport final : public Viewport {
 	void on_render(float delta) override {
 		static bool initialized { false };
 		if (!initialized) {
-			set_up_scene("./assets/models/housemedieval.obj");  // TODO(bkuolt)
+			set_up_scene("/home/bastian/Downloads/Sponza-master/sponza.obj");  // TODO(bkuolt)
 			initialized = true;
 		}
 
