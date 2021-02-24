@@ -12,8 +12,10 @@
 #include <iostream>
 #include <filesystem>
 #include <memory>
+#include <vector>
 
 #include "BoundingBox.hpp"
+#include "material.hpp"
 
 
 namespace bgl {
@@ -31,9 +33,10 @@ class BasicMesh {
 	std::shared_ptr<QOpenGLBuffer> _vbo;
 	std::shared_ptr<QOpenGLBuffer> _ibo;
 	std::shared_ptr<VertexArrayObject> _vao;
-	std::shared_ptr<QOpenGLTexture> _texture;
 	std::shared_ptr<QOpenGLShaderProgram> _program;
+
 	BoundingBox _boundingBox;
+	std::vector<Material> _materials;
 };
 
 class Mesh : public BasicMesh {
