@@ -39,30 +39,31 @@ static constexpr std::array<uvec2, 12> box_indices {{
 }  // anonymous namespace
 
 Box::Box() {
+    _meshes.resize(1);
+
     // create vbo
-    _vbo->bind();
-    _vbo->allocate(box_vertices.size() * sizeof(vec3));
-    std::copy(box_vertices.begin(), box_vertices.end(), reinterpret_cast<vec3*>(_vbo->map(QOpenGLBuffer::WriteOnly)));
-    _vbo->unmap();
+    _meshes[0]._vbo.bind();
+    _meshes[0]._vbo.allocate(box_vertices.size() * sizeof(vec3));
+    std::copy(box_vertices.begin(), box_vertices.end(), reinterpret_cast<vec3*>(_meshes[0]._vbo.map(QOpenGLBuffer::WriteOnly)));
+    _meshes[0]._vbo.unmap();
 
     // create ibo
-    _ibo->bind();
-    _ibo->allocate(box_indices.size() * 2 * sizeof(GLuint));
-    uvec2 *buffer = reinterpret_cast<uvec2*>(_ibo->map(QOpenGLBuffer::WriteOnly));
+    _meshes[0]._ibo.bind();
+    _meshes[0]._ibo.allocate(box_indices.size() * 2 * sizeof(GLuint));
+    uvec2 *buffer = reinterpret_cast<uvec2*>(_meshes[0]._ibo.map(QOpenGLBuffer::WriteOnly));
     std::copy(box_indices.begin(), box_indices.end(), buffer);
-    _ibo->unmap();
+    _meshes[0]._ibo.unmap();
 
     // create vao
     _vao->bind();
-    _ibo->bind();
-    _vbo->bind();
+    _meshes[0].bind();
     _vao->setAttribute<vec3>(2 /*locations::position*/, 0 /* no stride */, 0 /* no offset */);
 
     _program = LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs");
 }
 
 Box::Box(const BoundingBox &boundingBox)
-    : Box() {   
+    : Box() {
      _boundingBox = boundingBox;
 }
 
@@ -78,8 +79,7 @@ void Box::render(const mat4 &VP) {
     _program->setUniformValue("color", color.x, color.y, color.z);
 
     _vao->bind();
-    _ibo->bind();   // TODO: VAO should automatically bind
-    _vbo->bind();
+    _meshes[0].bind();
     _vao->draw(GL_LINES, box_indices.size() * 2);
 }
 

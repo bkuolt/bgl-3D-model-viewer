@@ -2,12 +2,13 @@
 #ifndef GFX_GRID_HPP
 #define GFX_GRID_HPP
 
-#include "mesh.hpp"
+#include "model.hpp"
+
 
 namespace bgl {
 
 // TODO(bkuolt): move to separate header
-class Grid final : public Mesh {
+class Grid final : public Model {
  public:
     explicit Grid(GLfloat size, std::size_t num_cells);
     void render(const mat4 &MVP) override;

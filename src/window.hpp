@@ -14,22 +14,21 @@ namespace bgl {
 namespace {
 
 struct {
-	std::shared_ptr<Mesh> mesh;
+	std::shared_ptr<Model> model;
 	std::shared_ptr<Grid> grid;
 	Camera camera;
 	std::shared_ptr<Box> box;
 } Scene;
 
 void set_up_scene(const std::filesystem::path &path) {
-	Scene.mesh = std::make_shared<Mesh>(path);
+	Scene.model = std::make_shared<Model>(path);
 	Scene.camera.setViewCenter({ 0.0, 0.0, 0.0 });
 	Scene.camera.setPosition({ 0.0, 1.0, 2.0 });
 
-	
-	Scene.box = std::make_shared<Box>(Scene.mesh->getBoundingBox());
+	Scene.box = std::make_shared<Box>(Scene.model->getBoundingBox());
 
 	Scene.grid = std::make_shared<Grid>(0.125, 40);
-	const vec3 v { 0.0, -Scene.mesh->getBoundingBox().getSize().y / 2.0, 0.0 };
+	const vec3 v { 0.0, -Scene.model->getBoundingBox().getSize().y / 2.0, 0.0 };
 	Scene.grid->translate(v);
 
 	glEnable(GL_DEPTH_TEST);
@@ -62,14 +61,14 @@ class GLViewport final : public Viewport {
 	void on_render(float delta) override {
 		static bool initialized { false };
 		if (!initialized) {
-			set_up_scene("./assets/models/housemedieval.obj");  // TODO(bkuolt)
+			set_up_scene("/home/bastian/Downloads/Sponza-master/sponza.obj");  // TODO(bkuolt)
 			initialized = true;
 		}
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		const mat4 PV { Scene.camera.getMatrix() };
 		Scene.grid->render(PV);
-		Scene.mesh->render(PV);
+		Scene.model->render(PV);
 		Scene.box->render(PV);
 	}
 };

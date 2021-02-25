@@ -20,7 +20,9 @@ struct Material {
 
     struct {
         std::shared_ptr<QOpenGLTexture> diffuse;
-        // TODO(bkuolt): add more
+        std::shared_ptr<QOpenGLTexture> ambient;
+        std::shared_ptr<QOpenGLTexture> specular;
+        std::shared_ptr<QOpenGLTexture> emissive;
     } textures;
 };
 

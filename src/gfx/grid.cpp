@@ -14,6 +14,7 @@ Grid::Grid(GLfloat size, std::size_t num_cells)
       _num_cells { num_cells } {
     _program = LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs");
 
+    _meshes.resize(1);
     create_vbo();
     create_ibo();
     create_vao();
@@ -25,27 +26,27 @@ void Grid::create_vbo() {
     const float size = _num_cells * _cell_size;
     const vec3 T { size / 2.0f, 0.0f, size / 2.0f };
 
-    _vbo->bind();
-    _vbo->allocate(sizeof(vec3) * _num_cells * _num_cells);
+    _meshes[0]._vbo.bind();
+    _meshes[0]._vbo.allocate(sizeof(vec3) * _num_cells * _num_cells);
 
-    vec3 *buffer = reinterpret_cast<vec3*>(_vbo->map(QOpenGLBuffer::WriteOnly));
+    vec3 *buffer = reinterpret_cast<vec3*>(_meshes[0]._vbo.map(QOpenGLBuffer::WriteOnly));
     for (auto z = 0u; z < _num_cells; ++z) {
         for (auto x = 0u; x < _num_cells; ++x) {
             buffer[get_index(x, z)] = vec3 { x * _cell_size, 0.0, z * _cell_size } - T;
         }
     }
-    _vbo->unmap();
+    _meshes[0]._vbo.unmap();
 }
 
 void Grid::create_ibo() {
     auto get_index = [&](int x, int z) { return (_num_cells * z) + x; };
 
     const size_t num_triangles { 2 * _num_cells * _num_cells + 4 };
-    _ibo->bind();
-    _ibo->allocate(num_triangles * 3 * sizeof(GLuint) /* vertices */);
+    _meshes[0]._ibo.bind();
+    _meshes[0]._ibo.allocate(num_triangles * 3 * sizeof(GLuint) /* vertices */);
 
     using uvec2 = glm::tvec2<GLuint>;
-    uvec2 *buffer = reinterpret_cast<uvec2*>(_ibo->map(QOpenGLBuffer::WriteOnly));
+    uvec2 *buffer = reinterpret_cast<uvec2*>(_meshes[0]._ibo.map(QOpenGLBuffer::WriteOnly));
 
     for (auto z = 0u; z < _num_cells - 1; ++z) {
         for (auto x = 0u; x < _num_cells - 1; ++x) {
@@ -56,15 +57,13 @@ void Grid::create_ibo() {
         *buffer++ = uvec2 { get_index(_num_cells - 1, 0), get_index(_num_cells - 1, _num_cells - 1) };
         *buffer++ = uvec2 { get_index(0, _num_cells - 1), get_index(_num_cells - 1, _num_cells - 1) };
     }
-    _ibo->unmap();
+    _meshes[0]._ibo.unmap();
 }
 
 void Grid::create_vao() {
     _vao->bind();
     _vao->setAttribute<vec3>(locations::position, sizeof(vec3), 0 /* no offset */);
-
-    _ibo->bind();
-    _vbo->bind();
+    _meshes[0].bind();
 }
 
 void Grid::translate(const vec3 &v) {
@@ -85,9 +84,8 @@ void Grid::render(const mat4 &PV) {
     _program->setUniformValue(locations::color, white.x, white.y, white.z );
 
     _vao->bind();
-    _ibo->bind();
-    _vbo->bind();
-    _vao->draw(GL_LINES, _ibo->size() / 4);
+    _meshes[0].bind();
+    _meshes[0].render(GL_LINES, _meshes[0]._ibo.size() / 4);
 }
 
 }  // namespace bgl

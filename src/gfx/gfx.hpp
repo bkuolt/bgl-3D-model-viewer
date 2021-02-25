@@ -10,6 +10,7 @@
 #include <memory>       // std::shared_ptr
 #include <ostream>      // std::ostream
 
+#include <QOpenGLShaderProgram>   // TODO(bkuolt)
 
 namespace bgl {
 
@@ -26,6 +27,14 @@ namespace console_color {
 }  // namespace console_color
 
 #endif  // __linux
+
+std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs) {
+    const auto program { std::make_shared<QOpenGLShaderProgram>() };
+    program->addShaderFromSourceFile(QOpenGLShader::Vertex, vs.string().c_str());
+    program->addShaderFromSourceFile(QOpenGLShader::Fragment, fs.string().c_str());
+    program->link();
+    return program;
+}
 
 }  // namespace bgl
 
