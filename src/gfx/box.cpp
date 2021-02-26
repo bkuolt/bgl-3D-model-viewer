@@ -68,6 +68,7 @@ Box::Box(const BoundingBox &boundingBox)
 }
 
 void Box::render(const mat4 &VP) {
+    std::cout << "Box::render()" << std::endl;
     _program->bind();
     glLineWidth(3);
 

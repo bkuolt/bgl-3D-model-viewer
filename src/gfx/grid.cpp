@@ -71,6 +71,7 @@ void Grid::translate(const vec3 &v) {
 }
 
 void Grid::render(const mat4 &PV) {
+    std::cout << "Grid::render()" << std::endl;
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glEnable(GL_LINE_SMOOTH);
     glLineWidth(1);

@@ -67,6 +67,7 @@ template<> struct GLtype_traits<GLfloat> : public GLtype_traits_base<GL_FLOAT, 1
 template<> struct GLtype_traits<vec2> : public GLtype_traits_base<GL_FLOAT, 2> {};
 template<> struct GLtype_traits<vec3> : public GLtype_traits_base<GL_FLOAT, 3> {};
 
+// TODO(bkuolt): remove
 class VertexArrayObject : public QOpenGLVertexArrayObject {
  public:
     void draw(GLenum mode, int count) {

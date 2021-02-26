@@ -4,11 +4,14 @@
 
 #include "gl.hpp"
 #include "mesh.hpp"
+#include "model.hpp"
 #include "gui/window.hpp"
 
 #include <filesystem>   // std::filesystem::path
 #include <memory>       // std::shared_ptr
 #include <ostream>      // std::ostream
+#include <iostream>
+
 
 #include <QOpenGLShaderProgram>   // TODO(bkuolt)
 
@@ -28,10 +31,14 @@ namespace console_color {
 
 #endif  // __linux
 
-std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs) {
+inline std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs) {
     const auto program { std::make_shared<QOpenGLShaderProgram>() };
-    program->addShaderFromSourceFile(QOpenGLShader::Vertex, vs.string().c_str());
-    program->addShaderFromSourceFile(QOpenGLShader::Fragment, fs.string().c_str());
+    bool a = program->addShaderFromSourceFile(QOpenGLShader::Vertex, vs.string().c_str());
+    std::cout << a << std::endl;
+
+    bool b = program->addShaderFromSourceFile(QOpenGLShader::Fragment, fs.string().c_str());
+    std::cout << b << std::endl;
+
     program->link();
     return program;
 }

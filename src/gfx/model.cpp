@@ -76,19 +76,24 @@ void create_ibo(QOpenGLBuffer &ibo, const aiMesh &mesh) {
     ibo.release();
 }
 
+void set_vertex_attribute(GLuint location, GLsizei size, GLenum type, GLsizei stride, GLsizei offset) {
+    glEnableVertexAttribArray(location);
+    glVertexAttribPointer(location, size, type, GL_FALSE, stride, reinterpret_cast<void*>(offset));
+    int i = glGetError();
+    if (i != GL_NO_ERROR) {
+        std::cout << i << std::endl;
+  //      throw std::runtime_error { "glVertexAttribPointer() failed -> location:" + std::to_string(location)  };
+    }
+}
+
 void create_vao(QOpenGLVertexArrayObject &vao, QOpenGLShaderProgram &program) {
     vao.bind();
     const auto stride { sizeof(Vertex) };
-#if 0
-    vao->setAttribute<vec3>(program->attributeLocation("position"), stride, offsetof(Vertex, position));
-    vao->setAttribute<vec3>(program->attributeLocation("normal"), stride, offsetof(Vertex, normal));
-    vao->setAttribute<vec2>(program->attributeLocation("texcoords"), stride, offsetof(Vertex, texcoords));
-#endif  // 0
-#warning TODO: implement VAO attributes
-
+    set_vertex_attribute(program.attributeLocation("position"), 3, GL_FLOAT, stride, offsetof(Vertex, position));
+    set_vertex_attribute(program.attributeLocation("normal"), 3, GL_FLOAT, stride, offsetof(Vertex, normal));
+    set_vertex_attribute(program.attributeLocation("texcoords"), 2, GL_FLOAT, stride, offsetof(Vertex, texcoords));
     vao.release();
 }
-
 
 /*********************************************************
  *                     Assimp Mesh Code                  *
@@ -128,13 +133,14 @@ Mesh load_mesh(const aiMesh &mesh) {
 }
 
 std::vector<Mesh> load_meshes(const aiScene &scene) {
-    std::vector<Mesh> meshes { scene.mNumMeshes };
-    if (meshes.empty()) {
+    if (scene.mNumMeshes == 0) {
         throw std::runtime_error { "empty model" };
     }
 
-    std::cout << "loading" << meshes.size() << " meshes" << std::endl;
-    for (auto i = 0u; i < meshes.size(); ++i) {
+    std::cout << "loading" << scene.mNumMeshes  << " meshes" << std::endl;
+    std::vector<Mesh> meshes;
+    for (auto i = 0u; i < scene.mNumMeshes; ++i) {
+        std::cout << "loading mesh " << i << std::endl;
         meshes.push_back(load_mesh(*scene.mMeshes[i]));
     }
     return meshes;
@@ -146,8 +152,8 @@ BoundingBox calculate_bounding_box(const aiScene &scene) noexcept {
         const aiMesh &mesh { *scene.mMeshes[i] };
         for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
             for (auto c = 0u; c < 3; ++c) {
-                boundingBox._bounds[c].min = std::min(boundingBox._bounds[i].min, mesh.mVertices[vertex_index][i]);
-                boundingBox._bounds[c].max = std::max(boundingBox._bounds[i].max, mesh.mVertices[vertex_index][i]);
+                boundingBox._bounds[c].min = std::min(boundingBox._bounds[c].min, mesh.mVertices[vertex_index][i]);
+                boundingBox._bounds[c].max = std::max(boundingBox._bounds[c].max, mesh.mVertices[vertex_index][i]);
             }
         }
     }
@@ -274,6 +280,7 @@ BasicModel::BasicModel()
     if (!_vao->create()) {
         throw std::runtime_error { "could not create VAO" };
     }
+    std::cout << "created vao" << std::endl;
 }
 
 void BasicModel::resize(const vec3 &dimensions) {
@@ -296,23 +303,23 @@ Model::Model(const std::filesystem::path &path) {
 }
 
 void Model::render(const mat4 &_MVP) {
+    std::cout << "Model::render()" << std::endl;
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     _program->bind();
 
-    // TODO(bkuolt): for each material {
-        setupMaterial(*_program, _materials[0]);
-        setupMaterial(*_program, _materials[1]);
+    setupLighting(*_program);
+    const QMatrix4x4 matrix { glm::value_ptr(_MVP) };
+    _program->setUniformValue("MVP", matrix.transposed());
 
-        // TODO(bkuolt): for each light {
-            setupLighting(*_program);
-
-            const QMatrix4x4 matrix { glm::value_ptr(_MVP) };
-            _program->setUniformValue("MVP", matrix.transposed());
-
-            _vao->bind();
-            _meshes[0].render(GL_TRIANGLES);
-        // }
-    // }
+    /**
+     * @brief Render a mesh for each material as there is 
+     *        is one _vbo per material)
+     */
+    for (auto i = 0u; i < _meshes.size(); ++i) {
+        setupMaterial(*_program, _materials[i]);
+        _vao->bind();
+        _meshes[i].render(GL_TRIANGLES);
+    }
 }
 
 }  // namespace bgl

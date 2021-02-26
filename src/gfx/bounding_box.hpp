@@ -7,11 +7,12 @@
 
 namespace bgl {
 
+struct Bound {
+   float min;
+   float max;
+};
+
 struct BoundingBox {
-   struct Bound {
-      float min;
-      float max;
-   };
 
    const vec3& getSize() const noexcept {
        return _dimensions = {
@@ -20,6 +21,7 @@ struct BoundingBox {
             _bounds.z.max -  _bounds.z.min
          };
    }
+
    void resize(const vec3 &dimensions)  {
       _dimensions = dimensions;  // TODO
    }

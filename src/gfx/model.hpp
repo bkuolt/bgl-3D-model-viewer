@@ -31,7 +31,7 @@ class BasicModel {
 	const BoundingBox& getBoundingBox() const;
 
  protected:
-	virtual void setUniforms(const Mesh &mesh);  // TODO
+	// TODO(bkuolt): virtual void setUniforms(const Mesh &mesh);
 
 	std::vector<Mesh> _meshes;
 	std::shared_ptr<VertexArrayObject> _vao;
@@ -43,9 +43,8 @@ class BasicModel {
 class Model : public BasicModel {
  public:
 	Model() = default;
-
 	explicit Model(const std::filesystem::path &path);
-	virtual ~Model() = default;
+	virtual ~Model() noexcept = default;
 
 	void render(const mat4 &MVP) override;
 };
