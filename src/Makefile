@@ -33,7 +33,8 @@ demo: main.o gfx/libgfx.so
 run: demo
 	export LD_LIBRARY_PATH=/home/bastian/code/bgl-demo/src/:/home/bastian/code/bgl-demo/src/gfx; \
 	 echo $(LD_LIBRARY_PATH); \
-	./demo /home/bastian/Downloads/Sponza-master/sponza.obj
+	./demo \
+	./assets/models/housemedieval.obj    # the rendered 3D model
 	#./assets/models/housemedieval.obj
 
 clean:

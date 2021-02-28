@@ -14,7 +14,7 @@ Grid::Grid(GLfloat size, std::size_t num_cells)
       _num_cells { num_cells } {
     _program = LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs");
 
-    _meshes.resize(1);
+//    _meshes.resize(1);
     create_vbo();
     create_ibo();
     create_vao();
@@ -61,8 +61,8 @@ void Grid::create_ibo() {
 }
 
 void Grid::create_vao() {
-    _vao->bind();
-    _vao->setAttribute<vec3>(locations::position, sizeof(vec3), 0 /* no offset */);
+//    _vao->bind();
+//    _vao->setAttribute<vec3>(locations::position, sizeof(vec3), 0 /* no offset */);
     _meshes[0].bind();
 }
 
@@ -84,7 +84,7 @@ void Grid::render(const mat4 &PV) {
     _program->setUniformValue(locations::MVP, matrix.transposed());
     _program->setUniformValue(locations::color, white.x, white.y, white.z );
 
-    _vao->bind();
+//    _vao->bind();
     _meshes[0].bind();
     _meshes[0].render(GL_LINES, _meshes[0]._ibo.size() / 4);
 }

@@ -38,9 +38,8 @@ static constexpr std::array<uvec2, 12> box_indices {{
 
 }  // anonymous namespace
 
-Box::Box() {
-    _meshes.resize(1);
-
+Box::Box()  {
+    // TODO!!!!!!!!!! RESIZE TO 1
     // create vbo
     _meshes[0]._vbo.bind();
     _meshes[0]._vbo.allocate(box_vertices.size() * sizeof(vec3));
@@ -55,9 +54,9 @@ Box::Box() {
     _meshes[0]._ibo.unmap();
 
     // create vao
-    _vao->bind();
+    _meshes[0]._vao.bind();
     _meshes[0].bind();
-    _vao->setAttribute<vec3>(2 /*locations::position*/, 0 /* no stride */, 0 /* no offset */);
+  //  _meshes[0]._vao.setAttribute<vec3>(2 /*locations::position*/, 0 /* no stride */, 0 /* no offset */);
 
     _program = LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs");
 }
@@ -79,9 +78,8 @@ void Box::render(const mat4 &VP) {
     const vec3 color { 1.0, 0.0, 0.0 }; /* red */
     _program->setUniformValue("color", color.x, color.y, color.z);
 
-    _vao->bind();
-    _meshes[0].bind();
-    _vao->draw(GL_LINES, box_indices.size() * 2);
+   // _meshes[0]._vao->bind();
+ //   _meshes[0]._vao->render(GL_LINES);
 }
 
 }  // namespace bgl

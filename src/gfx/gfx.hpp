@@ -17,8 +17,6 @@
 
 namespace bgl {
 
-std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs);
-
 #ifdef __linux
 namespace console_color {
     constexpr char blue[] = "\x1B[34m";
@@ -38,8 +36,7 @@ inline std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::
 
     bool b = program->addShaderFromSourceFile(QOpenGLShader::Fragment, fs.string().c_str());
     std::cout << b << std::endl;
-
-    program->link();
+    std::cout << program->link() << std::endl;
     return program;
 }
 

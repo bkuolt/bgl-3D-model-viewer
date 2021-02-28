@@ -77,22 +77,46 @@ void create_ibo(QOpenGLBuffer &ibo, const aiMesh &mesh) {
 }
 
 void set_vertex_attribute(GLuint location, GLsizei size, GLenum type, GLsizei stride, GLsizei offset) {
+    std::cout << "\t trying to set va for loaction " << location << std::endl;
     glEnableVertexAttribArray(location);
     glVertexAttribPointer(location, size, type, GL_FALSE, stride, reinterpret_cast<void*>(offset));
+
+/*
+
+
+void glVertexAttribPointer(	GLuint index,
+ 	GLint size,
+ 	GLenum type,
+ 	GLboolean normalized,
+ 	GLsizei stride,
+ 	const void * pointer);
+ 
+
+
+*/
     int i = glGetError();
     if (i != GL_NO_ERROR) {
-        std::cout << i << std::endl;
-  //      throw std::runtime_error { "glVertexAttribPointer() failed -> location:" + std::to_string(location)  };
+//        std::cout << i << std::endl;
+  //     throw std::runtime_error { "glVertexAttribPointer() failed -> location:" + std::to_string(location)  };
+  std::cout << gluErrorString(i) << std::endl;
+        std::cout << "glVertexAttribPointer() failed > -location: " << location <<
+                  std::endl;
+
     }
 }
 
-void create_vao(QOpenGLVertexArrayObject &vao, QOpenGLShaderProgram &program) {
+// program must be bound!!!!
+void create_vao(QOpenGLVertexArrayObject &vao, QOpenGLBuffer &vbo, QOpenGLShaderProgram &program) {
+    program.bind();
     vao.bind();
+    vbo.bind();
     const auto stride { sizeof(Vertex) };
     set_vertex_attribute(program.attributeLocation("position"), 3, GL_FLOAT, stride, offsetof(Vertex, position));
     set_vertex_attribute(program.attributeLocation("normal"), 3, GL_FLOAT, stride, offsetof(Vertex, normal));
     set_vertex_attribute(program.attributeLocation("texcoords"), 2, GL_FLOAT, stride, offsetof(Vertex, texcoords));
     vao.release();
+    vbo.release();
+    program.release();
 }
 
 /*********************************************************
@@ -125,25 +149,23 @@ const aiScene* importScene(const std::filesystem::path &path) {
                  : throw std::runtime_error { aiGetErrorString() };
 }
 
-Mesh load_mesh(const aiMesh &mesh) {
-    Mesh _mesh;
-    create_vbo(_mesh._vbo, mesh);
-    create_ibo(_mesh._ibo, mesh);
-    return _mesh;
-}
 
-std::vector<Mesh> load_meshes(const aiScene &scene) {
+void load_meshes(std::vector<Mesh> &meshes, const aiScene &scene, QOpenGLShaderProgram &program) {
     if (scene.mNumMeshes == 0) {
         throw std::runtime_error { "empty model" };
     }
 
-    std::cout << "loading" << scene.mNumMeshes  << " meshes" << std::endl;
-    std::vector<Mesh> meshes;
-    for (auto i = 0u; i < scene.mNumMeshes; ++i) {
-        std::cout << "loading mesh " << i << std::endl;
-        meshes.push_back(load_mesh(*scene.mMeshes[i]));
+    std::cout << "creating " << scene.mNumMeshes  << " meshes" << std::endl;
+    meshes = std::vector<Mesh>(scene.mNumMeshes);
+
+    for (auto i = 0u; i < meshes.size(); ++i) {
+        std::cout << "\tloading mesh " << i << std::endl;
+        create_vbo(meshes[i]._vbo, *scene.mMeshes[i]);
+        create_ibo(meshes[i]._ibo, *scene.mMeshes[i]);
+        create_vao(meshes[i]._vao, meshes[i]._vbo, program);
+        meshes[i]._materialIndex = scene.mMeshes[i]->mMaterialIndex;
+
     }
-    return meshes;
 }
 
 BoundingBox calculate_bounding_box(const aiScene &scene) noexcept {
@@ -275,12 +297,8 @@ void setupLighting(QOpenGLShaderProgram &program) {
 
 namespace bgl {
 
-BasicModel::BasicModel()
-    : _vao { std::make_shared<VertexArrayObject>() } {
-    if (!_vao->create()) {
-        throw std::runtime_error { "could not create VAO" };
-    }
-    std::cout << "created vao" << std::endl;
+BasicModel::BasicModel() {
+    std::cout << "created BasicModel" << std::endl;
 }
 
 void BasicModel::resize(const vec3 &dimensions) {
@@ -295,10 +313,11 @@ const BoundingBox& BasicModel::getBoundingBox() const {
 
 Model::Model(const std::filesystem::path &path) {
     const aiScene &scene { *details::importScene(path) };
-    _meshes = details::load_meshes(scene);
-    _materials = details::load_materials(scene, path.parent_path());
+
     _program = LoadProgram("./assets/shaders/main.vs", "./assets/shaders/main.fs");
-    details::create_vao(*_vao, *_program);
+    details::load_meshes(_meshes, scene, *_program);
+
+    _materials = details::load_materials(scene, path.parent_path());
     _boundingBox = details::calculate_bounding_box(scene);
 }
 
@@ -311,13 +330,13 @@ void Model::render(const mat4 &_MVP) {
     const QMatrix4x4 matrix { glm::value_ptr(_MVP) };
     _program->setUniformValue("MVP", matrix.transposed());
 
+    // TODO: Material Mesh Entries HAndlings
     /**
      * @brief Render a mesh for each material as there is 
      *        is one _vbo per material)
      */
     for (auto i = 0u; i < _meshes.size(); ++i) {
-        setupMaterial(*_program, _materials[i]);
-        _vao->bind();
+        setupMaterial(*_program, _materials[ _meshes[i]._materialIndex ] ); 
         _meshes[i].render(GL_TRIANGLES);
     }
 }

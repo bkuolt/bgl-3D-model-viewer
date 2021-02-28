@@ -5,6 +5,7 @@
 #include "gl.hpp"
 
 #include <QOpenGLBuffer>
+#include <QOpenGLVertexArrayObject>
 
 
 namespace bgl {
@@ -21,12 +22,16 @@ class Mesh {
 	Mesh();
 	virtual ~Mesh() noexcept = default;
 
-	void bind() {};  // TODO
+	void bind();
 	void render(GLenum mode, GLuint count);
 	void render(GLenum mode);
 
 	QOpenGLBuffer _vbo;
 	QOpenGLBuffer _ibo;
+	QOpenGLVertexArrayObject _vao;
+
+
+	int _materialIndex = -1;
 };
 
 }  // namespace bgl

@@ -5,7 +5,6 @@
 #include "gl.hpp"
 
 class QOpenGLShaderProgram;
-class QOpenGLVertexArrayObject;
 
 #include <filesystem>
 #include <memory>
@@ -34,7 +33,6 @@ class BasicModel {
 	// TODO(bkuolt): virtual void setUniforms(const Mesh &mesh);
 
 	std::vector<Mesh> _meshes;
-	std::shared_ptr<VertexArrayObject> _vao;
 	std::shared_ptr<QOpenGLShaderProgram> _program;
 	std::vector<Material> _materials;
 	BoundingBox _boundingBox;

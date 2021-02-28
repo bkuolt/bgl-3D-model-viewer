@@ -22,6 +22,10 @@ uniform struct Material {
     sampler2D texture;
 } material;
 
+in vec3 position;
+in vec3 normal;
+in vec2 texcoords;
+
 in vec3 pixelNormal;
 in vec2 pixelTexCoord;
 
