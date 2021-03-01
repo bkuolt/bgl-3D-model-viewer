@@ -29,6 +29,19 @@ namespace console_color {
 
 #endif  // __linux
 
+// vao must be bound!
+inline void set_va_attribute(GLuint location, GLsizei size, GLenum type, GLsizei stride, GLsizei offset) {
+    glEnableVertexAttribArray(location);
+    glVertexAttribPointer(location, size, type, GL_FALSE, stride, reinterpret_cast<void*>(offset));
+
+    int error = glGetError();
+    if (error != GL_NO_ERROR) {
+        std::cout << "glVertexAttribPointer() failed for location " << location << " due to "
+                  << gluErrorString(error) << std::endl;
+        throw std::runtime_error { "glVertexAttribPointer() failed" };
+    }
+}
+
 inline std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs) {
     const auto program { std::make_shared<QOpenGLShaderProgram>() };
     program->addShaderFromSourceFile(QOpenGLShader::Vertex, vs.string().c_str());

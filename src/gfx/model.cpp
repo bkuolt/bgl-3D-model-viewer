@@ -1,6 +1,7 @@
 // Copyright 2021 Bastian Kuolt
 #include "model.hpp"
 #include "box.hpp"
+#include "gfx.hpp"  //  model
 
 #include <assimp/cimport.h>      // aiPropertyStore
 #include <assimp/postprocess.h>  // Post processing flags
@@ -95,19 +96,6 @@ void create_ibo(QOpenGLBuffer &ibo, const aiMesh &mesh) {
     ibo.release();
 }
 
-// vao must be bound!
-void set_va_attribute(GLuint location, GLsizei size, GLenum type, GLsizei stride, GLsizei offset) {
-    glEnableVertexAttribArray(location);
-    glVertexAttribPointer(location, size, type, GL_FALSE, stride, reinterpret_cast<void*>(offset));
-
-    int error = glGetError();
-    if (error != GL_NO_ERROR) {
-        std::cout << "glVertexAttribPointer() failed for location " << location << " due to "
-                  << gluErrorString(error) << std::endl;
-        throw std::runtime_error { "glVertexAttribPointer() failed" };
-    }
-}
-
 // program must be bound!!!!
 void create_vao(QOpenGLVertexArrayObject &vao, QOpenGLBuffer &vbo, QOpenGLShaderProgram &program) {
     program.bind();
@@ -177,10 +165,11 @@ BoundingBox calculate_bounding_box(const aiScene &scene) noexcept {
     BoundingBox boundingBox;
     for (auto i = 0u; i < scene.mNumMeshes; ++i) {
         const aiMesh &mesh { *scene.mMeshes[i] };
+
         for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
             for (auto c = 0u; c < 3; ++c) {
-                boundingBox._bounds[c].min = std::min(boundingBox._bounds[c].min, mesh.mVertices[vertex_index][i]);
-                boundingBox._bounds[c].max = std::max(boundingBox._bounds[c].max, mesh.mVertices[vertex_index][i]);
+                boundingBox._bounds[c].min = std::min(boundingBox._bounds[c].min, mesh.mVertices[vertex_index][c]);
+                boundingBox._bounds[c].max = std::max(boundingBox._bounds[c].max, mesh.mVertices[vertex_index][c]);
             }
         }
     }

@@ -1,5 +1,6 @@
 // Copyright 2021 Bastian Kuolt
 #include "box.hpp"
+#include "gfx.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -39,7 +40,8 @@ static constexpr std::array<uvec2, 12> box_indices {{
 }  // anonymous namespace
 
 Box::Box()  {
-    // TODO!!!!!!!!!! RESIZE TO 1
+    _meshes = std::vector<Mesh>(1);  // TODO
+
     // create vbo
     _meshes[0]._vbo.bind();
     _meshes[0]._vbo.allocate(box_vertices.size() * sizeof(vec3));
@@ -56,9 +58,11 @@ Box::Box()  {
     // create vao
     _meshes[0]._vao.bind();
     _meshes[0].bind();
-  //  _meshes[0]._vao.setAttribute<vec3>(2 /*locations::position*/, 0 /* no stride */, 0 /* no offset */);
-
+    
     _program = LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs");
+    _program->bind();
+    set_va_attribute(_program->attributeLocation("position"), 3, GL_FLOAT, 0, 0);
+   _program->release();
 }
 
 Box::Box(const BoundingBox &boundingBox)
@@ -77,9 +81,8 @@ void Box::render(const mat4 &VP) {
 
     const vec3 color { 1.0, 0.0, 0.0 }; /* red */
     _program->setUniformValue("color", color.x, color.y, color.z);
-
-   // _meshes[0]._vao->bind();
- //   _meshes[0]._vao->render(GL_LINES);
+    
+    _meshes[0].render(GL_LINES);
 }
 
 }  // namespace bgl
