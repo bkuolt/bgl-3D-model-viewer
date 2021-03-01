@@ -2,6 +2,8 @@
 #ifndef GFX_MESH_HPP_
 #define GFX_MESH_HPP_
 
+#include <optional>
+
 #include "gl.hpp"
 
 #include <QOpenGLBuffer>
@@ -29,9 +31,7 @@ class Mesh {
 	QOpenGLBuffer _vbo;
 	QOpenGLBuffer _ibo;
 	QOpenGLVertexArrayObject _vao;
-
-
-	int _materialIndex = -1;
+	std::optional<unsigned int> _materialIndex;
 };
 
 }  // namespace bgl

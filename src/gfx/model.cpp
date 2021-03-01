@@ -1,6 +1,7 @@
 // Copyright 2021 Bastian Kuolt
 #include "model.hpp"
 #include "box.hpp"
+#include "gfx.hpp"  //  model
 
 #include <assimp/cimport.h>      // aiPropertyStore
 #include <assimp/postprocess.h>  // Post processing flags
@@ -30,6 +31,14 @@ inline QVector3D to_qt(const glm::vec3 &v) noexcept {
     return { v.x, v.y, v.z };
 }
 
+inline bool is_textured(const aiMesh &mesh) noexcept {
+    return mesh.mTextureCoords[0] != nullptr;
+}
+
+inline bool has_material(const aiMesh &mesh) noexcept {
+    return mesh.mMaterialIndex != 0;
+}
+
 /*********************************************************
  *                     OpenGL Code                       *
  *********************************************************/
@@ -38,6 +47,7 @@ QOpenGLBuffer create_vbo(QOpenGLBuffer &vbo, const aiMesh &mesh) {
     vbo.allocate(sizeof(Vertex) * mesh.mNumVertices);
     auto buffer { reinterpret_cast<Vertex*>(vbo.map(QOpenGLBuffer::ReadWrite)) };
     if (buffer == nullptr) {
+        vbo.release();
         throw std::runtime_error { "could not map VBO" };
     }
 
@@ -45,11 +55,21 @@ QOpenGLBuffer create_vbo(QOpenGLBuffer &vbo, const aiMesh &mesh) {
         buffer[i].normal = vec3 { mesh.mNormals[i].x, mesh.mNormals[i].y, mesh.mNormals[i].z };
         buffer[i].position = vec3 { mesh.mVertices[i].x, mesh.mVertices[i].y, mesh.mVertices[i].z };
     }
-    for (auto i = 0u; i < mesh.mNumVertices; ++i) {
-        buffer[i].texcoords = vec2 { mesh.mTextureCoords[0][i].x, 1.0 - mesh.mTextureCoords[0][i].y };
+
+    if (is_textured(mesh)) {
+        if (mesh.mNumUVComponents[0] != 2) {
+            vbo.unmap();
+            vbo.release();
+            throw std::runtime_error { "only one texture channel supported" };
+        }
+        for (unsigned int i = 0; i < mesh.mNumVertices; ++i) {
+            buffer[i].texcoords = vec2 { mesh.mTextureCoords[0][i].x, 1.0 - mesh.mTextureCoords[0][i].y };
+        }
+
     }
 
     if (!vbo.unmap()) {
+        vbo.release();
         throw std::runtime_error { "could not unmap VBO" };
     }
     vbo.release();
@@ -76,44 +96,15 @@ void create_ibo(QOpenGLBuffer &ibo, const aiMesh &mesh) {
     ibo.release();
 }
 
-void set_vertex_attribute(GLuint location, GLsizei size, GLenum type, GLsizei stride, GLsizei offset) {
-    std::cout << "\t trying to set va for loaction " << location << std::endl;
-    glEnableVertexAttribArray(location);
-    glVertexAttribPointer(location, size, type, GL_FALSE, stride, reinterpret_cast<void*>(offset));
-
-/*
-
-
-void glVertexAttribPointer(	GLuint index,
- 	GLint size,
- 	GLenum type,
- 	GLboolean normalized,
- 	GLsizei stride,
- 	const void * pointer);
- 
-
-
-*/
-    int i = glGetError();
-    if (i != GL_NO_ERROR) {
-//        std::cout << i << std::endl;
-  //     throw std::runtime_error { "glVertexAttribPointer() failed -> location:" + std::to_string(location)  };
-  std::cout << gluErrorString(i) << std::endl;
-        std::cout << "glVertexAttribPointer() failed > -location: " << location <<
-                  std::endl;
-
-    }
-}
-
 // program must be bound!!!!
 void create_vao(QOpenGLVertexArrayObject &vao, QOpenGLBuffer &vbo, QOpenGLShaderProgram &program) {
     program.bind();
     vao.bind();
     vbo.bind();
     const auto stride { sizeof(Vertex) };
-    set_vertex_attribute(program.attributeLocation("position"), 3, GL_FLOAT, stride, offsetof(Vertex, position));
-    set_vertex_attribute(program.attributeLocation("normal"), 3, GL_FLOAT, stride, offsetof(Vertex, normal));
-    set_vertex_attribute(program.attributeLocation("texcoords"), 2, GL_FLOAT, stride, offsetof(Vertex, texcoords));
+    set_va_attribute(program.attributeLocation("position"), 3, GL_FLOAT, stride, offsetof(Vertex, position));
+    set_va_attribute(program.attributeLocation("normal"), 3, GL_FLOAT, stride, offsetof(Vertex, normal));
+    set_va_attribute(program.attributeLocation("texcoords"), 2, GL_FLOAT, stride, offsetof(Vertex, texcoords));
     vao.release();
     vbo.release();
     program.release();
@@ -155,16 +146,18 @@ void load_meshes(std::vector<Mesh> &meshes, const aiScene &scene, QOpenGLShaderP
         throw std::runtime_error { "empty model" };
     }
 
-    std::cout << "creating " << scene.mNumMeshes  << " meshes" << std::endl;
     meshes = std::vector<Mesh>(scene.mNumMeshes);
-
+    std::cout << "loading " << meshes.size()  << " meshes" << std::endl;
+    
     for (auto i = 0u; i < meshes.size(); ++i) {
-        std::cout << "\tloading mesh " << i << std::endl;
-        create_vbo(meshes[i]._vbo, *scene.mMeshes[i]);
-        create_ibo(meshes[i]._ibo, *scene.mMeshes[i]);
+        const aiMesh &ai_mesh { *scene.mMeshes[i] };
+        create_vbo(meshes[i]._vbo, ai_mesh);
+        create_ibo(meshes[i]._ibo, ai_mesh);
         create_vao(meshes[i]._vao, meshes[i]._vbo, program);
-        meshes[i]._materialIndex = scene.mMeshes[i]->mMaterialIndex;
 
+        if (has_material(ai_mesh)) {
+            meshes[i]._materialIndex = ai_mesh.mMaterialIndex;
+        }
     }
 }
 
@@ -172,10 +165,11 @@ BoundingBox calculate_bounding_box(const aiScene &scene) noexcept {
     BoundingBox boundingBox;
     for (auto i = 0u; i < scene.mNumMeshes; ++i) {
         const aiMesh &mesh { *scene.mMeshes[i] };
+
         for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
             for (auto c = 0u; c < 3; ++c) {
-                boundingBox._bounds[c].min = std::min(boundingBox._bounds[c].min, mesh.mVertices[vertex_index][i]);
-                boundingBox._bounds[c].max = std::max(boundingBox._bounds[c].max, mesh.mVertices[vertex_index][i]);
+                boundingBox._bounds[c].min = std::min(boundingBox._bounds[c].min, mesh.mVertices[vertex_index][c]);
+                boundingBox._bounds[c].max = std::max(boundingBox._bounds[c].max, mesh.mVertices[vertex_index][c]);
             }
         }
     }
@@ -297,15 +291,12 @@ void setupLighting(QOpenGLShaderProgram &program) {
 
 namespace bgl {
 
-BasicModel::BasicModel() {
-    std::cout << "created BasicModel" << std::endl;
-}
 
-void BasicModel::resize(const vec3 &dimensions) {
+void Model::resize(const vec3 &dimensions) {
     _boundingBox.resize(dimensions);
 }
 
-const BoundingBox& BasicModel::getBoundingBox() const {
+const BoundingBox& Model::getBoundingBox() const {
     return _boundingBox;
 }
 
@@ -321,22 +312,23 @@ Model::Model(const std::filesystem::path &path) {
     _boundingBox = details::calculate_bounding_box(scene);
 }
 
-void Model::render(const mat4 &_MVP) {
-    std::cout << "Model::render()" << std::endl;
+void Model::render(const mat4 &MVP) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     _program->bind();
 
     setupLighting(*_program);
-    const QMatrix4x4 matrix { glm::value_ptr(_MVP) };
+    const QMatrix4x4 matrix { glm::value_ptr(MVP) };
     _program->setUniformValue("MVP", matrix.transposed());
 
-    // TODO: Material Mesh Entries HAndlings
     /**
-     * @brief Render a mesh for each material as there is 
-     *        is one _vbo per material)
+     * @brief Render a mesh for each material as there is is one VBO per material
+     * @details http://assimp.sourceforge.net/lib_html/materials.html
      */
     for (auto i = 0u; i < _meshes.size(); ++i) {
-        setupMaterial(*_program, _materials[ _meshes[i]._materialIndex ] ); 
+        if (_meshes[i]._materialIndex.has_value()) {
+            const unsigned int material_index { _meshes[i]._materialIndex.value() };
+            setupMaterial(*_program, _materials[material_index]);
+        }
         _meshes[i].render(GL_TRIANGLES);
     }
 }

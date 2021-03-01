@@ -28,9 +28,9 @@ void set_up_scene(const std::filesystem::path &path) {
 	Scene.model = std::make_shared<Model>(path);
 	Scene.camera.setViewCenter({ 0.0, 0.0, 0.0 });
 	Scene.camera.setPosition({ 0.0, 1.0, 2.0 });
-	std::cout << "........................\n\n" << std::endl;
 
-//	Scene.box = std::make_shared<Box>(Scene.model->getBoundingBox());
+	Scene.box = std::make_shared<Box>(Scene.model->getBoundingBox());
+
 //	Scene.grid = std::make_shared<Grid>(0.125, 40);
 //	const vec3 v { 0.0, -Scene.model->getBoundingBox().getSize().y / 2.0, 0.0 };
 //	Scene.grid->translate(v);
@@ -73,8 +73,8 @@ class GLViewport final : public Viewport {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		const mat4 PV { Scene.camera.getMatrix() };
 		Scene.model->render(PV);
-		// Scene.grid->render(PV);
-		// Scene.box->render(PV);
+	 	Scene.box->render(PV);
+	 	// Scene.grid->render(PV);
 	}
 };
 
