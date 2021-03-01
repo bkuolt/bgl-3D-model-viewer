@@ -19,7 +19,6 @@ namespace bgl {
 class Model {
  public:
 	Model() = default;
-	explicit Model(const std::filesystem::path &path);
 	virtual ~Model() noexcept = default;
 
 	virtual void render(const mat4 &MVP);
@@ -27,13 +26,18 @@ class Model {
 	void resize(const vec3 &dimensions);
 	const BoundingBox& getBoundingBox() const;
 
- protected:
+ protected: public:
 	std::vector<Mesh> _meshes;
 	std::vector<Material> _materials;
 
 	std::shared_ptr<QOpenGLShaderProgram> _program;
 	BoundingBox _boundingBox;
 };
+
+/**
+ * @brief Loads a 3D model file.
+ */
+std::shared_ptr<Model> LoadModel(const std::filesystem::path &path);  // defined in importer.cpp
 
 }  // namespace bgl
 

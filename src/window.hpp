@@ -1,5 +1,6 @@
 // Copyright 2021 Bastian Kuolt
 #include "gfx/gfx.hpp"
+#include "gfx/model.hpp"
 #include "gfx/box.hpp"
 #include "gfx/grid.hpp"
 #include "gfx/camera.hpp"
@@ -25,7 +26,7 @@ struct {
 void set_up_scene(const std::filesystem::path &path) {
 	std::cout << "\nLoading " << path << " ..." << std::endl;
 
-	Scene.model = std::make_shared<Model>(path);
+	Scene.model = LoadModel(path);
 	Scene.camera.setViewCenter({ 0.0, 0.0, 0.0 });
 	Scene.camera.setPosition({ 0.0, 1.0, 2.0 });
 

@@ -25,6 +25,8 @@ grid.o: grid.cpp grid.hpp
 camera.o: camera.cpp camera.hpp
 	@$(CC) $(FLAGS) -c camera.cpp
 
+importer.o: importer.cpp
+	@$(CC) $(FLAGS) -c importer.cpp
 
 gui/libgui.a:
 	@$(MAKE) -C gui
@@ -34,7 +36,8 @@ LIBS = -lGLEW -lstdc++fs \
 	   -lassimp  \
 	   -lGLU -lGL -lGLU -ldl
 
-libgfx.so: mesh.o model.o   \
+libgfx.so: mesh.o importer.o \
+           model.o   \
            box.o grid.o     \
            camera.o         \
 		   gui/libgui.a  
