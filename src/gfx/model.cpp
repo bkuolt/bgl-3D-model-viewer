@@ -27,12 +27,6 @@ inline QVector3D to_qt(const glm::vec3 &v) noexcept {
 /*********************************************************
  *                      Lighting Code                    *
  *********************************************************/
-struct DirectionalLight {
-    vec3 direction;
-    vec3 diffuse;
-    vec3 ambient;
-};
-
 void setupLight(QOpenGLShaderProgram &program, const DirectionalLight &light) {
     program.setUniformValue("light.direction", to_qt(light.direction));
     program.setUniformValue("light.diffuse", to_qt(light.diffuse));
@@ -62,24 +56,19 @@ void setupMaterial(QOpenGLShaderProgram &program, const Material &material) {
     }
 }
 
-void setupLighting(QOpenGLShaderProgram &program) {
-    static DirectionalLight light {
-        .direction = vec3 { -1.0, -1.0, -1.0 },
-        .diffuse = vec3 { 0.0, 1.0, 1.0 },
-        .ambient = vec3 { 0.2f, 0.2f, 0.2f }
-    };
-
-    setupLight(program, light);
-}
-
 }  // anonmous namespace
 
 
-void Model::render(const mat4 &MVP) {
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+
+void Model::render(const mat4 &MVP, const DirectionalLight &light) {
+     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     _program->bind();
 
-    setupLighting(*_program);
+    setupLight(*_program, light);
+
     const QMatrix4x4 matrix { glm::value_ptr(MVP) };
     _program->setUniformValue("MVP", matrix.transposed());
 

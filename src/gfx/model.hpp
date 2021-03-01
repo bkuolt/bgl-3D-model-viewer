@@ -16,12 +16,19 @@
 
 namespace bgl {
 
+struct DirectionalLight {
+    vec3 direction;
+    vec3 diffuse;
+    vec3 ambient;
+};  // TODO: move to scene.hpp
+
 class Model {
  public:
 	Model() = default;
 	virtual ~Model() noexcept = default;
 
-	virtual void render(const mat4 &MVP);
+	virtual void render(const mat4 &MVP) {};
+	virtual void render(const mat4 &MVP, const DirectionalLight &light);
 
 	void resize(const vec3 &dimensions);
 	const BoundingBox& getBoundingBox() const;

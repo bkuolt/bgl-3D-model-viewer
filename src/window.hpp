@@ -74,8 +74,15 @@ class GLViewport final : public Viewport {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		const mat4 PV { Scene.camera.getMatrix() };
 	    Scene.grid->render(PV);
-		Scene.model->render(PV);
 	 	Scene.box->render(PV);
+		 
+		static DirectionalLight light {
+			.direction = vec3 { -1.0, -1.0, -1.0 },
+			.diffuse = vec3 { 0.0, 1.0, 1.0 },
+			.ambient = vec3 { 0.2f, 0.2f, 0.2f }
+    	};
+
+		Scene.model->render(PV, light);
 	}
 };
 
