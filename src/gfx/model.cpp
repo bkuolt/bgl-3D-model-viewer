@@ -45,9 +45,16 @@ QOpenGLBuffer create_vbo(QOpenGLBuffer &vbo, const aiMesh &mesh) {
         buffer[i].normal = vec3 { mesh.mNormals[i].x, mesh.mNormals[i].y, mesh.mNormals[i].z };
         buffer[i].position = vec3 { mesh.mVertices[i].x, mesh.mVertices[i].y, mesh.mVertices[i].z };
     }
-    for (auto i = 0u; i < mesh.mNumVertices; ++i) {
-        buffer[i].texcoords = vec2 { mesh.mTextureCoords[0][i].x, 1.0 - mesh.mTextureCoords[0][i].y };
+
+//const bool has texture
+    if( mesh.mTextureCoords[0] != NULL) {
+
+        for (auto i = 0u; i < mesh.mNumVertices; ++i) {
+            buffer[i].texcoords = vec2 { mesh.mTextureCoords[0][i].x, 1.0 - mesh.mTextureCoords[0][i].y };
+        }
+
     }
+
 
     if (!vbo.unmap()) {
         throw std::runtime_error { "could not unmap VBO" };
@@ -164,7 +171,7 @@ void load_meshes(std::vector<Mesh> &meshes, const aiScene &scene, QOpenGLShaderP
         create_ibo(meshes[i]._ibo, *scene.mMeshes[i]);
         create_vao(meshes[i]._vao, meshes[i]._vbo, program);
         meshes[i]._materialIndex = scene.mMeshes[i]->mMaterialIndex;
-
+        std::cout << "mat index: " << meshes[i]._materialIndex;
     }
 }
 
@@ -336,7 +343,8 @@ void Model::render(const mat4 &_MVP) {
      *        is one _vbo per material)
      */
     for (auto i = 0u; i < _meshes.size(); ++i) {
-        setupMaterial(*_program, _materials[ _meshes[i]._materialIndex ] ); 
+        if (_meshes[i]._materialIndex != -1)
+            setupMaterial(*_program, _materials[ _meshes[i]._materialIndex ] ); 
         _meshes[i].render(GL_TRIANGLES);
     }
 }
