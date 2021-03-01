@@ -12,9 +12,9 @@ enum locations { MVP = 0 , color, position };
 Grid::Grid(GLfloat size, std::size_t num_cells)
     : _cell_size { size },
       _num_cells { num_cells } {
-    _program = LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs");
 
-//    _meshes.resize(1);
+    _meshes = std::vector<Mesh>(1);
+    _program = LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs");
     create_vbo();
     create_ibo();
     create_vao();
@@ -30,6 +30,10 @@ void Grid::create_vbo() {
     _meshes[0]._vbo.allocate(sizeof(vec3) * _num_cells * _num_cells);
 
     vec3 *buffer = reinterpret_cast<vec3*>(_meshes[0]._vbo.map(QOpenGLBuffer::WriteOnly));
+    if (buffer == 0) {
+        throw std::runtime_error { "!!!" };
+    }
+
     for (auto z = 0u; z < _num_cells; ++z) {
         for (auto x = 0u; x < _num_cells; ++x) {
             buffer[get_index(x, z)] = vec3 { x * _cell_size, 0.0, z * _cell_size } - T;
@@ -47,6 +51,9 @@ void Grid::create_ibo() {
 
     using uvec2 = glm::tvec2<GLuint>;
     uvec2 *buffer = reinterpret_cast<uvec2*>(_meshes[0]._ibo.map(QOpenGLBuffer::WriteOnly));
+    if (buffer == 0) {
+        throw std::runtime_error { "!!!" };
+    }
 
     for (auto z = 0u; z < _num_cells - 1; ++z) {
         for (auto x = 0u; x < _num_cells - 1; ++x) {
@@ -61,9 +68,12 @@ void Grid::create_ibo() {
 }
 
 void Grid::create_vao() {
-//    _vao->bind();
-//    _vao->setAttribute<vec3>(locations::position, sizeof(vec3), 0 /* no offset */);
-    _meshes[0].bind();
+    _meshes[0]._vao.bind();
+    _meshes[0]._vbo.bind();
+    _meshes[0]._ibo.bind();
+
+    _program->bind();
+    set_va_attribute(_program->attributeLocation("position"), 3, GL_FLOAT, 0, 0);
 }
 
 void Grid::translate(const vec3 &v) {
@@ -72,21 +82,21 @@ void Grid::translate(const vec3 &v) {
 
 void Grid::render(const mat4 &PV) {
     std::cout << "Grid::render()" << std::endl;
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  //  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glEnable(GL_LINE_SMOOTH);
-    glLineWidth(1);
+
+    glDisable(GL_CULL_FACE);
+    glLineWidth(3);
     // TODO(bkuolt): adjust OpenGL line rendering settings
 
     constexpr vec3 white { 1.0f, 1.0f, 1.0f };
-    _program->bind();
-
     QMatrix4x4 matrix(glm::value_ptr(PV * glm::translate(_translation))); 
-    _program->setUniformValue(locations::MVP, matrix.transposed());
-    _program->setUniformValue(locations::color, white.x, white.y, white.z );
 
-//    _vao->bind();
-    _meshes[0].bind();
-    _meshes[0].render(GL_LINES, _meshes[0]._ibo.size() / 4);
+    _program->bind();
+    _program->setUniformValue(_program->attributeLocation("MVP"), matrix.transposed());
+    _program->setUniformValue(_program->attributeLocation("color"), white.x, white.y, white.z );
+    _meshes[0].render(GL_LINES);
+    _program->release();
 }
 
 }  // namespace bgl
