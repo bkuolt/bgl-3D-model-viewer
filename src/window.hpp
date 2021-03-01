@@ -31,6 +31,7 @@ void set_up_scene(const std::filesystem::path &path) {
 	std::cout << "........................\n\n" << std::endl;
 
 //	Scene.box = std::make_shared<Box>(Scene.model->getBoundingBox());
+
 //	Scene.grid = std::make_shared<Grid>(0.125, 40);
 //	const vec3 v { 0.0, -Scene.model->getBoundingBox().getSize().y / 2.0, 0.0 };
 //	Scene.grid->translate(v);
