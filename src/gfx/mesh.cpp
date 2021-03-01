@@ -33,9 +33,9 @@ void Mesh::render(GLenum mode, GLuint count) {
     bind();
     glDrawElements(mode, count, GL_UNSIGNED_INT, nullptr);
     if (glGetError() != GL_NO_ERROR) {
-     //   throw std::runtime_error { "glDrawElements() failed" };
+        throw std::runtime_error { "glDrawElements() failed" };
     }
-    std::cout << "\tcount: " << count << std::endl;
+
     _vbo.release();
     _ibo.release();
     _vao.release();

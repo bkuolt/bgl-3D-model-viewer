@@ -28,7 +28,6 @@ void set_up_scene(const std::filesystem::path &path) {
 	Scene.model = std::make_shared<Model>(path);
 	Scene.camera.setViewCenter({ 0.0, 0.0, 0.0 });
 	Scene.camera.setPosition({ 0.0, 1.0, 2.0 });
-	std::cout << "........................\n\n" << std::endl;
 
 //	Scene.box = std::make_shared<Box>(Scene.model->getBoundingBox());
 

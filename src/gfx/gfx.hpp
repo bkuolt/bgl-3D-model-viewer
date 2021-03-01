@@ -31,12 +31,9 @@ namespace console_color {
 
 inline std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs) {
     const auto program { std::make_shared<QOpenGLShaderProgram>() };
-    bool a = program->addShaderFromSourceFile(QOpenGLShader::Vertex, vs.string().c_str());
-    std::cout << a << std::endl;
-
-    bool b = program->addShaderFromSourceFile(QOpenGLShader::Fragment, fs.string().c_str());
-    std::cout << b << std::endl;
-    std::cout << program->link() << std::endl;
+    program->addShaderFromSourceFile(QOpenGLShader::Vertex, vs.string().c_str());
+    program->addShaderFromSourceFile(QOpenGLShader::Fragment, fs.string().c_str());
+    // TODO: error handling
     return program;
 }
 

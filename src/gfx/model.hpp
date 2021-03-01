@@ -2,14 +2,11 @@
 #ifndef GFX_MODEL_HPP_
 #define GFX_MODEL_HPP_
 
-#include "gl.hpp"
-
-class QOpenGLShaderProgram;
-
 #include <filesystem>
-#include <memory>
+#include <memory>  // std::shared_ptr
 #include <vector>
 
+#include "gl.hpp"
 #include "mesh.hpp"
 #include "material.hpp"
 #include "bounding_box.hpp"
@@ -19,32 +16,23 @@ class QOpenGLShaderProgram;
 
 namespace bgl {
 
-class BasicModel {
- public:
-	BasicModel();
-	virtual ~BasicModel() noexcept = default;
-
-	virtual void render(const mat4 &MVP) = 0;
-
-	void resize(const vec3 &dimensions);
-	const BoundingBox& getBoundingBox() const;
-
- protected:
-	// TODO(bkuolt): virtual void setUniforms(const Mesh &mesh);
-
-	std::vector<Mesh> _meshes;
-	std::shared_ptr<QOpenGLShaderProgram> _program;
-	std::vector<Material> _materials;
-	BoundingBox _boundingBox;
-};
-
-class Model : public BasicModel {
+class Model {
  public:
 	Model() = default;
 	explicit Model(const std::filesystem::path &path);
 	virtual ~Model() noexcept = default;
 
-	void render(const mat4 &MVP) override;
+	virtual void render(const mat4 &MVP);
+
+	void resize(const vec3 &dimensions);
+	const BoundingBox& getBoundingBox() const;
+
+ protected:
+	std::vector<Mesh> _meshes;
+	std::vector<Material> _materials;
+
+	std::shared_ptr<QOpenGLShaderProgram> _program;
+	BoundingBox _boundingBox;
 };
 
 }  // namespace bgl
