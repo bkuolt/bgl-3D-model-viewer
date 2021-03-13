@@ -21,22 +21,33 @@ class MenuBar : public QMenuBar {
 
     virtual void onLoadModel(const std::filesystem::path &path);
 
-
  private:
+    void loadModel() noexcept;
+
     QMainWindow &_window;
 };
 
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
+MenuBar::loadModel() noexcept{
+    const QString fileName { QFileDialog::getOpenFileName(nullptr, "Load 3D Model", "", "All Files (*)") };
+    if (fileName.isEmpty()) {
+        return;  // nothing to do
+    }
+
+    try {
+        onLoadModel(fileName.toStdString());
+    } catch (std::exception &exception) {
+        QMessageBox::error(nullptr, "Error", exception.what());
+    }
+}
+
 MenuBar::MenuBar(QMainWindow &window)
     : _window { window } {
     QMenu * const fileMenu { this->addMenu("&File") };
-    fileMenu->addAction("Load",  [this] () {
-        const QString fileName { QFileDialog::getOpenFileName(nullptr, "Load 3D Model", "", "All Files (*)") };
-        onLoadModel(fileName.toStdString());
-    });
-    fileMenu->addAction("Exit", [this] () { 
+    fileMenu->addAction("Load", this, &loadModel);
+    fileMenu->addAction("Exit", [this] () {
         _window.close();
     });
 
