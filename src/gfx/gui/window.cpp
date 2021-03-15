@@ -1,6 +1,6 @@
 // Copyright 2021 Bastian Kuolt
 #include "window.hpp"
-#include "MenuBar.hpp"
+#include "menu.hpp"
 
 #include <QEvent>  // QEvent::KeyPress
 
