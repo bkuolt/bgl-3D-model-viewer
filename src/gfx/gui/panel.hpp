@@ -11,14 +11,14 @@
 
 namespace bgl {
 
-class SettingsPanel : protected QFrame {
+class SettingsPanel : public QFrame {
  public:
     enum class RenderMode { /* TODO(bkuolt */ };
     enum class Settings { /* TODO(bkuolt */  };
 
     SettingsPanel();
     virtual ~SettingsPanel() noexcept = default;
-    
+
     bool is_set(Settings settings);
     RenderMode get_mode();
 
@@ -53,6 +53,9 @@ class Panel : public QPanel {
  public:
     Panel();
     virtual ~Panel()  noexcept = default;
+ 
+ protected:
+    virtual void settingsChanged();  // TODO
 
  private:
     StatisticsPanel _statistics;

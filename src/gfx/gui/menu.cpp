@@ -6,21 +6,73 @@
 #include <QMenuBar>
 #include <QMessageBox>
 
+#include <optional>
 
 namespace bgl {
 
-void MenuBar::loadModel() noexcept {
+// ------------------------------------------------------------------------
+// ------------------------------------------------------------------------
+
+namespace {
+namespace actions {
+
+inline std::optional<std:filesystem::path> chooseFile() {
     const QString fileName { QFileDialog::getOpenFileName(nullptr, "Load 3D Model", "", "All Files (*)") };
-    if (fileName.isEmpty()) {
-        return;  // nothing to do
+    return fileName.isEmpty() ? {} : fileName.toStdString();
+}
+
+/**
+ * @brief 
+ * 
+ * @param progressBar 
+ * @return std::shared_ptr<Model> 
+ */
+std::optional<Model> load3DModel(QProgressBar &progressBar) {
+    std::optional<std:filesystem::path> path { chooseFile() };
+    if (!path.has_value()) {
+        return;  // there was no file chosen
     }
+    // TODO: check whether file changed -> avoid unnecessary reload
+
+    progressBar.show();
+    progressBar.setValue(0);
 
     try {
-        onLoadModel(fileName.toStdString());
+        model = bgl::io::Load3DModel(path);
     } catch (std::exception &exception) {
         QMessageBox::critical(nullptr, "Error", exception.what());
+        progressBar.reset();
+        progressBar.hide();
+        return {};
     }
+
+    // TODO: update model statistics panel
+    progressBar.setValue(100);
+    progressBar.hide();
+    return model;
 }
+
+
+void showInfoBox() {
+    // TODO
+}
+
+
+#if 1
+void main() {
+    // TODO program flow
+}
+#endif  // 1
+
+}  // namespace actions
+}  // anonymous namespace
+
+// ------------------------------------------------------------------------
+// ------------------------------------------------------------------------
+
+
+void MenuBar::loadModel() noexcept 
+{}
 
 MenuBar::MenuBar(QMainWindow &window)
     : _window { window } {
