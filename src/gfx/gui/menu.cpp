@@ -1,4 +1,5 @@
 #include "menu.hpp"
+#include "../model.hpp"
 
 #include <QFileDialog>
 #include <QMainWindow>
@@ -32,18 +33,20 @@ inline std::optional<std::filesystem::path> chooseFile() {
  * @param progressBar 
  * @return std::shared_ptr<Model> 
  */
-std::optional<bgl::Model> load3DModel(QProgressBar &progressBar) {
-    std::optional<std:filesystem::path> path { chooseFile() };
+std::optional<std::shared_ptr<bgl::Model>> load3DModel(QProgressBar &progressBar) {
+    std::optional<std::filesystem::path> path { chooseFile() };
     if (!path.has_value()) {
-        return;  // there was no file chosen
+        return {};  // there was no file chosen
     }
     // TODO: check whether file changed -> avoid unnecessary reload
 
     progressBar.show();
     progressBar.setValue(0);
 
+    std::shared_ptr<bgl::Model> model;
+
     try {
-        model = bgl::io::Load3DModel(path);
+        //model = bgl::io::Load3DModel(path);
     } catch (std::exception &exception) {
         QMessageBox::critical(nullptr, "Error", exception.what());
         progressBar.reset();
@@ -62,14 +65,15 @@ void showInfoBox() {
     // TODO
 }
 
-}  // anonymous namespace
+//}  // anonymous namespace
 
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
 
 
-void MenuBar::loadModel() noexcept 
-{}
+void MenuBar::loadModel() noexcept {
+    // TODO
+}
 
 MenuBar::MenuBar(QMainWindow &window)
     : _window { window } {
