@@ -9,6 +9,9 @@
 //#undef Q_CC_GNU  //  removes "#warning To use GLEW with Qt, do not include <qopengl.h> or <QOpenGLFunctions> after glew.h"
 #include <QApplication>
 #include <QKeyEvent>
+#include <QOpenGLFramebufferObject>
+
+#include <string>
 
 #include <string>
 #include <mutex>  // std::call_once()
