@@ -10,17 +10,13 @@
 #include "mesh.hpp"
 #include "material.hpp"
 #include "bounding_box.hpp"
+#include "light.hpp"
 
 #include <QOpenGLShaderProgram>
 
 
 namespace bgl {
 
-struct DirectionalLight {
-    vec3 direction;
-    vec3 diffuse;
-    vec3 ambient;
-};  // TODO: move to scene.hpp
 
 class Model {
  public:

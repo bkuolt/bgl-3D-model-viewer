@@ -234,6 +234,8 @@ std::vector<Material> load_materials(const aiScene &scene, const std::filesystem
 
 std::shared_ptr<Model> LoadModel(const std::filesystem::path &path) {
     auto model = std::make_shared<Model>();
+	
+	std::cout << "\n" << "Loading " << path << " ..." << std::endl;
 
     const aiScene &scene { *importScene(path) };
 

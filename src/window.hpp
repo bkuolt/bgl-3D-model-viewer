@@ -4,37 +4,46 @@
 #include "gfx/box.hpp"
 #include "gfx/grid.hpp"
 #include "gfx/camera.hpp"
+#include "gfx/scene.hpp"
 
 //#undef Q_CC_GNU  //  removes "#warning To use GLEW with Qt, do not include <qopengl.h> or <QOpenGLFunctions> after glew.h"
 #include <QApplication>
 #include <QKeyEvent>
 
 #include <string>
+#include <mutex>  // std::call_once()
 
 
 namespace bgl {
 
 namespace {
 
-struct {
-	std::shared_ptr<Model> model;
-	std::shared_ptr<Grid> grid;
-	Camera camera;
-	std::shared_ptr<Box> box;
-} Scene;
 
-void set_up_scene(const std::filesystem::path &path) {
-	std::cout << "\nLoading " << path << " ..." << std::endl;
+void set_up_scene(Scene scene) {
+	const std::filesystem::path path { QCoreApplication::arguments().at(1).toStdString() };
 
-	Scene.model = LoadModel(path);
-	Scene.camera.setViewCenter({ 0.0, 0.0, 0.0 });
-	Scene.camera.setPosition({ 0.0, 1.0, 2.0 });
+	auto model { LoadModel(path) };
+	auto grid { std::make_shared<Grid>(0.125, 40) };
+	auto bounding_box { std::make_shared<Box>(model->getBoundingBox()) };
 
-	Scene.box = std::make_shared<Box>(Scene.model->getBoundingBox());
+	DirectionalLight light;
+	light.direction = vec3 { -1.0, -1.0, -1.0 };
+	light.diffuse = vec3 { 0.0, 1.0, 1.0 };
+	light.ambient = vec3 { 0.2f, 0.2f, 0.2f };
 
-	Scene.grid = std::make_shared<Grid>(0.125, 40);
-	const vec3 v { 0.0, -Scene.model->getBoundingBox().getSize().y / 2.0, 0.0 };
-	Scene.grid->translate(v);
+	scene.add(model);
+	scene.add(grid);
+	scene.add(bounding_box);
+	scene.add(std::make_shared<DirectionalLight>(light));
+
+	// places origin of the grid at the center of the bounding box
+	const vec3 v { 0.0, -model->getBoundingBox().getSize().y / 2.0, 0.0 };
+	grid->translate(v);
+
+	// sets up camera
+	Camera &camera { scene.getCamera() };
+	camera.setViewCenter({ 0.0, 0.0, 0.0 });
+	camera.setPosition({ 0.0, 1.0, 2.0 });
 
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -56,34 +65,27 @@ void set_up_scene(const std::filesystem::path &path) {
 
 class GLViewport final : public Viewport {
  public:
-	explicit GLViewport(QWidget *parent)
-		: Viewport(parent)
+	GLViewport(QWidget *parent,
+	           std::shared_ptr<Scene> scene = std::make_shared<Scene>())
+		: Viewport(parent), _scene(scene)
 	{}
 
     virtual ~GLViewport() = default;
 	// TODO(bkuolt): not movable, not copyable, destructor
 
 	void on_render(float delta) override {
-		static bool initialized { false };
-		if (!initialized) {
-			const std::filesystem::path path { QCoreApplication::arguments().at(1).toStdString() };
-			set_up_scene(path);
-			initialized = true;
-		}
-
+    	std::call_once(_initialized, &set_up_scene, *_scene);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		const mat4 PV { Scene.camera.getMatrix() };
-	    Scene.grid->render(PV);
-	 	Scene.box->render(PV);
-		 
-		static DirectionalLight light {
-			.direction = vec3 { -1.0, -1.0, -1.0 },
-			.diffuse = vec3 { 0.0, 1.0, 1.0 },
-			.ambient = vec3 { 0.2f, 0.2f, 0.2f }
-    	};
-
-		Scene.model->render(PV, light);
+		_scene->render();
 	}
+
+	std::shared_ptr<Scene> getScene() const noexcept {
+		return _scene;
+	}
+
+ private:
+	std::shared_ptr<Scene> _scene;
+	std::once_flag _initialized;
 };
 
 
@@ -116,10 +118,10 @@ class SimpleWindow final : public bgl::Window {
                 return true;
 				break;
 			case Qt::Key_Left:
-				Scene.camera.rotate(vec2(0, -0.5));
+				_viewport.getScene()->getCamera().rotate(vec2(0, -0.5));
 				break;
 			case Qt::Key_Right:
-				Scene.camera.rotate(vec2(0, 0.5));
+				_viewport.getScene()->getCamera().rotate(vec2(0, 0.5));
 				break;
 		default:
 			return QMainWindow::event(event);
