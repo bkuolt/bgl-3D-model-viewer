@@ -9,7 +9,7 @@
 # Faces: 2540
 #
 ####
-mtllib ./housemedieval.obj.mtl
+mtllib housemedieval.mtl
 
 vn -2.168455 0.049839 -1.524147
 v -4.008920 2.428170 -3.770250 0.752941 0.752941 0.752941

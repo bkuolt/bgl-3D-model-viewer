@@ -13,6 +13,9 @@ LD_FLAGS = -ldl -fPIC #-O3
 mesh.o: mesh.cpp mesh.hpp
 	@$(CC) $(FLAGS) -c mesh.cpp
 
+model.o: model.cpp model.hpp
+	@$(CC) $(FLAGS) -c model.cpp
+
 box.o: box.cpp box.hpp
 	@$(CC) $(FLAGS) -c box.cpp
 
@@ -22,6 +25,9 @@ grid.o: grid.cpp grid.hpp
 camera.o: camera.cpp camera.hpp
 	@$(CC) $(FLAGS) -c camera.cpp
 
+importer.o: importer.cpp
+	@$(CC) $(FLAGS) -c importer.cpp
+
 gui/libgui.a:
 	@$(MAKE) -C gui
 
@@ -30,8 +36,10 @@ LIBS = -lGLEW -lstdc++fs \
 	   -lassimp  \
 	   -lGLU -lGL -lGLU -ldl
 
-libgfx.so: mesh.o box.o grid.o  \
-           camera.o             \
+libgfx.so: mesh.o importer.o \
+           model.o   \
+           box.o grid.o     \
+           camera.o         \
 		   gui/libgui.a  
 	$(CC) -shared       \
 	-Wl,--whole-archive -Lgui -l:libgui.a -Wl,--no-whole-archive \

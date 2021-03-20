@@ -1,5 +1,6 @@
 // Copyright 2021 Bastian Kuolt
 #include "gfx/gfx.hpp"
+#include "gfx/model.hpp"
 #include "gfx/box.hpp"
 #include "gfx/grid.hpp"
 #include "gfx/camera.hpp"
@@ -9,28 +10,31 @@
 #include <QKeyEvent>
 #include <QOpenGLFramebufferObject>
 
+#include <string>
+
 
 namespace bgl {
 
 namespace {
 
 struct {
-	std::shared_ptr<Mesh> mesh;
+	std::shared_ptr<Model> model;
 	std::shared_ptr<Grid> grid;
 	Camera camera;
 	std::shared_ptr<Box> box;
 } Scene;
 
 void set_up_scene(const std::filesystem::path &path) {
-	Scene.mesh = std::make_shared<Mesh>(path);
+	std::cout << "\nLoading " << path << " ..." << std::endl;
+
+	Scene.model = LoadModel(path);
 	Scene.camera.setViewCenter({ 0.0, 0.0, 0.0 });
 	Scene.camera.setPosition({ 0.0, 1.0, 2.0 });
 
-	
-	Scene.box = std::make_shared<Box>(Scene.mesh->getBoundingBox());
+	Scene.box = std::make_shared<Box>(Scene.model->getBoundingBox());
 
 	Scene.grid = std::make_shared<Grid>(0.125, 40);
-	const vec3 v { 0.0, -Scene.mesh->getBoundingBox().getSize().y / 2.0, 0.0 };
+	const vec3 v { 0.0, -Scene.model->getBoundingBox().getSize().y / 2.0, 0.0 };
 	Scene.grid->translate(v);
 
 	glEnable(GL_DEPTH_TEST);
@@ -72,33 +76,23 @@ class GLViewport final : public Viewport {
 
 		static bool initialized { false };
 		if (!initialized) {
-			set_up_scene("./assets/models/housemedieval.obj");  // TODO(bkuolt)
+			const std::filesystem::path path { QCoreApplication::arguments().at(1).toStdString() };
+			set_up_scene(path);
 			initialized = true;
 		}
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		const mat4 PV { Scene.camera.getMatrix() };
-		Scene.grid->render(PV);
-		Scene.mesh->render(PV);
-		Scene.box->render(PV);
+	    Scene.grid->render(PV);
+	 	Scene.box->render(PV);
+		 
+		static DirectionalLight light {
+			.direction = vec3 { -1.0, -1.0, -1.0 },
+			.diffuse = vec3 { 0.0, 1.0, 1.0 },
+			.ambient = vec3 { 0.2f, 0.2f, 0.2f }
+    	};
 
-
-        std::cout << "fbo valid:" << fbo.isValid() << std::endl;
-
-        fbo.bind();
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		Scene.grid->render(PV);
-		Scene.mesh->render(PV);
-		Scene.box->render(PV);
-
-        std::cout << fbo.isValid() << std::endl;
-        auto image = fbo.toImage();
-        image.save("/home/bastian/screeny.png");
-        std::cout << "screenshot size: " << image.width() << "x" << image.height() << std::endl;
-        //init = true;
-
-        fbo.release();
-		
+		Scene.model->render(PV, light);
 	}
 };
 

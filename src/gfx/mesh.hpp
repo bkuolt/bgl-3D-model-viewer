@@ -1,60 +1,39 @@
 // Copyright 2021 Bastian Kuolt
-#ifndef GFX_MESH_HPP
-#define GFX_MESH_HPP
+#ifndef GFX_MESH_HPP_
+#define GFX_MESH_HPP_
+
+#include <optional>
 
 #include "gl.hpp"
 
-#include <QOpenGLTexture>
-#include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
-
-#include <iostream>
-#include <filesystem>
-#include <memory>
-
-#include "BoundingBox.hpp"
 
 
 namespace bgl {
 
-struct Material {
-    vec3 diffuse;
-    vec3 ambient;
-    vec3 specular;
-	float shininess;
-	std::shared_ptr<QOpenGLTexture> texture;
-	// TODO: add more properties;
+struct Vertex {
+    vec3 position;
+    vec3 normal;
+    vec2 texcoords;
 };
 
-class BasicMesh {
+
+class Mesh {
  public:
-	BasicMesh();
-	virtual ~BasicMesh() noexcept = default;
-	virtual void render(const mat4 &MVP) = 0;
+	Mesh();
+	virtual ~Mesh() noexcept = default;
 
-	void resize(const vec3 &dimensions);
-	const BoundingBox& getBoundingBox() const;
+	void bind();
+	void render(GLenum mode, GLuint count);
+	void render(GLenum mode);
 
- protected:
-	std::shared_ptr<QOpenGLBuffer> _vbo;
-	std::shared_ptr<QOpenGLBuffer> _ibo;
-	std::shared_ptr<VertexArrayObject> _vao;
-	std::shared_ptr<QOpenGLShaderProgram> _program;
-
-	BoundingBox _boundingBox;
-	Material _material;
-};
-
-class Mesh : public BasicMesh {
- public:
-   Mesh() = default;
-   explicit Mesh(const std::filesystem::path &path);
-   virtual ~Mesh() = default;
-
-   void render(const mat4 &MVP) override;
+	QOpenGLBuffer _vbo;
+	QOpenGLBuffer _ibo;
+	QOpenGLVertexArrayObject _vao;
+	std::optional<unsigned int> _materialIndex;
 };
 
 }  // namespace bgl
 
-#endif  // GFX_MESH_HPP
+#endif  // GFX_MESH_HPP_

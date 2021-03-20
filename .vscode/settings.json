@@ -72,7 +72,11 @@
         "qopenglbuffer": "cpp",
         "qopenglvertexarrayobject": "cpp",
         "qopenglshaderprogram": "cpp",
+<<<<<<< HEAD
         "qopenglframebufferobject": "cpp"
+=======
+        "qopengltexture": "cpp"
+>>>>>>> development
     },
     "C_Cpp.default.intelliSenseMode": "gcc-x64",
     "C_Cpp.default.cStandard": "c11",

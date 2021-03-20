@@ -3,11 +3,11 @@
 #define GL_BOX_HPP_
 
 #include "gl.hpp"
-#include "mesh.hpp"
+#include "model.hpp"
 
 namespace bgl {
 
-class Box final : public Mesh {
+class Box final : public Model {
  public:
 	Box();
 	explicit Box(const BoundingBox &boundingBox);

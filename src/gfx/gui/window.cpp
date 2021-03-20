@@ -1,5 +1,6 @@
 // Copyright 2021 Bastian Kuolt
 #include "window.hpp"
+#include "MenuBar.hpp"
 
 #include <QEvent>  // QEvent::KeyPress
 
@@ -16,6 +17,9 @@ Window::Window(const std::string &title) {
     this->setWindowTitle("BGL Demo");
     this->setFixedSize(1280, 720);
     this->show();
+
+    auto menuBar = new MenuBar(*this);
+    this->setMenuBar(menuBar);
 }
 
 /*
