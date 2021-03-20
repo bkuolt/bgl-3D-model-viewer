@@ -59,6 +59,10 @@
         "*.ipp": "cpp",
         "qopenglvertexarrayobject": "cpp",
         "qopenglshaderprogram": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "cinttypes": "cpp",
+        "optional": "cpp",
+        "qmessagebox": "cpp",
+        "qprogressbar": "cpp"
     }
 }

@@ -5,21 +5,26 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QProgressBar>
 
 #include <optional>
+#include <filesystem>
+
 
 namespace bgl {
 
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
 
-namespace {
-namespace actions {
+//namespace {
+//namespace actions {
 
-inline std::optional<std:filesystem::path> chooseFile() {
+inline std::optional<std::filesystem::path> chooseFile() {
     const QString fileName { QFileDialog::getOpenFileName(nullptr, "Load 3D Model", "", "All Files (*)") };
-    return fileName.isEmpty() ? {} : fileName.toStdString();
+    return fileName.isEmpty() ? std::filesystem::path{} : std::filesystem::path { fileName.toStdString() };
 }
+
+//}  // namespace actions
 
 /**
  * @brief 
@@ -27,7 +32,7 @@ inline std::optional<std:filesystem::path> chooseFile() {
  * @param progressBar 
  * @return std::shared_ptr<Model> 
  */
-std::optional<Model> load3DModel(QProgressBar &progressBar) {
+std::optional<bgl::Model> load3DModel(QProgressBar &progressBar) {
     std::optional<std:filesystem::path> path { chooseFile() };
     if (!path.has_value()) {
         return;  // there was no file chosen
@@ -57,14 +62,6 @@ void showInfoBox() {
     // TODO
 }
 
-
-#if 1
-void main() {
-    // TODO program flow
-}
-#endif  // 1
-
-}  // namespace actions
 }  // anonymous namespace
 
 // ------------------------------------------------------------------------
