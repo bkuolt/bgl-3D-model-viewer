@@ -14,25 +14,49 @@
 
 namespace bgl {
 
-
+/**
+ * @brief A simple scene grap approach.
+ */
 class Scene {
  public:
     Scene() = default;
     virtual ~Scene() noexcept = default;
 
     /**
-     * @brief Renders the scene.
+     * @brief Renders this scene.
      * 
      */
     virtual void render();
 
+    /**
+     * @brief Adds a model to this scene.
+     * 
+     */
     void add(const std::shared_ptr<Model>&);
-    void add(const std::shared_ptr<DirectionalLight>&);
 
+    /**
+     * @brief  Adds a light source to this scene.
+     * 
+     */
+    void add(const std::shared_ptr<Light>&);
+
+    /**
+     * @brief Removes a model from this scene
+     * 
+     */
     void remove(const std::shared_ptr<Model>&);
-    void remove(const std::shared_ptr<DirectionalLight>&);
 
+    /**
+     * @brief Removes a light source from this scene.
+     * 
+     */
+    void remove(const std::shared_ptr<Light>&);
+
+    /**
+     * @brief Sets the camera of this scene.
+     */
     void setCamera(const Camera&);
+
 
     Camera& getCamera() noexcept;
     const Camera& getCamera() const noexcept;

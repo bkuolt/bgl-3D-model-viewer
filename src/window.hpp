@@ -19,7 +19,7 @@ namespace bgl {
 namespace {
 
 
-void set_up_scene(Scene scene) {
+void set_up_scene(Scene &scene) {
 	const std::filesystem::path path { QCoreApplication::arguments().at(1).toStdString() };
 
 	auto model { LoadModel(path) };
