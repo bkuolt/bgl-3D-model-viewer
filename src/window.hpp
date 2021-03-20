@@ -8,6 +8,9 @@
 //#undef Q_CC_GNU  //  removes "#warning To use GLEW with Qt, do not include <qopengl.h> or <QOpenGLFunctions> after glew.h"
 #include <QApplication>
 #include <QKeyEvent>
+#include <QOpenGLFramebufferObject>
+
+#include <string>
 
 #include <string>
 
@@ -64,6 +67,15 @@ class GLViewport final : public Viewport {
 	// TODO(bkuolt): not movable, not copyable, destructor
 
 	void on_render(float delta) override {
+	    static QSize size { 1280, 720 };
+
+		QOpenGLFramebufferObjectFormat format;
+		format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+		format.setMipmap(false);
+		format.setSamples(0);
+
+	    static QOpenGLFramebufferObject fbo(size, format);   // !!!!!!!!!!!!!!!!!!!!!
+
 		static bool initialized { false };
 		if (!initialized) {
 			const std::filesystem::path path { QCoreApplication::arguments().at(1).toStdString() };

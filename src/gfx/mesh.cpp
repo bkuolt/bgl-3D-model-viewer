@@ -46,4 +46,5 @@ void Mesh::render(GLenum mode) {
     render(mode, _ibo.size() / sizeof(GLuint));
 }
 
+
 }  // namespace bgl
