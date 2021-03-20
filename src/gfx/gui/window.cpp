@@ -1,6 +1,6 @@
 // Copyright 2021 Bastian Kuolt
 #include "window.hpp"
-#include "MenuBar.hpp"
+#include "menu.hpp"
 
 #include <QEvent>  // QEvent::KeyPress
 
@@ -46,7 +46,7 @@ void Window::setViewport(Viewport *viewport) {
     _viewport->resize(1200, 800);
     _viewport->show();
     this->setCentralWidget(_viewport);
-
+    // TODO: add panel
 }
 
 uvec2 Window::getSize() const noexcept {
