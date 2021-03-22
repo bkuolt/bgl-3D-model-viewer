@@ -1,26 +1,21 @@
-// Copyright 2021 Bastian Kuolt
+#include "window.hpp"
+
 #include <csignal>
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
 
-#include "gfx/gfx.hpp"
-#include "window.hpp"
 #include <QApplication>
-
-using namespace bgl;
+#include <QMessageBox>
 
 
 static void signal_handler(int signal) {
-	std::cerr << console_color::red << "\rrequested program termination" << std::endl;
 	std::exit(EXIT_FAILURE);
 }
 
 int main(int argc, char *argv[]) {
 	if (argc != 2) {
-		std::cout << console_color::red << "usage: "
-				  << console_color::white << "./bgl "
-				  << console_color::blue << "<path-to-model>" << std::endl;
+		QMessageBox::critical(nullptr, "Error", "usage: bgl <path-to-model>");
 		return EXIT_FAILURE;
 	}
 
@@ -29,12 +24,11 @@ int main(int argc, char *argv[]) {
 
 	try {
 		QApplication app(argc, argv);
-		SimpleWindow window { "BGL Model Viewer" };
+		bgl::SimpleWindow window { "BGL 3D Model Viewer" };
 		window.show();
 		return app.exec();
-	} catch (const std::exception &exception) {
-		// TODO(bkuolt): show message box
-		std::cout << console_color::red << "error: " << exception.what() << std::endl;
+	} catch (const std::exception &error) {
+		QMessageBox::critical(nullptr, "Error", error.what());
 		return EXIT_FAILURE;
 	}
 

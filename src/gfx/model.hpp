@@ -1,4 +1,3 @@
-// Copyright 2021 Bastian Kuolt
 #ifndef GFX_MODEL_HPP_
 #define GFX_MODEL_HPP_
 
@@ -22,18 +21,24 @@ struct DirectionalLight {
     vec3 ambient;
 };  // TODO: move to scene.hpp
 
+
+/**
+ * @brief 
+ * 
+ */
 class Model {
  public:
 	Model() = default;
 	virtual ~Model() noexcept = default;
 
-	virtual void render(const mat4 &MVP) {};
+	virtual void render(const mat4 &MVP) {}
 	virtual void render(const mat4 &MVP, const DirectionalLight &light);
 
 	void resize(const vec3 &dimensions);
 	const BoundingBox& getBoundingBox() const;
+	// TODO: non const version
 
- protected: public:
+ public:
 	std::vector<Mesh> _meshes;
 	std::vector<Material> _materials;
 
@@ -42,7 +47,10 @@ class Model {
 };
 
 /**
- * @brief Loads a 3D model file.
+ * @brief 
+ * 
+ * @param path 
+ * @return std::shared_ptr<Model> 
  */
 std::shared_ptr<Model> LoadModel(const std::filesystem::path &path);  // defined in importer.cpp
 
