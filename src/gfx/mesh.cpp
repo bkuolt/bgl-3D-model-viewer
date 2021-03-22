@@ -1,4 +1,3 @@
-// Copyright 2021 Bastian Kuolt
 #include "mesh.hpp"
 
 #include <iostream>
@@ -48,6 +47,5 @@ void Mesh::render(GLenum mode) {
     _ibo.bind();
     render(mode, _ibo.size() / sizeof(GLuint));
 }
-
 
 }  // namespace bgl
