@@ -11,15 +11,14 @@
 #include <utility>   // std::swap()
 
 
+
 namespace bgl {
 
 Window::Window(const std::string &title) {
     this->setWindowTitle("BGL Demo");
     this->setFixedSize(1280, 720);
     this->show();
-
-    auto menuBar = new MenuBar(*this);
-    this->setMenuBar(menuBar);
+    // TODO: add panel
 }
 
 /*

@@ -1,5 +1,5 @@
-#include "menu.hpp"
 #include "../model.hpp"
+#include "menu.hpp"
 
 #include <QFileDialog>
 #include <QMainWindow>
@@ -8,88 +8,68 @@
 #include <QMessageBox>
 #include <QProgressBar>
 
-#include <optional>
 #include <filesystem>
+#include <string>
+#include <optional>
 
 
 namespace bgl {
 
-// ------------------------------------------------------------------------
-// ------------------------------------------------------------------------
-
-//namespace {
-//namespace actions {
+namespace {
 
 inline std::optional<std::filesystem::path> chooseFile() {
-    const QString fileName { QFileDialog::getOpenFileName(nullptr, "Load 3D Model", "", "All Files (*)") };
-    return fileName.isEmpty() ? std::filesystem::path{} : std::filesystem::path { fileName.toStdString() };
+    const std::filesystem::path fileName {
+        QFileDialog::getOpenFileName(nullptr, "Load 3D Model", "", "All Files (*)").toStdString()
+    };
+    return fileName.empty() ?  std::nullopt : std::optional<std::filesystem::path>(fileName);
 }
 
-//}  // namespace actions
+inline void showInfoBox() {
+    QMessageBox::about(nullptr, "About,", "A simple Qt OpenGL demo.");
+}
 
-/**
- * @brief 
- * 
- * @param progressBar 
- * @return std::shared_ptr<Model> 
- */
-std::optional<std::shared_ptr<bgl::Model>> load3DModel(QProgressBar &progressBar) {
+}  // anonymous namespace
+
+void MenuBar::loadModel() noexcept {
+    _window._viewport->makeCurrent();  // <---
+
+    QProgressBar progressBar;  // TODO
+
     std::optional<std::filesystem::path> path { chooseFile() };
     if (!path.has_value()) {
-        return {};  // there was no file chosen
+        return;  // no file chosen
     }
-    // TODO: check whether file changed -> avoid unnecessary reload
 
     progressBar.show();
     progressBar.setValue(0);
-
     std::shared_ptr<bgl::Model> model;
 
     try {
-        //model = bgl::io::Load3DModel(path);
+        model = LoadModel(path.value());
+        // TODO(bkuolt) update model statistics panel
     } catch (std::exception &exception) {
         QMessageBox::critical(nullptr, "Error", exception.what());
         progressBar.reset();
         progressBar.hide();
-        return {};
+        return;
     }
 
-    // TODO: update model statistics panel
+    onLoadModel(model);
     progressBar.setValue(100);
     progressBar.hide();
-    return model;
 }
 
-
-void showInfoBox() {
-    // TODO
-}
-
-// }  // anonymous namespace
-
-// ------------------------------------------------------------------------
-// ------------------------------------------------------------------------
-
-
-void MenuBar::loadModel() noexcept {
-    // TODO
-}
-
-MenuBar::MenuBar(QMainWindow &window)
+MenuBar::MenuBar(Window &window)
     : _window { window } {
     QMenu * const fileMenu { this->addMenu("&File") };
     fileMenu->addAction("Load", this, &MenuBar::loadModel);
-    fileMenu->addAction("Exit", [this] () {
-        _window.close();
-    });
+    fileMenu->addAction("Exit", [this] () { _window.close(); });
 
     QMenu * const helpMenu { this->addMenu("&Help") };
-    helpMenu->addAction("About", [] () {
-        QMessageBox::about(nullptr, "About,", "A simple Qt OpenGL demo.");
-    });
+    helpMenu->addAction("About", &showInfoBox);
 }
 
-void MenuBar::onLoadModel(const std::filesystem::path &path) {
+void MenuBar::onLoadModel(const std::shared_ptr<bgl::Model> &model) {
     QMessageBox::warning(nullptr, "Warning,", "Not implemented yet.");
 }
 

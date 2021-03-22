@@ -18,7 +18,9 @@ class GLViewport final : public Viewport {
 	// TODO(bkuolt): not movable, not copyable, destructor
     virtual ~GLViewport() = default;
 
-	void on_render(float delta) override;
+	void initializeGL() override { /* TODO */ };
+
+	void onDraw(float delta) override;
 };
 
 

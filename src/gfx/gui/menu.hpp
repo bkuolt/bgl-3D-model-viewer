@@ -6,21 +6,24 @@
 
 #include <filesystem>
 
+#include "../model.hpp"
+#include "window.hpp"
+
 
 namespace bgl {
 
 class MenuBar : public QMenuBar {
  public:
-    MenuBar(QMainWindow &window);
+    MenuBar(Window &window);
     virtual ~MenuBar() = default;
 
  protected:
-    virtual void onLoadModel(const std::filesystem::path &path);
+    virtual void onLoadModel(const std::shared_ptr<bgl::Model> &model);
 
  private:
     void loadModel() noexcept;
 
-    QMainWindow &_window;
+    Window &_window;
 };
 
 }  // namespace bgl

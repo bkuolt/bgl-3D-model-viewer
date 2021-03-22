@@ -5,38 +5,58 @@
 #include "gfx/box.hpp"
 #include "gfx/grid.hpp"
 #include "gfx/camera.hpp"
+#include "gfx/gui/menu.hpp"
 
 #include <QApplication>
 #include <QKeyEvent>
 #include <QOpenGLFramebufferObject>
 
 #include <memory>
+#include <mutex>  // call_once
 
 
 namespace bgl {
 
 namespace {
 
+/**
+ * @brief The scene which is rendered to the viewport.
+ */
 struct {
 	std::shared_ptr<Model> model;
-	std::shared_ptr<Grid> grid;
-	Camera camera;
-	std::shared_ptr<Box> box;
+	std::shared_ptr<Box> box;      // the bounding box of the 3D model
+    std::shared_ptr<Grid> grid;
+
+	DirectionalLight light;
+    Camera camera;
 } Scene;
 
-void set_up_scene(const std::filesystem::path &path) {
-	std::cout << "\nLoading " << path << " ..." << std::endl;
 
-	Scene.model = LoadModel(path);
+void setUpScene(const std::shared_ptr<Model> &model) {
+	Scene.model = model;
 	Scene.camera.setViewCenter({ 0.0, 0.0, 0.0 });
 	Scene.camera.setPosition({ 0.0, 1.0, 2.0 });
 
 	Scene.box = std::make_shared<Box>(Scene.model->getBoundingBox());
-
 	Scene.grid = std::make_shared<Grid>(0.125, 40);
-	const vec3 v { 0.0, -Scene.model->getBoundingBox().getSize().y / 2.0, 0.0 };
-	Scene.grid->translate(v);
 
+    // repositions the grid under the bounding box
+	const vec3 translation { 0.0, -Scene.model->getBoundingBox().getSize().y / 2.0, 0.0 };
+	Scene.grid->translate(translation);
+
+    Scene.light = DirectionalLight {
+        .direction = vec3 { -1.0, -1.0, -1.0 },
+        .diffuse = vec3 { 0.0, 1.0, 1.0 },
+        .ambient = vec3 { 0.2f, 0.2f, 0.2f }
+    };
+}
+
+void setUpDefaultScene() {
+    const std::filesystem::path path { QCoreApplication::arguments().at(1).toStdString() };
+    setUpScene(LoadModel(path));
+}
+
+void initGL() {
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -52,6 +72,18 @@ void set_up_scene(const std::filesystem::path &path) {
 	glFrontFace(GL_CCW);
 }
 
+class SimpleMenuBar : public bgl::MenuBar {
+ public:
+    explicit SimpleMenuBar(Window &window)
+        : bgl::MenuBar(window)
+    {}
+
+ protected:
+     void onLoadModel(const std::shared_ptr<Model> &model) override {
+        setUpScene(model);
+    }
+};
+
 }  // anonymous namespace
 
 
@@ -59,40 +91,26 @@ GLViewport::GLViewport(QWidget *parent)
     : Viewport(parent)
 {}
 
-void GLViewport::on_render(float delta) {
-    static QSize size { 1280, 720 };
+void GLViewport::onDraw(float delta) {
+    static std::once_flag initialized;
+    std::call_once(initialized, &setUpDefaultScene);
 
-    QOpenGLFramebufferObjectFormat format;
-    format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-    format.setMipmap(false);
-    format.setSamples(0);
-
-    static bool initialized { false };
-    if (!initialized) {
-        const std::filesystem::path path { QCoreApplication::arguments().at(1).toStdString() };
-        set_up_scene(path);
-        initialized = true;
-    }
-
+    initGL();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     const mat4 PV { Scene.camera.getMatrix() };
     Scene.grid->render(PV);
     Scene.box->render(PV);
-
-    static DirectionalLight light {
-        .direction = vec3 { -1.0, -1.0, -1.0 },
-        .diffuse = vec3 { 0.0, 1.0, 1.0 },
-        .ambient = vec3 { 0.2f, 0.2f, 0.2f }
-    };
-
-    Scene.model->render(PV, light);
+    Scene.model->render(PV, Scene.light);
 }
-
 
 SimpleWindow::SimpleWindow(const std::string &title)
     : bgl::Window(title), _viewport(this) {
     this->setViewport(&_viewport);
     this->show();
+
+    auto menuBar = new SimpleMenuBar(*this);
+    this->setMenuBar(menuBar);
 }
 
 bool SimpleWindow::event(QEvent *event) {
@@ -108,7 +126,6 @@ bool SimpleWindow::keyEvent(QKeyEvent *event) {
         case Qt::Key_Escape:
             close();
             return true;
-            break;
         case Qt::Key_Left:
             Scene.camera.rotate(vec2(0, -0.5));
             break;

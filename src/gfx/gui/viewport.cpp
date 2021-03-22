@@ -94,11 +94,11 @@ void Viewport::paintGL() {
     }
 
     makeCurrent();
-    on_render(frame_counter.delta());
+    onDraw(frame_counter.delta());
     // std::cout << "paintedGL()" << std::endl;
 }
 
-void Viewport::on_render(float delta) {
+void Viewport::onDraw(float delta) {
     // nothing to do yet
 }
 
