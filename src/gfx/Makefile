@@ -7,8 +7,15 @@ INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL   \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui
 
-FLAGS = -std=c++17  $(INCLUDES_QT) -Wall -fPIC   #-O3
-LD_FLAGS = -ldl -fPIC #-O3
+LIBS_QT =-lQt5Widgets -lQt5Core -lQt5Gui -lQt5OpenGL 
+
+LIBS = -lGLEW -lstdc++fs \
+       $(LIBS_QT)        \
+	   -lassimp          \
+	   -lGLU -lGL -lGLU -ldl
+
+FLAGS = -std=c++17  $(INCLUDES_QT) -Wall -fPIC -O3
+LD_FLAGS = -ldl -fPIC
 
 mesh.o: mesh.cpp mesh.hpp
 	@$(CC) $(FLAGS) -c mesh.cpp
@@ -30,11 +37,6 @@ importer.o: importer.cpp
 
 gui/libgui.a:
 	@$(MAKE) -C gui
-
-LIBS = -lGLEW -lstdc++fs \
-       -lQt5Widgets -lQt5Core -lQt5Gui -lQt5OpenGL -lGL \
-	   -lassimp  \
-	   -lGLU -lGL -lGLU -ldl
 
 libgfx.so: mesh.o importer.o \
            model.o   \

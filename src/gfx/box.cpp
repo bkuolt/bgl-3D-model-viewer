@@ -13,8 +13,6 @@
 
 namespace bgl {
 
-std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs);
-
 namespace {
 
 using uvec2 = glm::tvec2<GLuint>;
@@ -25,12 +23,6 @@ constexpr std::array<vec3, 8> box_vertices {{
     {  0.5,  0.5, -0.5 }, {  0.5, -0.5, -0.5 }   // back, right handside
 }};
 
-/* 
-front: back:
-1--2   5--6 
-|  |   |  |
-0--3   4--7
-*/
 static constexpr std::array<uvec2, 12> box_indices {{
     { 0, 3 }, { 1, 2 }, { 0, 1 }, { 2, 3 },  // frontside
     { 4, 7 }, { 5, 6 }, { 4, 5 }, { 6, 7 },  // backside
@@ -39,8 +31,9 @@ static constexpr std::array<uvec2, 12> box_indices {{
 
 }  // anonymous namespace
 
-Box::Box()  {
-    _meshes = std::vector<Mesh>(1);  // TODO
+
+Box::Box() {
+    _meshes =  std::vector<Mesh>(1);
 
     // create vbo
     _meshes[0]._vbo.bind();
@@ -58,11 +51,11 @@ Box::Box()  {
     // create vao
     _meshes[0]._vao.bind();
     _meshes[0].bind();
-    
+
     _program = LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs");
     _program->bind();
     set_va_attribute(_program->attributeLocation("position"), 3, GL_FLOAT, 0, 0);
-   _program->release();
+    _program->release();
 }
 
 Box::Box(const BoundingBox &boundingBox)
@@ -81,7 +74,6 @@ void Box::render(const mat4 &VP) {
 
     const vec3 color { 1.0, 0.0, 0.0 }; /* red */
     _program->setUniformValue("color", color.x, color.y, color.z);
-    
     _meshes[0].render(GL_LINES);
 }
 

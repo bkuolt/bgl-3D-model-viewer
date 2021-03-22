@@ -1,4 +1,3 @@
-// Copyright 2021 Bastian Kuolt
 #include "model.hpp"
 #include "box.hpp"
 #include "gfx.hpp"  //  model
@@ -18,8 +17,6 @@
 #include <QMatrix4x4>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
-
-#include "gfx.hpp"  // details;
 
 
 namespace bgl {
@@ -60,7 +57,6 @@ QOpenGLBuffer create_vbo(QOpenGLBuffer &vbo, const aiMesh &mesh) {
         for (unsigned int i = 0; i < mesh.mNumVertices; ++i) {
             buffer[i].texcoords = vec2 { mesh.mTextureCoords[0][i].x, 1.0 - mesh.mTextureCoords[0][i].y };
         }
-
     }
 
     if (!vbo.unmap()) {
@@ -143,7 +139,7 @@ void load_meshes(std::vector<Mesh> &meshes, const aiScene &scene, QOpenGLShaderP
 
     meshes = std::vector<Mesh>(scene.mNumMeshes);
     std::cout << "loading " << meshes.size()  << " meshes" << std::endl;
-    
+
     for (auto i = 0u; i < meshes.size(); ++i) {
         const aiMesh &ai_mesh { *scene.mMeshes[i] };
         create_vbo(meshes[i]._vbo, ai_mesh);

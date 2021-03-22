@@ -27,22 +27,25 @@ void Mesh::bind() {
     _ibo.bind();
 }
 
-// TODO: Release
-
-void Mesh::render(GLenum mode, GLuint count) {
-    bind();
-    glDrawElements(mode, count, GL_UNSIGNED_INT, nullptr);
-    if (glGetError() != GL_NO_ERROR) {
-        throw std::runtime_error { "glDrawElements() failed" };
-    }
-
+void Mesh::release() {
     _vbo.release();
     _ibo.release();
     _vao.release();
 }
 
+void Mesh::render(GLenum mode, GLuint count) {
+    bind();
+    glDrawElements(mode, count, GL_UNSIGNED_INT, nullptr);
+    if (glGetError() != GL_NO_ERROR) {
+        release();
+        throw std::runtime_error { "glDrawElements() failed" };
+    }
+    release();
+
+}
+
 void Mesh::render(GLenum mode) {
-    _ibo.bind();  // for _ibo.size()
+    _ibo.bind();
     render(mode, _ibo.size() / sizeof(GLuint));
 }
 

@@ -17,18 +17,6 @@
 
 namespace bgl {
 
-#ifdef __linux
-namespace console_color {
-    constexpr char blue[] = "\x1B[34m";
-    constexpr char red[] = "\x1B[31m";
-    constexpr char white[] = "\x1B[37m";
-    constexpr char magenta[] = "\x1B[35m";
-    constexpr char yellow[] = "\x1B[33m";
-    constexpr char green[] =  "\x1B[32m";
-}  // namespace console_color
-
-#endif  // __linux
-
 // vao must be bound!
 inline void set_va_attribute(GLuint location, GLsizei size, GLenum type, GLsizei stride, GLsizei offset) {
     glEnableVertexAttribArray(location);

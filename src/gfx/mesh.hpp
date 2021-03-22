@@ -25,6 +25,8 @@ class Mesh {
 	virtual ~Mesh() noexcept = default;
 
 	void bind();
+	void release();
+
 	void render(GLenum mode, GLuint count);
 	void render(GLenum mode);
 

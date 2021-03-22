@@ -1,4 +1,3 @@
-// Copyright 2021 Bastian Kuolt
 #ifndef GFX_BOUNDING_BOX_HPP
 #define GFX_BOUNDING_BOX_HPP
 
@@ -12,22 +11,39 @@ struct Bound {
    float max;
 };
 
-struct BoundingBox {
+struct BoundingBox final {
+	BoundingBox() = default;
+	BoundingBox(const vec3 &center, const vec3 &size) {
+		// TODO(bkuolt)
+	}
 
-   const vec3& getSize() const noexcept {
-       return _dimensions = {
-            _bounds.x.max -  _bounds.x.min,
-            _bounds.y.max -  _bounds.y.min,
-            _bounds.z.max -  _bounds.z.min
-         };
-   }
+	explicit BoundingBox(const vec3 &size)
+	 : BoundingBox({}, size) {}
 
-   void resize(const vec3 &dimensions)  {
-      _dimensions = dimensions;  // TODO
-   }
+	void resize(const vec3 &size) noexcept {
+		_size = size;
+	}
 
-   mutable glm::vec3 _dimensions;  // TODO
-   glm::tvec3<Bound> _bounds;
+	const vec3& getSize() const noexcept {
+		_size = vec3 {
+			_bounds.x.max -  _bounds.x.min,
+			_bounds.y.max -  _bounds.y.min,
+			_bounds.z.max -  _bounds.z.min
+		};
+		return _size;
+	}
+
+	tvec3<Bound>& getBounds() noexcept {
+		return _bounds;
+	}
+
+	const tvec3<Bound>& getBounds() const noexcept {
+		return _bounds;
+	}
+
+ // TODO(bkuolt: private:
+	mutable vec3 _size;
+	tvec3<Bound> _bounds;
 };
 
 }  // namespace bgl

@@ -7,38 +7,36 @@ INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL   \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui
 
-FLAGS = -std=c++17  -pthread            \
-	    -DUSE_QT $(INCLUDES_QT) -fPIC  \
-		-Wall -fPIC   #-O3
-# -fPIC is for QT only
+FLAGS = -std=c++17            \
+	    $(INCLUDES_QT) -fPIC  \
+		-Wall -O3
 
-LIBS = -lstdc++fs \
-       -lGL \
+LIBS = -lstdc++ -lstdc++fs   \
        -lQt5Widgets -lQt5Core -lQt5Gui -lQt5OpenGL  \
-	   -lassimp  \
-	   -lGLU  -lGLU  -ldl
+	   -lGL -lGLU   \
+	   -lassimp     \
+	   -ldl
 
 main.o: main.cpp window.hpp
 	@$(CC) $(FLAGS) -c main.cpp
 
+window.o: window.cpp window.hpp
+	@$(CC) $(FLAGS) -c window.cpp
+
 gfx/libgfx.so:
 	@$(MAKE) -C gfx
 
-demo: main.o gfx/libgfx.so
+demo: main.o window.o gfx/libgfx.so
 	$(CC) \
-	$(FLAGS)  main.o  \
+	$(FLAGS)  main.o  window.o \
 	-Lgfx -lgfx  -lstdc++ -ldl $(LIBS) \
-     -o demo   
-	#-Wl,--as-needed -lGLEW
+    -o demo   
+
 run: demo
 	export LD_LIBRARY_PATH=/home/bastian/code/bgl-demo/src/:/home/bastian/code/bgl-demo/src/gfx; \
-	 echo $(LD_LIBRARY_PATH); \
+	echo $(LD_LIBRARY_PATH); \
 	./demo \
 	./assets/models/housemedieval.obj
-	#/home/bastian/Downloads/Sponza-master/sponza.obj
-	#./assets/models/bunny.obj
-	#./assets/models/housemedieval.obj    # the rendered 3D model
-	#./assets/models/housemedieval.obj
 
 clean:
 	@$(MAKE) -C gfx clean
