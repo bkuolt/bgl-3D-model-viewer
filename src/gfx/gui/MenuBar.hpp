@@ -30,7 +30,7 @@ class MenuBar : public QMenuBar {
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-MenuBar::loadModel() noexcept{
+void MenuBar::loadModel() noexcept{
     const QString fileName { QFileDialog::getOpenFileName(nullptr, "Load 3D Model", "", "All Files (*)") };
     if (fileName.isEmpty()) {
         return;  // nothing to do
@@ -39,14 +39,14 @@ MenuBar::loadModel() noexcept{
     try {
         onLoadModel(fileName.toStdString());
     } catch (std::exception &exception) {
-        QMessageBox::error(nullptr, "Error", exception.what());
+        QMessageBox::critical(nullptr, "Error", exception.what());
     }
 }
 
 MenuBar::MenuBar(QMainWindow &window)
     : _window { window } {
     QMenu * const fileMenu { this->addMenu("&File") };
-    fileMenu->addAction("Load", this, &loadModel);
+    fileMenu->addAction("Load", this, &MenuBar::loadModel);
     fileMenu->addAction("Exit", [this] () {
         _window.close();
     });

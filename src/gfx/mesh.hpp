@@ -1,4 +1,3 @@
-// Copyright 2021 Bastian Kuolt
 #ifndef GFX_MESH_HPP_
 #define GFX_MESH_HPP_
 

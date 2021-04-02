@@ -1,4 +1,3 @@
-// Copyright 2020 Bastian Kuolt
 #ifndef GFX_GL_GL_HPP_
 #define GFX_GL_GL_HPP_
 
@@ -9,6 +8,8 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
+#include <QOpenGLVertexArrayObject>
+
 // GLM support
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
@@ -18,11 +19,10 @@
 #include <glm/gtx/transform.hpp>         // glm::rotate(), glm::scale()
 #include <glm/gtc/type_ptr.hpp>          // glm::value_ptr()
 
-#include <QOpenGLVertexArrayObject>
-
-#include <iomanip>  // std::fixed
+#include <iomanip>
 #include <ostream>
 #include <memory>
+
 
 namespace bgl {
 

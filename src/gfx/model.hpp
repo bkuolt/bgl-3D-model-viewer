@@ -1,4 +1,4 @@
-// Copyright 2021 Bastian Kuolt
+
 #ifndef GFX_MODEL_HPP_
 #define GFX_MODEL_HPP_
 
