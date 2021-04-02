@@ -5,32 +5,39 @@
 
 #include "gl.hpp"
 
-#include <QOpenGLBuffer>
-#include <QOpenGLVertexArrayObject>
+#include <QOpenGLBuffer>             // NOLINT
+#include <QOpenGLVertexArrayObject>  // NOLINT
 
 
 namespace bgl {
 
+/**
+ * @brief OpenGL VBO vertex format.
+ */
 struct Vertex {
     vec3 position;
     vec3 normal;
     vec2 texcoords;
 };
 
-
-class Mesh {
- public:
-	Mesh();
+/**
+ * @brief An OpenGL renderable mesh managing VBOs, IBOs, VAOs,
+ *        shader and textures.
+ */
+struct Mesh {
+ 	Mesh();
 	virtual ~Mesh() noexcept = default;
 
 	void bind();
+	void release();
+
 	void render(GLenum mode, GLuint count);
 	void render(GLenum mode);
 
 	QOpenGLBuffer _vbo;
 	QOpenGLBuffer _ibo;
 	QOpenGLVertexArrayObject _vao;
-	std::optional<unsigned int> _materialIndex;
+	std::optional<unsigned int> _materialIndex;  // index to an Assimp material
 };
 
 }  // namespace bgl

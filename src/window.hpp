@@ -10,7 +10,7 @@
 #include <QKeyEvent>
 
 #include <string>
-
+#include <iostream>
 
 namespace bgl {
 

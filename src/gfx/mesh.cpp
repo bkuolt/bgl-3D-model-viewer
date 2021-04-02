@@ -27,6 +27,10 @@ void Mesh::bind() {
     _ibo.bind();
 }
 
+void Mesh::release() {
+    // TODO
+}
+
 // TODO: Release
 
 void Mesh::render(GLenum mode, GLuint count) {
