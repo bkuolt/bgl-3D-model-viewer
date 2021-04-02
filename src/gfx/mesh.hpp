@@ -21,8 +21,8 @@ struct Vertex {
 };
 
 /**
- * @brief An OpenGL renderable mesh managing VBOs, IBOs, VAOs,
- *        shader and textures.
+ * @brief Contains and manages all OpenGL resources (VBOs, IBOs, VAOs,
+ *        shaders and textures) for a mesh.
  */
 struct Mesh {
  	Mesh();
