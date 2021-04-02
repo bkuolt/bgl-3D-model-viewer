@@ -1,4 +1,4 @@
-// Copyright 2021 Bastian Kuolt
+
 #ifndef GFX_MODEL_HPP_
 #define GFX_MODEL_HPP_
 
@@ -10,18 +10,16 @@
 #include "mesh.hpp"
 #include "material.hpp"
 #include "bounding_box.hpp"
+#include "scene.hpp"
 
-#include <QOpenGLShaderProgram>
+#include <QOpenGLShaderProgram>  // NOLINT
 
 
 namespace bgl {
 
-struct DirectionalLight {
-    vec3 direction;
-    vec3 diffuse;
-    vec3 ambient;
-};  // TODO: move to scene.hpp
-
+/**
+ * @brief An OpenGL renderable mesh.
+ */
 class Model {
  public:
 	Model() = default;
@@ -33,7 +31,7 @@ class Model {
 	void resize(const vec3 &dimensions);
 	const BoundingBox& getBoundingBox() const;
 
- protected: public:
+ protected: public:  // TODO
 	std::vector<Mesh> _meshes;
 	std::vector<Material> _materials;
 

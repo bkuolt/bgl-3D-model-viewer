@@ -1,13 +1,13 @@
-// Copyright 2021 Bastian Kuolt
 #include "model.hpp"
 #include "box.hpp"
-#include "gfx.hpp"  //  model
+#include "importer.hpp"  //  TODO
+#include "gfx.hpp"  //  TODO
 
 #include <assimp/cimport.h>      // aiPropertyStore
 #include <assimp/postprocess.h>  // Post processing flags
 #include <assimp/Importer.hpp>   // Model loader
 #include <assimp/material.h>
-#include <assimp/scene.h>        // Output data structure
+#include <assimp/scene.h>  // Output data structure
 
 #include <algorithm>
 #include <iostream>
@@ -43,29 +43,28 @@ QOpenGLBuffer create_vbo(QOpenGLBuffer &vbo, const aiMesh &mesh) {
     auto buffer { reinterpret_cast<Vertex*>(vbo.map(QOpenGLBuffer::ReadWrite)) };
     if (buffer == nullptr) {
         vbo.release();
-        throw std::runtime_error { "could not map VBO" };
+        throw std::runtime_error{"could not map VBO"};
     }
 
     for (auto i = 0u; i < mesh.mNumVertices; ++i) {
-        buffer[i].normal = vec3 { mesh.mNormals[i].x, mesh.mNormals[i].y, mesh.mNormals[i].z };
-        buffer[i].position = vec3 { mesh.mVertices[i].x, mesh.mVertices[i].y, mesh.mVertices[i].z };
+        buffer[i].normal = vec3{mesh.mNormals[i].x, mesh.mNormals[i].y, mesh.mNormals[i].z};
+        buffer[i].position = vec3{mesh.mVertices[i].x, mesh.mVertices[i].y, mesh.mVertices[i].z};
     }
 
     if (is_textured(mesh)) {
         if (mesh.mNumUVComponents[0] != 2) {
             vbo.unmap();
             vbo.release();
-            throw std::runtime_error { "only one texture channel supported" };
+            throw std::runtime_error{"only one texture channel supported"};
         }
         for (unsigned int i = 0; i < mesh.mNumVertices; ++i) {
-            buffer[i].texcoords = vec2 { mesh.mTextureCoords[0][i].x, 1.0 - mesh.mTextureCoords[0][i].y };
+            buffer[i].texcoords = vec2{mesh.mTextureCoords[0][i].x, 1.0 - mesh.mTextureCoords[0][i].y};
         }
-
     }
 
     if (!vbo.unmap()) {
         vbo.release();
-        throw std::runtime_error { "could not unmap VBO" };
+        throw std::runtime_error{"could not unmap VBO"};
     }
     vbo.release();
     return vbo;
@@ -74,19 +73,19 @@ QOpenGLBuffer create_vbo(QOpenGLBuffer &vbo, const aiMesh &mesh) {
 void create_ibo(QOpenGLBuffer &ibo, const aiMesh &mesh) {
     ibo.bind();
     ibo.allocate(sizeof(GLuint) * mesh.mNumFaces * 3);
-    GLuint * buffer { reinterpret_cast<GLuint*>(ibo.map(QOpenGLBuffer::WriteOnly)) };
+    GLuint *buffer {reinterpret_cast<GLuint*>(ibo.map(QOpenGLBuffer::WriteOnly))};
     if (buffer == nullptr) {
-        throw std::runtime_error { "could not map IBO" };
+        throw std::runtime_error{"could not map IBO"};
     }
 
     for (auto i = 0u; i < mesh.mNumFaces; ++i) {
         assert(mesh.mFaces[i].mNumIndices == 3);
-            std::copy_n(mesh.mFaces[i].mIndices, 3, buffer);
-            buffer += 3;
+        std::copy_n(mesh.mFaces[i].mIndices, 3, buffer);
+        buffer += 3;
     }
 
     if (!ibo.unmap()) {
-        throw std::runtime_error { "could not unmap IBO" };
+        throw std::runtime_error{"could not unmap IBO"};
     }
     ibo.release();
 }
@@ -96,7 +95,7 @@ void create_vao(QOpenGLVertexArrayObject &vao, QOpenGLBuffer &vbo, QOpenGLShader
     program.bind();
     vao.bind();
     vbo.bind();
-    const auto stride { sizeof(Vertex) };
+    const auto stride{sizeof(Vertex)};
     set_va_attribute(program.attributeLocation("position"), 3, GL_FLOAT, stride, offsetof(Vertex, position));
     set_va_attribute(program.attributeLocation("normal"), 3, GL_FLOAT, stride, offsetof(Vertex, normal));
     set_va_attribute(program.attributeLocation("texcoords"), 2, GL_FLOAT, stride, offsetof(Vertex, texcoords));
@@ -108,44 +107,41 @@ void create_vao(QOpenGLVertexArrayObject &vao, QOpenGLBuffer &vbo, QOpenGLShader
 /*********************************************************
  *                     Assimp Mesh Code                  *
  *********************************************************/
-const aiScene* importScene(const std::filesystem::path &path) {
+const aiScene *importScene(const std::filesystem::path &path) {
     if (!std::filesystem::exists(path)) {
         std::ostringstream oss;
         oss << "the file " << std::quoted(path.string()) << " does not exist";
-        throw std::runtime_error { oss.str() };
+        throw std::runtime_error{oss.str()};
     }
 
-    aiPropertyStore* props = aiCreatePropertyStore();
+    aiPropertyStore *props = aiCreatePropertyStore();
     if (props == nullptr) {
-        throw std::runtime_error { aiGetErrorString() };
+        throw std::runtime_error{aiGetErrorString()};
     }
 
     aiSetImportPropertyInteger(props, AI_CONFIG_PP_PTV_NORMALIZE, 1);
-    const aiScene * scene { aiImportFileExWithProperties(path.string().c_str(),
-        aiProcess_Triangulate            |
-        aiProcess_GenSmoothNormals |
-        aiProcess_Triangulate |
-        aiProcess_JoinIdenticalVertices | aiProcess_PreTransformVertices,
-        nullptr,
-        props)
-    };
+    const aiScene *scene{aiImportFileExWithProperties(path.string().c_str(),
+                                                      aiProcess_Triangulate |
+                                                      aiProcess_GenSmoothNormals |
+                                                      aiProcess_Triangulate |
+                                                      aiProcess_JoinIdenticalVertices | aiProcess_PreTransformVertices,
+                                                      nullptr, props)};
 
     aiReleasePropertyStore(props);
     return scene ? scene
-                 : throw std::runtime_error { aiGetErrorString() };
+                    : throw std::runtime_error{aiGetErrorString()};
 }
-
 
 void load_meshes(std::vector<Mesh> &meshes, const aiScene &scene, QOpenGLShaderProgram &program) {
     if (scene.mNumMeshes == 0) {
-        throw std::runtime_error { "empty model" };
+        throw std::runtime_error{"empty model"};
     }
 
     meshes = std::vector<Mesh>(scene.mNumMeshes);
-    std::cout << "loading " << meshes.size()  << " meshes" << std::endl;
-    
+    std::cout << "loading " << meshes.size() << " meshes" << std::endl;
+
     for (auto i = 0u; i < meshes.size(); ++i) {
-        const aiMesh &ai_mesh { *scene.mMeshes[i] };
+        const aiMesh &ai_mesh{*scene.mMeshes[i]};
         create_vbo(meshes[i]._vbo, ai_mesh);
         create_ibo(meshes[i]._ibo, ai_mesh);
         create_vao(meshes[i]._vao, meshes[i]._vbo, program);
@@ -159,7 +155,7 @@ void load_meshes(std::vector<Mesh> &meshes, const aiScene &scene, QOpenGLShaderP
 BoundingBox calculate_bounding_box(const aiScene &scene) noexcept {
     BoundingBox boundingBox;
     for (auto i = 0u; i < scene.mNumMeshes; ++i) {
-        const aiMesh &mesh { *scene.mMeshes[i] };
+        const aiMesh &mesh{*scene.mMeshes[i]};
 
         for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
             for (auto c = 0u; c < 3; ++c) {
@@ -175,73 +171,76 @@ BoundingBox calculate_bounding_box(const aiScene &scene) noexcept {
  *                   Assimp Material Code                *
  *********************************************************/
 vec3 get_color(const aiMaterial &material,
-                      const char *pKey, unsigned int type, unsigned int idx) {
+                const char *pKey, unsigned int type, unsigned int idx) {
     aiColor3D color;
     material.Get(pKey, type, idx, color);
-    return { color.r, color.g, color.b };
+    return {color.r, color.g, color.b};
 }
 
 float get_shininess(const aiMaterial &material) {
-    // SHININESS
-    return 0;
+    return 0;  // TODO
 }
 
-std::shared_ptr<QOpenGLTexture> get_texture(const aiMaterial &material, aiTextureType type, const std::filesystem::path &base_path) {
-    const unsigned int texture_count { material.GetTextureCount(type) };
-    if (texture_count >= 1) {
-        aiString path;
-        material.GetTexture(type, 0, &path);
-        QImage image { (base_path / path.data).string().c_str() };
+const std::filesystem::path get_path(const aiMaterial &material, aiTextureType type,
+	                               const std::filesystem::path &base_path) {
+	aiString str;
+	material.GetTexture(type, 0, &str);
+	return { (base_path / str.data).string() };
+}
 
-        std::cout << "loading " << (base_path / path.data).string().c_str() << std::endl;
+std::shared_ptr<QOpenGLTexture> get_texture(const aiMaterial &material, aiTextureType type,
+	                                        const std::filesystem::path &base_path) {
+    const unsigned int texture_count{material.GetTextureCount(type)};
+    if (texture_count >= 1) {
+        auto texture { LoadTexture(get_path(material, type, base_path)) };
         if (texture_count > 1) {
             std::cout << "warning: found more textures than expected" << std::endl;
         }
-
-        return std::make_shared<QOpenGLTexture>(image);
+        return texture;
     }
-
     return {};
 }
 
 Material load_material(const aiMaterial &material, const std::filesystem::path &base_path) {
     return {
-        .diffuse = get_color(material,  AI_MATKEY_COLOR_DIFFUSE),
-        .ambient = get_color(material,  AI_MATKEY_COLOR_AMBIENT),
+        .diffuse = get_color(material, AI_MATKEY_COLOR_DIFFUSE),
+        .ambient = get_color(material, AI_MATKEY_COLOR_AMBIENT),
         .specular = get_color(material, AI_MATKEY_COLOR_SPECULAR),
         .emissive = get_color(material, AI_MATKEY_COLOR_EMISSIVE),
         .shininess = get_shininess(material),
-        .textures {
+        .textures{
             .diffuse = get_texture(material, aiTextureType_DIFFUSE, base_path),
             .ambient = get_texture(material, aiTextureType_AMBIENT, base_path),
             .specular = get_texture(material, aiTextureType_SPECULAR, base_path),
-            .emissive = get_texture(material, aiTextureType_EMISSIVE, base_path)
-        }
-    };
+            .emissive = get_texture(material, aiTextureType_EMISSIVE, base_path)} };
 }
 
 std::vector<Material> load_materials(const aiScene &scene, const std::filesystem::path &base_path) {
     std::cout << "loading " << scene.mNumMaterials << " materials" << std::endl;
     std::vector<Material> materials;
     for (auto i = 0u; i < scene.mNumMaterials; ++i) {
-        materials.push_back(load_material(*scene.mMaterials[i], base_path) );
+        materials.push_back(load_material(*scene.mMaterials[i], base_path));
     }
     return materials;
 }
 
-}  // anonymous namespace
+} // anonymous namespace
 
-
-std::shared_ptr<Model> LoadModel(const std::filesystem::path &path) {
-    auto model = std::make_shared<Model>();
-
+std::shared_ptr<Model> LoadModel(const std::filesystem::path &path){
+    const auto model { std::make_shared<Model>() };
     const aiScene &scene { *importScene(path) };
 
-    model->_program = LoadProgram("./assets/shaders/main.vs", "./assets/shaders/main.fs");
+    model->_program = LoadProgram({ "./assets/shaders/main.vs", "./assets/shaders/main.fs" });
     load_meshes(model->_meshes, scene, *model->_program);
     model->_materials = load_materials(scene, path.parent_path());
     model->_boundingBox = calculate_bounding_box(scene);
     return model;
 }
 
-}  // namespace bgl
+std::shared_ptr<QOpenGLTexture> LoadTexture(const std::filesystem::path &path) {
+	QImage image { path.string().c_str() };
+	std::cout << "loading " << path << std::endl;
+	return std::make_shared<QOpenGLTexture>(image);
+}
+
+} // namespace bgl
