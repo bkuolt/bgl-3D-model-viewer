@@ -9,6 +9,7 @@ src/gfx/.vscode/**
 src/gfx/.vscode
 gfx/gl/.vscode/
 gfx/gl/.vscode/**
+.vscode/**
 TODO
 src/TODO
 bgl

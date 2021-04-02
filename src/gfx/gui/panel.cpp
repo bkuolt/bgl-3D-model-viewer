@@ -1,4 +1,3 @@
-// Copyright 2021 Bastian Kuolt
 #include "panel.hpp"
 
 #include <QFrame>

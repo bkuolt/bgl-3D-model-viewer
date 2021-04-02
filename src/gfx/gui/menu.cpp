@@ -1,25 +1,31 @@
 #include "menu.hpp"
+#include "../model.hpp"
 
 #include <QFileDialog>
 #include <QMainWindow>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QProgressBar>
 
 #include <optional>
+#include <filesystem>
+
 
 namespace bgl {
 
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
 
-namespace {
-namespace actions {
+//namespace {
+//namespace actions {
 
-inline std::optional<std:filesystem::path> chooseFile() {
+inline std::optional<std::filesystem::path> chooseFile() {
     const QString fileName { QFileDialog::getOpenFileName(nullptr, "Load 3D Model", "", "All Files (*)") };
-    return fileName.isEmpty() ? {} : fileName.toStdString();
+    return fileName.isEmpty() ? std::filesystem::path{} : std::filesystem::path { fileName.toStdString() };
 }
+
+//}  // namespace actions
 
 /**
  * @brief 
@@ -27,18 +33,20 @@ inline std::optional<std:filesystem::path> chooseFile() {
  * @param progressBar 
  * @return std::shared_ptr<Model> 
  */
-std::optional<Model> load3DModel(QProgressBar &progressBar) {
-    std::optional<std:filesystem::path> path { chooseFile() };
+std::optional<std::shared_ptr<bgl::Model>> load3DModel(QProgressBar &progressBar) {
+    std::optional<std::filesystem::path> path { chooseFile() };
     if (!path.has_value()) {
-        return;  // there was no file chosen
+        return {};  // there was no file chosen
     }
     // TODO: check whether file changed -> avoid unnecessary reload
 
     progressBar.show();
     progressBar.setValue(0);
 
+    std::shared_ptr<bgl::Model> model;
+
     try {
-        model = bgl::io::Load3DModel(path);
+        //model = bgl::io::Load3DModel(path);
     } catch (std::exception &exception) {
         QMessageBox::critical(nullptr, "Error", exception.what());
         progressBar.reset();
@@ -57,22 +65,15 @@ void showInfoBox() {
     // TODO
 }
 
+// }  // anonymous namespace
 
-#if 1
-void main() {
-    // TODO program flow
+// ------------------------------------------------------------------------
+// ------------------------------------------------------------------------
+
+
+void MenuBar::loadModel() noexcept {
+    // TODO
 }
-#endif  // 1
-
-}  // namespace actions
-}  // anonymous namespace
-
-// ------------------------------------------------------------------------
-// ------------------------------------------------------------------------
-
-
-void MenuBar::loadModel() noexcept 
-{}
 
 MenuBar::MenuBar(QMainWindow &window)
     : _window { window } {

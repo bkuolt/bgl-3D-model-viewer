@@ -1,15 +1,15 @@
-// Copyright 2020 Bastian Kuolt
 #ifndef GFX_MATERIAL_HPP_
 #define GFX_MATERIAL_HPP_
 
-#include <glm/glm.hpp>
 #include <memory>
+#include <glm/glm.hpp>
 
 class QOpenGLTexture;
 
+
 namespace bgl  {
 
-using namespace glm;
+using namespace glm;  // NOLINT
 
 struct Material {
     vec3 diffuse;

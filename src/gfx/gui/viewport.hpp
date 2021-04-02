@@ -12,7 +12,7 @@ namespace bgl {
 class Viewport : public QOpenGLWidget {
  public:
 	explicit Viewport(QWidget *parent);
-	// TODO(bkuolt): not movable, not copyable, destructor
+	// TODO(bkuolt): not movable, not copyable
 
  protected:
 	void initializeGL() override;

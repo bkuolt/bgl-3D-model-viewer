@@ -1,4 +1,3 @@
-// Copyright 2021 Bastian Kuolt
 #include "window.hpp"
 #include "menu.hpp"
 
@@ -15,7 +14,7 @@ namespace bgl {
 
 Window::Window(const std::string &title) {
     this->setWindowTitle("BGL Demo");
-    this->setFixedSize(1200, 800);
+    this->setFixedSize(1280, 720);
     this->show();
 
     auto menuBar = new MenuBar(*this);

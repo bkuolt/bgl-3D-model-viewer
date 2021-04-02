@@ -1,8 +1,8 @@
-// Copyright 2020 Bastian Kuolt
-#include "camera.hpp"
-
 #include <stdexcept>
 #include <iostream>
+
+#include "camera.hpp"
+#define DEBUG  // TODO(bkuolt)
 
 
 namespace bgl {
@@ -10,16 +10,16 @@ namespace bgl {
 namespace {
 
 double calculate_aspect_ratio() {
-#define DEBUG  // TODO(bkuolt)
 #ifdef DEBUG
     return 16.0 / 9.0;
 #else
-    const uvec2 size {  () ?   App.window->getSize() : throw std::runtime_error { "could not get aspect ratio" }};
+    const uvec2 size { () ? App.window->getSize() : throw std::runtime_error { "could not get aspect ratio" }};
     return size.y ? static_cast<double>(size.x) / size.y : throw std::runtime_error { "invalid aspect ratio" };
 #endif  // DEBUG
 }
 
-}  // namespace
+}  // anonymous namespace
+
 
 Camera::Camera() noexcept {
     updateProjectionMatrix();

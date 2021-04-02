@@ -1,4 +1,3 @@
-// Copyright 2021 Bastian Kuolt
 #include "grid.hpp"
 #include "gfx.hpp"
 
@@ -57,7 +56,7 @@ void Grid::create_ibo() {
 
     for (auto z = 0u; z < _num_cells - 1; ++z) {
         for (auto x = 0u; x < _num_cells - 1; ++x) {
-            *buffer++ = uvec2 { get_index(0, z), get_index(_num_cells - 1, z) };  // verticall line
+            *buffer++ = uvec2 { get_index(0, z), get_index(_num_cells - 1, z) };  // vertical line
             *buffer++ = uvec2 { get_index(x, 0), get_index(x, _num_cells - 1) };  // horizontal line
         }
 
@@ -81,20 +80,17 @@ void Grid::translate(const vec3 &v) {
 }
 
 void Grid::render(const mat4 &PV) {
-    std::cout << "Grid::render()" << std::endl;
-  //  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glEnable(GL_LINE_SMOOTH);
-
     glDisable(GL_CULL_FACE);
     glLineWidth(3);
     // TODO(bkuolt): adjust OpenGL line rendering settings
 
     constexpr vec3 white { 1.0f, 1.0f, 1.0f };
-    QMatrix4x4 matrix(glm::value_ptr(PV * glm::translate(_translation))); 
+    QMatrix4x4 matrix(glm::value_ptr(PV * glm::translate(_translation)));
 
     _program->bind();
     _program->setUniformValue(_program->attributeLocation("MVP"), matrix.transposed());
-    _program->setUniformValue(_program->attributeLocation("color"), white.x, white.y, white.z );
+    _program->setUniformValue(_program->attributeLocation("color"), white.x, white.y, white.z);
     _meshes[0].render(GL_LINES);
     _program->release();
 }

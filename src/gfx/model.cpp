@@ -1,12 +1,11 @@
-// Copyright 2021 Bastian Kuolt
-#include "model.hpp"
-#include "box.hpp"
-#include "gfx.hpp"  //  model
-
 #include <algorithm>
 #include <iostream>
 #include <list>
 #include <string>
+
+#include "model.hpp"
+#include "box.hpp"
+#include "gfx.hpp"
 
 #include <QImage>
 #include <QMatrix4x4>
@@ -56,12 +55,8 @@ void setupMaterial(QOpenGLShaderProgram &program, const Material &material) {
     }
 }
 
-}  // anonmous namespace
+}  // anonymous namespace
 
-
-////////////////////////////////////////////////
-////////////////////////////////////////////////
-////////////////////////////////////////////////
 
 void Model::render(const mat4 &MVP, const DirectionalLight &light) {
      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -83,6 +78,10 @@ void Model::render(const mat4 &MVP, const DirectionalLight &light) {
         }
         _meshes[i].render(GL_TRIANGLES);
     }
+}
+
+void Model::render(const mat4 &MVP) {
+    // TODO
 }
 
 void Model::resize(const vec3 &dimensions) {

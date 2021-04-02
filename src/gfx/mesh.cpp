@@ -1,8 +1,7 @@
-// Copyright 2021 Bastian Kuolt
-#include "mesh.hpp"
-
 #include <iostream>
 #include <stdexcept>
+
+#include "mesh.hpp"
 
 
 namespace bgl {
@@ -21,29 +20,30 @@ Mesh::Mesh()
     }
 }
 
-void Mesh::bind() {
-    _vao.bind();
-    _vbo.bind();
-    _ibo.bind();
-}
-
-// TODO: Release
-
 void Mesh::render(GLenum mode, GLuint count) {
     bind();
     glDrawElements(mode, count, GL_UNSIGNED_INT, nullptr);
     if (glGetError() != GL_NO_ERROR) {
         throw std::runtime_error { "glDrawElements() failed" };
     }
-
-    _vbo.release();
-    _ibo.release();
-    _vao.release();
+    release();
 }
 
 void Mesh::render(GLenum mode) {
-    _ibo.bind();  // for _ibo.size()
+    _ibo.bind();  // for each @p _ibo.size()
     render(mode, _ibo.size() / sizeof(GLuint));
+}
+
+void Mesh::bind() {
+    _vao.bind();
+    _vbo.bind();
+    _ibo.bind();
+}
+
+void Mesh::release() {
+    _vao.release();
+    _vbo.release();
+    _ibo.release();
 }
 
 }  // namespace bgl

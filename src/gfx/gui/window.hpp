@@ -1,13 +1,10 @@
-// Copyright 2020 Bastian Kuolt
 #ifndef GUI_WINDOW_HPP_
 #define GUI_WINDOW_HPP_
 
-#include "../gl.hpp"  // TODO(bkuolt): fix this
-
-//#include <memory>
 #include <string>
+#include <QMainWindow>  // NOLINT
 
-#include <QMainWindow>
+#include "../gl.hpp"    // TODO(bkuolt): fix this
 #include "viewport.hpp"
 
 
@@ -19,8 +16,7 @@ namespace bgl {
 class Window : public QMainWindow {
  public:
     explicit Window(const std::string &title);
-
-	// TODO(bkuolt): not movable, not copyable, destructor
+	// TODO(bkuolt): not movable, not copyable
 
     Window(const Window&) = delete;
     virtual ~Window() noexcept;
@@ -36,7 +32,7 @@ class Window : public QMainWindow {
 	Viewport *_viewport { nullptr };
 
  private:
-    void swap(Window &rhs) noexcept;
+    void swap(Window &rhs) noexcept;  // TODO
 };
 
 }  // namespace bgl

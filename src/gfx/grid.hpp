@@ -1,4 +1,3 @@
-// Copyright 2021 Bastian Kuolt
 #ifndef GFX_GRID_HPP
 #define GFX_GRID_HPP
 
@@ -7,7 +6,6 @@
 
 namespace bgl {
 
-// TODO(bkuolt): move to separate header
 class Grid final : public Model {
  public:
     explicit Grid(GLfloat size, std::size_t num_cells);

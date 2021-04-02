@@ -1,5 +1,5 @@
 .DEFAULT_GOAL = run
-.PHONY = demo gfx/libgfx.so run clean
+.PHONY = demo gfx/libbgl.so run clean
 
 INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
 	          -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets  \
@@ -9,8 +9,7 @@ INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
 
 FLAGS = -std=c++17  -pthread            \
 	    -DUSE_QT $(INCLUDES_QT) -fPIC  \
-		-Wall -fPIC   #-O3
-# -fPIC is for QT only
+		-Wall -fPIC -O3
 
 LIBS = -lstdc++fs \
        -lGL \
@@ -18,29 +17,38 @@ LIBS = -lstdc++fs \
 	   -lassimp  \
 	   -lGLU  -lGLU  -ldl
 
-main.o: main.cpp window.hpp
+main.o: main.cpp
 	@$(CC) $(FLAGS) -c main.cpp
+
+window.o: window.cpp window.hpp
+	@$(CC) $(FLAGS) -c window.cpp
 
 gfx/libgfx.so:
 	@$(MAKE) -C gfx
 
-demo: main.o gfx/libgfx.so
-	$(CC) \
-	$(FLAGS)  main.o  \
-	-Lgfx -lgfx  -lstdc++ -ldl $(LIBS) \
-     -o demo   
-	#-Wl,--as-needed -lGLEW
-run: demo
+libbgl.so: gfx/libgfx.so
+	cp gfx/libgfx.so libbgl.so
+
+demo: main.o window.o libbgl.so
+	$(CC) $(FLAGS) main.o window.o    \
+	-L./ -lbgl -lstdc++ -ldl $(LIBS)  \
+    -o demo   
+
+run: demo  # TODO
 	export LD_LIBRARY_PATH=/home/bastian/code/bgl-demo/src/:/home/bastian/code/bgl-demo/src/gfx; \
-	 echo $(LD_LIBRARY_PATH); \
-	./demo \
-	./assets/models/housemedieval.obj
-	#/home/bastian/Downloads/Sponza-master/sponza.obj
-	#./assets/models/bunny.obj
-	#./assets/models/housemedieval.obj    # the rendered 3D model
-	#./assets/models/housemedieval.obj
+	echo $(LD_LIBRARY_PATH); \
+	./demo assets/models/housemedieval.obj
+
+install: libbgl.so demo
+	sudo cp libbgl.so /usr/lib/libbgl.so ;  \
+	sudo cp demo /usr/bin/bgl
+
+uninstall:
+	sudo rm -f /usr/lib/libbgl.so
+	sudo rm -f /usr/bin/bgl
 
 clean:
 	@$(MAKE) -C gfx clean
 	@rm -f *.o
+	@rm -f *.so
 	@rm -f demo

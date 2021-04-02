@@ -1,4 +1,3 @@
-// Copyright 2021 Bastian Kuolt
 #ifndef GUI_PANEL_HPP_
 #define GUI_PANEL_HPP_
 
@@ -17,6 +16,7 @@ class SettingsPanel : public QFrame {
     enum class Settings { /* TODO(bkuolt */  };
 
     SettingsPanel();
+    // TODO
     virtual ~SettingsPanel() noexcept = default;
 
     bool is_set(Settings settings);
@@ -38,6 +38,7 @@ class StatisticsPanel : public QFrame {
 
     StatisticsPanel();
     virtual StatisticsPanel() noexcept = default;
+	// TODO delete
 
     void update(StatisticsType type, unsigned int value);
 
@@ -46,21 +47,21 @@ class StatisticsPanel : public QFrame {
     QLabel triangles;
     QLabel materials;
     QVBoxLayout _layout;
-}; 
-
+};
 
 class Panel : public QPanel {
  public:
-    Panel();
-    virtual ~Panel()  noexcept = default;
- 
+	Panel();
+	virtual ~Panel() noexcept = default;
+	// TODO
+
  protected:
-    virtual void settingsChanged();  // TODO
+	virtual void settingsChanged();  // TODO
 
  private:
-    StatisticsPanel _statistics;
-    SettingsPanel _settings;
-    QVBoxLayout _layout;
+	StatisticsPanel _statistics;
+	SettingsPanel _settings;
+	QVBoxLayout _layout;
 };
 
 }  // namespace bgl
