@@ -22,6 +22,10 @@ struct DirectionalLight {
     vec3 ambient;
 };  // TODO: move to scene.hpp
 
+
+
+
+
 class Model {
  public:
 	Model() = default;
