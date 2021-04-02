@@ -1,5 +1,6 @@
 #include "model.hpp"
 #include "box.hpp"
+#include "importer.hpp"  //  TODO
 #include "gfx.hpp"  //  TODO
 
 #include <assimp/cimport.h>      // aiPropertyStore
@@ -180,20 +181,22 @@ float get_shininess(const aiMaterial &material) {
     return 0;  // TODO
 }
 
+const std::filesystem::path get_path(const aiMaterial &material, aiTextureType type,
+	                               const std::filesystem::path &base_path) {
+	aiString str;
+	material.GetTexture(type, 0, &str);
+	return { (base_path / str.data).string() };
+}
+
 std::shared_ptr<QOpenGLTexture> get_texture(const aiMaterial &material, aiTextureType type,
 	                                        const std::filesystem::path &base_path) {
     const unsigned int texture_count{material.GetTextureCount(type)};
     if (texture_count >= 1) {
-        aiString path;
-        material.GetTexture(type, 0, &path);
-        QImage image{(base_path / path.data).string().c_str()};
-
-        std::cout << "loading " << (base_path / path.data).string().c_str() << std::endl;
+        auto texture { LoadTexture(get_path(material, type, base_path)) };
         if (texture_count > 1) {
             std::cout << "warning: found more textures than expected" << std::endl;
         }
-
-        return std::make_shared<QOpenGLTexture>(image);
+        return texture;
     }
     return {};
 }
@@ -232,6 +235,12 @@ std::shared_ptr<Model> LoadModel(const std::filesystem::path &path){
     model->_materials = load_materials(scene, path.parent_path());
     model->_boundingBox = calculate_bounding_box(scene);
     return model;
+}
+
+std::shared_ptr<QOpenGLTexture> LoadTexture(const std::filesystem::path &path) {
+	QImage image { path.string().c_str() };
+	std::cout << "loading " << path << std::endl;
+	return std::make_shared<QOpenGLTexture>(image);
 }
 
 } // namespace bgl
