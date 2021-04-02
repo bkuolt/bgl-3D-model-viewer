@@ -43,6 +43,8 @@ class SimpleWindow final : public bgl::Window {
 	SimpleWindow(SimpleWindow&&) = default;
 	SimpleWindow& operator=(SimpleWindow&&) = default;
 
+	virtual ~SimpleWindow() noexcept = default;
+
 	bool event(QEvent *event) override;
 
     GLViewport _viewport;  // TODO

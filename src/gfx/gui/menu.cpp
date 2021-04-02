@@ -1,3 +1,7 @@
+#include <optional>
+#include <filesystem>
+#include <memory>
+
 #include "menu.hpp"
 #include "../model.hpp"
 
@@ -8,17 +12,10 @@
 #include <QMessageBox>
 #include <QProgressBar>
 
-#include <optional>
-#include <filesystem>
-
 
 namespace bgl {
 
-// ------------------------------------------------------------------------
-// ------------------------------------------------------------------------
-
-//namespace {
-//namespace actions {
+namespace {
 
 inline std::optional<std::filesystem::path> chooseFile() {
     const QString fileName { QFileDialog::getOpenFileName(nullptr, "Load 3D Model", "", "All Files (*)") };
@@ -46,7 +43,7 @@ std::optional<std::shared_ptr<bgl::Model>> load3DModel(QProgressBar &progressBar
     std::shared_ptr<bgl::Model> model;
 
     try {
-        //model = bgl::io::Load3DModel(path);
+        // TODO: model = bgl::io::Load3DModel(path);
     } catch (std::exception &exception) {
         QMessageBox::critical(nullptr, "Error", exception.what());
         progressBar.reset();
@@ -65,10 +62,7 @@ void showInfoBox() {
     // TODO
 }
 
-// }  // anonymous namespace
-
-// ------------------------------------------------------------------------
-// ------------------------------------------------------------------------
+}  // anonymous namespace
 
 
 void MenuBar::loadModel() noexcept {

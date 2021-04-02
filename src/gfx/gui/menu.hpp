@@ -11,16 +11,23 @@ namespace bgl {
 
 class MenuBar : public QMenuBar {
  public:
-    MenuBar(QMainWindow &window);
-    virtual ~MenuBar() = default;
+	explicit MenuBar(QMainWindow &window);  // NOLINT
+
+	MenuBar(MenuBar&&) = default;
+	MenuBar& operator=(MenuBar&&) = default;
+
+	MenuBar(const MenuBar&) = delete;
+	MenuBar& operator=(const MenuBar&) = delete;
+
+	virtual ~MenuBar() noexcept = default;
 
  protected:
-    virtual void onLoadModel(const std::filesystem::path &path);
+	virtual void onLoadModel(const std::filesystem::path &path);
 
- private:
-    void loadModel() noexcept;
+	private:
+	void loadModel() noexcept;
 
-    QMainWindow &_window;
+	QMainWindow &_window;
 };
 
 }  // namespace bgl

@@ -16,13 +16,13 @@ namespace bgl {
 class Window : public QMainWindow {
  public:
     explicit Window(const std::string &title);
-	// TODO(bkuolt): not movable, not copyable
+    Window(Window &&rhs) = default;
+    Window& operator=(Window &&rhs) = default;
 
-    Window(const Window&) = delete;
-    virtual ~Window() noexcept;
+    Window(const Window &rhs) = delete;
+    Window& operator=(const Window &rhs) = delete;
 
-    Window& operator=(Window &&rhs);
-    Window& operator=(const Window&) = delete;
+    virtual ~Window() noexcept = default;
 
     uvec2 getSize() const noexcept;
     void render();
@@ -30,9 +30,6 @@ class Window : public QMainWindow {
 
  protected:
 	Viewport *_viewport { nullptr };
-
- private:
-    void swap(Window &rhs) noexcept;  // TODO
 };
 
 }  // namespace bgl

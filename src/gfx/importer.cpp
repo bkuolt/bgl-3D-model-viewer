@@ -132,12 +132,14 @@ const aiScene *importScene(const std::filesystem::path &path) {
                     : throw std::runtime_error{aiGetErrorString()};
 }
 
-void load_meshes(std::vector<Mesh> &meshes, const aiScene &scene, QOpenGLShaderProgram &program) {
+void load_meshes(Model& model, const aiScene &scene, QOpenGLShaderProgram &program) {
     if (scene.mNumMeshes == 0) {
         throw std::runtime_error{"empty model"};
     }
 
+    std::vector<Mesh> &meshes { model.getMeshes() };
     meshes = std::vector<Mesh>(scene.mNumMeshes);
+
     std::cout << "loading " << meshes.size() << " meshes" << std::endl;
 
     for (auto i = 0u; i < meshes.size(); ++i) {
@@ -230,10 +232,10 @@ std::shared_ptr<Model> LoadModel(const std::filesystem::path &path){
     const auto model { std::make_shared<Model>() };
     const aiScene &scene { *importScene(path) };
 
-    model->_program = LoadProgram({ "./assets/shaders/main.vs", "./assets/shaders/main.fs" });
-    load_meshes(model->_meshes, scene, *model->_program);
-    model->_materials = load_materials(scene, path.parent_path());
-    model->_boundingBox = calculate_bounding_box(scene);
+    model->setProgram(LoadProgram({ "./assets/shaders/main.vs", "./assets/shaders/main.fs" }));
+    load_meshes(*model, scene, *model->getProgram());
+    model->setMaterials(load_materials(scene, path.parent_path()));
+    model->setBoundingBox(calculate_bounding_box(scene));
     return model;
 }
 

@@ -7,12 +7,19 @@
 
 #include <QOpenGLWidget>
 
+
 namespace bgl {
 
 class Viewport : public QOpenGLWidget {
  public:
 	explicit Viewport(QWidget *parent);
-	// TODO(bkuolt): not movable, not copyable
+	Viewport(Viewport&&) = default;
+	Viewport& operator=(Viewport&&) = default;
+
+	Viewport(const Viewport&) = delete;
+	Viewport& operator=(const Viewport&) = delete;
+
+	virtual ~Viewport() noexcept = default;
 
  protected:
 	void initializeGL() override;

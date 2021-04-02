@@ -24,7 +24,7 @@ SettingsPanel::SettingsPanel()
 }
 
 void SettingsPanel::onSettingsChanged() {
-	// TODO(bkuol)
+	// TODO
 }
 
 bool SettingsPanel::is_set(Settings settings) {

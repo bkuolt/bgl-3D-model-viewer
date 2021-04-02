@@ -12,12 +12,15 @@ namespace bgl {
 
 class SettingsPanel : public QFrame {
  public:
-    enum class RenderMode { /* TODO(bkuolt */ };
-    enum class Settings { /* TODO(bkuolt */  };
+    enum class RenderMode { /* TODO */ };
+    enum class Settings { /* TODO */  };
 
-    SettingsPanel();
-    // TODO
-    virtual ~SettingsPanel() noexcept = default;
+	SettingsPanel();
+	SettingsPanel(SettingsPanel&&) = default;
+	StatisticsPanel& operator=(SettingsPanel&&) = default;
+
+	SettingsPanel(const SettingsPanel&) = delete;
+	SettingsPanel& operator=(const SettingsPanel&) = delete;
 
     bool is_set(Settings settings);
     RenderMode get_mode();
@@ -34,11 +37,16 @@ class SettingsPanel : public QFrame {
 
 class StatisticsPanel : public QFrame {
  public:
-    enum class StatisticsType { /* TODO */ };
+	enum class StatisticsType { /* TODO */ };
 
-    StatisticsPanel();
-    virtual StatisticsPanel() noexcept = default;
-	// TODO delete
+	StatisticsPanel();
+	StatisticsPanel(StatisticsPanel&&) = default;
+	StatisticsPanel& operator=(StatisticsPanel&&) = default;
+
+	StatisticsPanel(const StatisticsPanel&) = delete;
+	StatisticsPanel& operator=(const StatisticsPanel&) = delete;
+
+	virtual StatisticsPanel() noexcept = default;
 
     void update(StatisticsType type, unsigned int value);
 
@@ -52,8 +60,13 @@ class StatisticsPanel : public QFrame {
 class Panel : public QPanel {
  public:
 	Panel();
-	virtual ~Panel() noexcept = default;
-	// TODO
+	Panel(Panel&&) = default;
+	Panel& operator=(Panel&&) = default;
+
+	Panel(const Panel&) = delete;
+	Panel& operator=(const Panel&) = delete;
+
+	virtual Panel() noexcept = default;
 
  protected:
 	virtual void settingsChanged();  // TODO

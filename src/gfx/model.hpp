@@ -23,6 +23,12 @@ namespace bgl {
 class Model {
  public:
 	Model() = default;
+	Model(Model&&) = default;
+	Model& operator=(Model&&) = default;
+
+	Model(const Model&) = delete;
+	Model& operator=(const Model&) = delete;
+
 	virtual ~Model() noexcept = default;
 
 	virtual void render(const mat4 &MVP);
@@ -31,7 +37,31 @@ class Model {
 	void resize(const vec3 &dimensions);
 	const BoundingBox& getBoundingBox() const;
 
- protected: public:  // TODO
+	void setMaterials(std::vector<Material> materials) {
+		_materials = materials;
+	}
+
+	void setProgram(std::shared_ptr<QOpenGLShaderProgram> program) {
+		_program = program;
+	}
+
+	void setBoundingBox(const BoundingBox &boundingBox) {
+		_boundingBox = boundingBox;
+	}
+
+	const std::vector<Mesh>& getMeshes() const noexcept {
+		return _meshes;
+	}
+
+	std::vector<Mesh>& getMeshes() noexcept {
+		return _meshes;
+	}
+
+	const std::shared_ptr<QOpenGLShaderProgram> getProgram() const noexcept {
+		return _program;
+	}
+
+ protected:
 	std::vector<Mesh> _meshes;
 	std::vector<Material> _materials;
 

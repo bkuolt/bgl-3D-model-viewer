@@ -1,13 +1,12 @@
-#include "window.hpp"
-#include "menu.hpp"
-
-#include <QEvent>  // QEvent::KeyPress
-
 #include <iostream>
 #include <future>    // std::call_once()
 #include <memory>
 #include <string>
-#include <utility>   // std::swap()
+
+#include "window.hpp"
+#include "menu.hpp"
+
+#include <QEvent>  // QEvent::KeyPress
 
 
 namespace bgl {
@@ -19,25 +18,6 @@ Window::Window(const std::string &title) {
 
     auto menuBar = new MenuBar(*this);
     this->setMenuBar(menuBar);
-}
-
-/*
-Window::Window(Window &&rhs) {
-    swap(rhs);
-}
-*/
-
-Window::~Window() noexcept {
-    // TODO(bkuolt)
-}
-
-Window& Window::operator=(Window &&rhs) {
-    swap(rhs);
-    return *this;
-}
-
-void Window::swap(Window &rhs) noexcept {
-    // TODO(bkuolt):
 }
 
 void Window::setViewport(Viewport *viewport) {
