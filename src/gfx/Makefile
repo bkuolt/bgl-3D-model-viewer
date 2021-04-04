@@ -1,7 +1,7 @@
 .DEFAULT_GOAL = libgfx.so
 .PHONY = libgfx.so clean
 
-INCLUDES_QT = -isystem/usr/include/x86_64-linux-gnu/qt5             \
+INCLUDES_QT = -I/usr/include -isystem /usr/include/x86_64-linux-gnu/qt5 \
 	          -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets  \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore     \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL   \
