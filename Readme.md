@@ -1,4 +1,4 @@
-![C/C++ CI](https://github.com/bkuolt/bgl-demo/workflows/C/C++%20CI/badge.svg?branch=master)
+[![C/C++ CI](https://github.com/bkuolt/bgl-3D-model-viewer/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/bkuolt/bgl-3D-model-viewer/actions/workflows/test.yml)
 
 ![Screenshot](screenshot.png "BGL Engine Tech Demo")
 
@@ -9,7 +9,7 @@ cd bgl-demo
 ./install.sh
 cd src
 make
-```
+``` 
 
 # Run
 ```bash

@@ -27,7 +27,7 @@ class Viewport : public QOpenGLWidget {
 	void paintGL() override;
 
  private:
-	virtual void on_render(float delta);
+	 virtual void on_render(float delta);
 };
 
 }  // namespace bgl
