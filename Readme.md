@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 [![C/C++ CI](https://github.com/bkuolt/bgl-3D-model-viewer/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/bkuolt/bgl-3D-model-viewer/actions/workflows/test.yml)
+=======
+[![C/C++ CI](https://github.com/bkuolt/bgl-3D-model-viewer/actions/workflows/test.yml/badge.svg?branch=development)](https://github.com/bkuolt/bgl-3D-model-viewer/actions/workflows/test.yml)
+>>>>>>> development
 
 ![Screenshot](screenshot.png "BGL Engine Tech Demo")
 
