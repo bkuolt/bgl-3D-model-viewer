@@ -32,24 +32,32 @@ Camera::Camera(const vec3 &position, const vec3 &center)
 }
 
 void Camera::updateProjectionMatrix() {
-    const double ratio = calculate_aspect_ratio();
-    const double width { (ratio / 2) * _zoom };
+    const float ratio = calculate_aspect_ratio();
+    const float width { (ratio / 2) * _zoom };
     _P = glm::frustum(-width, width,
                       -_zoom,  _zoom,
-                      1.0, 10.0);
+                      1.0f, 10.0f);
 }
 
 void Camera::updateViewMatrix() noexcept {
-    _V = glm::lookAt(_position, _center, _up);
+    _V = glm::lookAt(_position * _zoom, _center, _up);
 }
 
-void Camera::rotate(const vec2 angle) noexcept {
-    static vec2 _current_angle {};
-   _current_angle +=  angle;
-    // std::cout << "Angle: " << _current_angle.x << ", " << _current_angle.y << std::endl;
+void Camera::rotate(float angle, RotationAxis axis) {
+    _angle += angle;
 
-    auto position =  glm::rotate(getPosition(), glm::radians(_current_angle.y), _up);
-    setPosition(position);
+    vec3 v;
+    if (axis == RotationAxis::Y) {
+        v.x = std::cos(glm::radians(_angle.y));
+        v.z = std::sin(glm::radians(_angle.y));
+    }
+
+    // v.y = std::sin(glm::radians(_angle.x));
+    // v.z += std::cos(glm::radians(_angle.x));
+
+    auto distance = glm::distance(_position, _center);
+    _position = _center + (v * distance);
+    updateViewMatrix();
 }
 
 mat4 Camera::getMatrix() const noexcept {
@@ -62,8 +70,13 @@ void Camera::setPosition(const vec3 &position) noexcept {
 }
 
 void Camera::setZoom(double factor) {
+    if (factor <= 0) return;
+
     _zoom = (factor > 0.0) ? factor : throw std::invalid_argument { "invalid zoom factor" };
+
+    std::cout << "set zoom to "<< _zoom << std::endl;
     updateProjectionMatrix();
+    updateViewMatrix();
 }
 
 void Camera::setViewCenter(const vec3 &center) noexcept {
@@ -79,7 +92,7 @@ const vec3& Camera::getViewCenter() const noexcept {
     return _center;
 }
 
-double Camera::getZoom() const noexcept {
+float Camera::getZoom() const noexcept {
     return _zoom;
 }
 
