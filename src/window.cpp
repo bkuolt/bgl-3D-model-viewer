@@ -11,6 +11,7 @@
 
 #include <QApplication>               // NOLINT
 #include <QKeyEvent>                  // NOLINT
+#include <QWheelEvent>
 #include <QOpenGLFramebufferObject>   // NOLINT
 
 
@@ -105,16 +106,23 @@ bool SimpleWindow::event(QEvent *event) {
 }
 
 bool SimpleWindow::keyEvent(QKeyEvent *event) {
+    const auto rotation = 0.5;
+
     switch (event->key()) {
         case Qt::Key_Escape:
             close();
             return true;
-            break;
         case Qt::Key_Left:
-            Scene.camera.rotate(vec2(0, -0.5));
+            Scene.camera.rotate(-rotation, Camera::RotationAxis::Y);
             break;
         case Qt::Key_Right:
-            Scene.camera.rotate(vec2(0, 0.5));
+            Scene.camera.rotate(rotation, Camera::RotationAxis::Y);
+            break;
+        case Qt::Key_Up:
+            Scene.camera.rotate(-rotation, Camera::RotationAxis::Z);
+            break;
+        case Qt::Key_Down:
+            Scene.camera.rotate(rotation, Camera::RotationAxis::Z);
             break;
     default:
         return QMainWindow::event(event);
@@ -123,6 +131,15 @@ bool SimpleWindow::keyEvent(QKeyEvent *event) {
     _viewport.makeCurrent();
     _viewport.update();
     return true;
+}
+
+void SimpleWindow::wheelEvent(QWheelEvent *event) {
+    const float delta { (-event->angleDelta().y() / 120.0f) / 10.0f };  // TODO
+    const float zoom { std::max(Scene.camera.getZoom() + delta, 1.0f) };
+    Scene.camera.setZoom(zoom);
+
+    _viewport.makeCurrent();
+    _viewport.update();
 }
 
 }  // namespace bgl

@@ -21,13 +21,20 @@ class Camera {
     void setPosition(const vec3 &position) noexcept;
     void setZoom(double factor = 1.0);
     void setViewCenter(const vec3 &center) noexcept;
-    void rotate(const vec2 degrees) noexcept;
 
-    const vec3& getPosition() const noexcept;
-    const vec3& getViewCenter() const noexcept;
-    double getZoom() const noexcept;
+	enum class RotationAxis { Y, Z };
 
-    mat4 getMatrix() const noexcept;
+	void rotate(float angle, RotationAxis axis);
+
+	void zoom(float delta) {
+		// TODO
+	}
+
+	const vec3& getPosition() const noexcept;
+	const vec3& getViewCenter() const noexcept;
+	float getZoom() const noexcept;
+
+	mat4 getMatrix() const noexcept;
 
  private:
     void updateProjectionMatrix();
@@ -36,10 +43,11 @@ class Camera {
     vec3 _position { 0.0, 0.0, 1.0 };
     vec3 _center { 0.0, 0.0, 0.0 };
     const vec3 _up {0.0, 1.0, 0.0 };
-    double _zoom { 1.0 };
+    float _zoom { 1.0 };
 
     mat4 _V;
     mat4 _P;
+    vec2 _angle {0, 90 };
 };
 
 }  // namespace bgl
