@@ -2,21 +2,12 @@ name: C/C++ CI
 
 on:
   push:
-<<<<<<< HEAD
     branches: [ master ]
   pull_request:
     branches: [ master ]
   workflow_dispatch:
     push:
       branches: [ master ]
-=======
-    branches: [ development ]
-  pull_request:
-    branches: [ development ]
-  workflow_dispatch:
-    push:
-      branches: [ development ]
->>>>>>> development
 jobs:
   build:
     runs-on: ubuntu-latest
