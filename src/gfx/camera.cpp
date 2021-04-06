@@ -50,6 +50,8 @@ void Camera::rotate(float angle, RotationAxis axis) {
     if (axis == RotationAxis::Y) {
         v.x = std::cos(glm::radians(_angle.y));
         v.z = std::sin(glm::radians(_angle.y));
+    } else {
+        return;  // TODO
     }
 
     // v.y = std::sin(glm::radians(_angle.x));
