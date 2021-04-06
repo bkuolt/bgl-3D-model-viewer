@@ -43,10 +43,8 @@ QMenuBar* get_dummy_menu_bar(QMainWindow &window) {
 
 Window::Window(const std::string &title) {
     this->setWindowTitle("BGL Demo");
-
     this->setMenuBar(get_dummy_menu_bar(*this));
     this->setStatusBar(get_dummy_status_bar());
-    // TODO: add panel
 
     const QSize size { get_desktop_size() };
     this->setFixedSize(size.width() * 0.75, size.height() * 0.75);

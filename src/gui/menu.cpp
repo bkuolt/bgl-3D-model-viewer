@@ -13,10 +13,6 @@
 #include "../gfx/model.hpp"  // TODO
 
 
-
-
-namespace bgl {
-
 namespace {
 
 inline std::optional<std::filesystem::path> chooseFile() {
@@ -24,29 +20,24 @@ inline std::optional<std::filesystem::path> chooseFile() {
     return fileName.isEmpty() ? std::filesystem::path{} : std::filesystem::path { fileName.toStdString() };
 }
 
-//}  // namespace actions
-
 /**
- * @brief 
- * 
- * @param progressBar 
- * @return std::shared_ptr<Model> 
+ * @brief Selects and loads a 3D model.
  */
-std::optional<std::shared_ptr<bgl::Model>> load3DModel(QProgressBar &progressBar) {
+void load3DModel() {
     std::optional<std::filesystem::path> path { chooseFile() };
     if (!path.has_value()) {
-        return {};  // there was no file chosen
+        QMessageBox::information(nullptr, "Warning", "No file chosen.");
+        return {};
     }
-    // TODO: check whether file changed -> avoid unnecessary reload
 
+    QProgressBar progressBar;
     progressBar.show();
     progressBar.setValue(0);
 
     std::shared_ptr<bgl::Model> model;
-
     try {
-        // TODO: model = bgl::io::Load3DModel(path);
-        QMessageBox::information(nullptr, "Warning", "Not implemented");
+        model = bgl::LoadModel(path.value());
+        // TODO: update progress bar
     } catch (std::exception &exception) {
         QMessageBox::critical(nullptr, "Error", exception.what());
         progressBar.reset();
@@ -57,33 +48,25 @@ std::optional<std::shared_ptr<bgl::Model>> load3DModel(QProgressBar &progressBar
     // TODO: update model statistics panel
     progressBar.setValue(100);
     progressBar.hide();
-    return model;
+    // TODO: update model in viewport
 }
 
-
-void showInfoBox() {
-    // TODO
+inline void showAboutBox() {
+    QMessageBox::about(nullptr, "About,", "A simple Qt OpenGL demo.");
 }
 
 }  // anonymous namespace
 
-
-void MenuBar::loadModel() noexcept {
-    // TODO
-}
+namespace bgl {
 
 MenuBar::MenuBar(QMainWindow &window)
     : _window { window } {
     QMenu * const fileMenu { this->addMenu("&File") };
-    fileMenu->addAction("Load", this, &MenuBar::loadModel);
-    fileMenu->addAction("Exit", [this] () {
-        _window.close();
-    });
+    fileMenu->addAction("Load", this, &load3DModel);
+    fileMenu->addAction("Exit", [this] () { _window.close(); });
 
     QMenu * const helpMenu { this->addMenu("&Help") };
-    helpMenu->addAction("About", [] () {
-        QMessageBox::about(nullptr, "About,", "A simple Qt OpenGL demo.");
-    });
+    helpMenu->addAction("About", &showAboutBox);
 }
 
 void MenuBar::onLoadModel(const std::filesystem::path &path) {
