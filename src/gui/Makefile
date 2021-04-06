@@ -18,7 +18,7 @@ WARNINGS = -pedantic -Wall -Wextra -Wcast-align -Wcast-qual  \
 		   -Wundef -Wno-unused
 
 FLAGS = -std=c++17 -Wno-endif-labels     \
-        $(WARNINGS)                      \
+        -Wall                            \
 		$(INCLUDES_QT) -DQT_NO_KEYWORDS  \
 		-fPIC -o3
 

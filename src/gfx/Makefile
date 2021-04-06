@@ -18,7 +18,7 @@ WARNINGS = -pedantic -Wall -Wextra -Wcast-align -Wcast-qual  \
 		   -Wundef -Wno-unused 
 
 # C++20 features: designated initializers
-FLAGS = $(INCLUDES_QT) $(WARNINGS)  \
+FLAGS = $(INCLUDES_QT) -Wall        \
         -std=gnu++2a                \
 		-fPIC -O3
 

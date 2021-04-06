@@ -18,7 +18,7 @@ WARNINGS = -pedantic -Wall -Wextra -Wcast-align -Wcast-qual  \
 
 FLAGS = -std=c++17 -pthread   \
 	    $(INCLUDES_QT)        \
-	    $(WARNINGS)           \
+	    -Wall                 \
 		-fPIC -O3
 
 LIBS = -lstdc++fs                                   \

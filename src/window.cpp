@@ -62,8 +62,6 @@ GLViewport::GLViewport(QWidget *parent)
 {}
 
 void GLViewport::on_render(float delta) {
-    static QSize size { 1280, 720 };
-
     QOpenGLFramebufferObjectFormat format;
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
     format.setMipmap(false);
