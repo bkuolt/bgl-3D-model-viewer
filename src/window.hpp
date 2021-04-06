@@ -2,10 +2,10 @@
  * @file window.hpp
  * @brief 
  */
-#include <string>
 #include <QKeyEvent>
 
-#include "gfx/gfx.hpp"  // bgl::Window, bgl::Viewport
+#include <string>
+
 #include "gui/gui.hpp"  // bgl::Window, bgl::Viewport
 
 
@@ -31,17 +31,15 @@ class GLViewport final : public Viewport {
 
 /**
  * @brief 
- * 
  */
-class SimpleWindow final : public bgl::Window {
+class SimpleWindow final : public Window {
  public:
 	SimpleWindow() noexcept = default;
 	explicit SimpleWindow(const std::string &title);
+	SimpleWindow(SimpleWindow&&) = default;
 
 	SimpleWindow(const SimpleWindow&) = delete;
 	SimpleWindow& operator=(const SimpleWindow&) = delete;
-
-	SimpleWindow(SimpleWindow&&) = default;
 	SimpleWindow& operator=(SimpleWindow&&) = default;
 
 	virtual ~SimpleWindow() noexcept = default;

@@ -1,4 +1,4 @@
-#ifndef GUI_PANEL_HPP_
+#ifdef  GUI_PANEL_HPP_
 #define GUI_PANEL_HPP_
 
 #include <QFrame>

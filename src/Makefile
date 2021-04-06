@@ -6,10 +6,20 @@ INCLUDES_QT =  -I/usr/include -isystem /usr/include/x86_64-linux-gnu/qt5  \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore           \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL         \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui
+WARNINGS = -pedantic -Wall -Wextra -Wcast-align -Wcast-qual  \
+           -Wctor-dtor-privacy -Wdisabled-optimization       \
+		   -Wformat=2 -Winit-self -Wlogical-op               \
+		   -Wmissing-declarations -Wmissing-include-dirs     \
+		   -Wnoexcept -Wold-style-cast -Woverloaded-virtual  \
+		   -Wredundant-decls -Wshadow -Wsign-conversion      \
+		   -Wsign-promo -Wstrict-null-sentinel               \
+		   -Wstrict-overflow=5 -Wswitch-default              \
+		   -Wundef -Wno-unused # -Werror 
 
-FLAGS = -std=c++17 -pthread    \
-	    $(INCLUDES_QT)         \
-	    -Wall -fPIC -O3
+FLAGS = -std=c++17 -pthread   \
+	    $(INCLUDES_QT)        \
+	    $(WARNINGS)           \
+		-fPIC -O3
 
 LIBS = -lstdc++fs                                   \
        -lGLEW -lGL -lGLU                            \

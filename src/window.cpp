@@ -1,6 +1,12 @@
+#include "gfx/gfx.hpp"
 
-#include <memory>
-#include <iostream>
+#include <QApplication>
+#include <QKeyEvent>
+#include <QWheelEvent>
+#include <QOpenGLFramebufferObject>  // QOpenGLFramebufferObjectFormat
+
+#include <algorithm>  // std::max()
+#include <memory>     // std::shared_ptr
 
 #include "window.hpp"
 
@@ -8,11 +14,6 @@
 #include "gfx/box.hpp"
 #include "gfx/grid.hpp"
 #include "gfx/camera.hpp"
-
-#include <QApplication>               // NOLINT
-#include <QKeyEvent>                  // NOLINT
-#include <QWheelEvent>
-#include <QOpenGLFramebufferObject>   // NOLINT
 
 
 namespace bgl {
@@ -27,8 +28,6 @@ struct {
 } Scene;
 
 void set_up_scene(const std::filesystem::path &path) {
-	std::cout << "\nLoading " << path << " ..." << std::endl;
-
 	Scene.model = LoadModel(path);
 	Scene.camera.setViewCenter({ 0.0, 0.0, 0.0 });
 	Scene.camera.setPosition({ 0.0, 1.0, 2.0 });
@@ -56,6 +55,7 @@ void set_up_scene(const std::filesystem::path &path) {
 
 }  // anonymous namespace
 
+/* ------------------------------------ GLViewport ------------------------------------ */
 
 GLViewport::GLViewport(QWidget *parent)
     : Viewport(parent)
@@ -90,6 +90,7 @@ void GLViewport::on_render(float delta) {
     Scene.model->render(PV, light);
 }
 
+/* ------------------------------------ SimpleWindow ------------------------------------ */
 
 SimpleWindow::SimpleWindow(const std::string &title)
     : bgl::Window(title), _viewport(this) {

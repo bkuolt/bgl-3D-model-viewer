@@ -1,3 +1,10 @@
+#include <QFileDialog>
+#include <QMainWindow>
+#include <QMenu>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QProgressBar>
+
 #include <optional>
 #include <filesystem>
 #include <memory>
@@ -5,12 +12,7 @@
 #include "menu.hpp"
 #include "../gfx/model.hpp"  // TODO
 
-#include <QFileDialog>
-#include <QMainWindow>
-#include <QMenu>
-#include <QMenuBar>
-#include <QMessageBox>
-#include <QProgressBar>
+
 
 
 namespace bgl {
@@ -44,6 +46,7 @@ std::optional<std::shared_ptr<bgl::Model>> load3DModel(QProgressBar &progressBar
 
     try {
         // TODO: model = bgl::io::Load3DModel(path);
+        QMessageBox::information(nullptr, "Warning", "Not implemented");
     } catch (std::exception &exception) {
         QMessageBox::critical(nullptr, "Error", exception.what());
         progressBar.reset();
