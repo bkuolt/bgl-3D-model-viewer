@@ -4,7 +4,7 @@
 #include <string>
 #include <QMainWindow>  // NOLINT
 
-#include "../gl.hpp"    // TODO(bkuolt): fix this
+#include "../gfx/gl.hpp"    // TODO(bkuolt): fix this
 #include "viewport.hpp"
 
 

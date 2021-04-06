@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "menu.hpp"
-#include "../model.hpp"
+#include "../gfx/model.hpp"  // TODO
 
 #include <QFileDialog>
 #include <QMainWindow>

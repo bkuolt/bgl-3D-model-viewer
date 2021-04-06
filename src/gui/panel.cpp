@@ -1,3 +1,4 @@
+#if 0
 #include "panel.hpp"
 
 #include <QFrame>
@@ -66,3 +67,5 @@ Panel::Panel() {
 }
 
 }  // namespace bgl
+
+#endif  // 0

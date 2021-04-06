@@ -2,7 +2,7 @@
  * @file viewport.cpp
  * @brief A simple OpenGL Qt Viewport
  */
-#include "../gl.hpp"
+#include "../gfx/gl.hpp"
 #include "viewport.hpp"
 
 #include <QOpenGLWidget>

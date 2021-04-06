@@ -7,7 +7,7 @@
 #include "gl.hpp"
 #include "mesh.hpp"
 #include "model.hpp"
-#include "gui/window.hpp"
+// #include "gui/window.hpp"
 
 #include <QOpenGLShaderProgram>  // NOLINT (glew issue)
 

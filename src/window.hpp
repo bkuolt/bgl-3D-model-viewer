@@ -6,6 +6,7 @@
 #include <QKeyEvent>
 
 #include "gfx/gfx.hpp"  // bgl::Window, bgl::Viewport
+#include "gui/gui.hpp"  // bgl::Window, bgl::Viewport
 
 
 namespace bgl {
