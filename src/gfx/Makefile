@@ -17,7 +17,10 @@ WARNINGS = -pedantic -Wall -Wextra -Wcast-align -Wcast-qual  \
 		   -Wstrict-overflow=5 -Wswitch-default              \
 		   -Wundef -Wno-unused 
 
-FLAGS = $(INCLUDES_QT) $(WARNINGS) -std=c++17 -Wall -fPIC -O3
+# C++20 features: designated initializers
+FLAGS = $(INCLUDES_QT) $(WARNINGS)  \
+        -std=gnu++2a                \
+		-fPIC -O3
 
 OBJS = mesh.o importer.o model.o \
 	   box.o grid.o     \
