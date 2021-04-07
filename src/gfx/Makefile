@@ -22,7 +22,7 @@ FLAGS = $(INCLUDES_QT) -Wall        \
         -std=gnu++2a                \
 		-fPIC -O3
 
-OBJS = mesh.o importer.o model.o \
+OBJS = mesh.o importer.o model.o bounding_box.o \
 	   box.o grid.o     \
 	   camera.o gfx.o
 
