@@ -160,7 +160,7 @@ BoundingBox calculate_bounding_box(const aiScene &scene) noexcept {
         const aiMesh &mesh{*scene.mMeshes[i]};
 
         for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
-            for (auto c = 0u; c < 3; ++c) {
+            for (auto c = 0; c < 3; ++c) {
                 boundingBox._bounds[c].min = std::min(boundingBox._bounds[c].min, mesh.mVertices[vertex_index][c]);
                 boundingBox._bounds[c].max = std::max(boundingBox._bounds[c].max, mesh.mVertices[vertex_index][c]);
             }

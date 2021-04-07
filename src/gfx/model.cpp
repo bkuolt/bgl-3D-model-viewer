@@ -1,10 +1,3 @@
-#include <algorithm>
-#include <iostream>
-#include <list>
-#include <string>
-
-#include "model.hpp"
-#include "box.hpp"
 #include "gfx.hpp"
 
 #include <QImage>
@@ -12,7 +5,13 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 
-#include "gfx.hpp"
+#include <algorithm>
+#include <iostream>
+#include <list>
+#include <string>
+
+#include "model.hpp"
+#include "box.hpp"
 
 
 namespace bgl {
@@ -26,20 +25,20 @@ inline QVector3D to_qt(const glm::vec3 &v) noexcept {
 /*********************************************************
  *                      Lighting Code                    *
  *********************************************************/
-void setupLight(QOpenGLShaderProgram &program, const DirectionalLight &light) {
+void setupLight(QOpenGLShaderProgram &program /* NOLINT */, const DirectionalLight &light) {
     program.setUniformValue("light.direction", to_qt(light.direction));
     program.setUniformValue("light.diffuse", to_qt(light.diffuse));
     program.setUniformValue("light.ambient", to_qt(light.ambient));
 }
 
-void setupTexture(QOpenGLShaderProgram &program, QOpenGLTexture &texture,
+void setupTexture(QOpenGLShaderProgram &program /* NOLINT */, QOpenGLTexture &texture,
                   const std::string &name, GLuint textureUnit = 0) {
     glActiveTexture(GL_TEXTURE0 + textureUnit);
     texture.bind();
     program.setUniformValue(name.c_str(), textureUnit);
 }
 
-void setupMaterial(QOpenGLShaderProgram &program, const Material &material) {
+void setupMaterial(QOpenGLShaderProgram &program /* NOLINT */, const Material &material) {
     program.setUniformValue("material.ambient", to_qt(material.ambient));
     program.setUniformValue("material.diffuse", to_qt(material.diffuse));
     program.setUniformValue("material.specular", to_qt(material.specular));

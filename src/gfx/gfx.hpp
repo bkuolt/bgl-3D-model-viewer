@@ -7,14 +7,14 @@
 #include "gl.hpp"
 #include "mesh.hpp"
 #include "model.hpp"
-#include "gui/window.hpp"
+// #include "gui/window.hpp"
 
 #include <QOpenGLShaderProgram>  // NOLINT (glew issue)
 
 
 namespace bgl {
 
-void set_va_attribute(GLuint location, GLsizei size, GLenum type, GLsizei stride, GLsizei offset);
+void set_va_attribute(GLint location, GLsizei size, GLenum type, GLsizei stride, GLsizei offset);
 std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs);
 std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::initializer_list<std::filesystem::path> &shaders);
 

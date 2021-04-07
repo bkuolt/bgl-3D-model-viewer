@@ -72,7 +72,7 @@ class Model {
 /**
  * @brief Loads a 3D model file.
  */
-std::shared_ptr<Model> LoadModel(const std::filesystem::path &path);  // defined in importer.cpp
+std::shared_ptr<Model> LoadModel(const std::filesystem::path &path);  // TODO defined in importer.cpp
 
 }  // namespace bgl
 
