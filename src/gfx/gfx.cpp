@@ -7,8 +7,9 @@
 namespace bgl {
 
 // vao must be bound!
-void set_va_attribute(GLuint location, GLsizei size, GLenum type, GLsizei stride, GLsizei offset) {
+void set_va_attribute(GLint location, GLsizei size, GLenum type, GLsizei stride, GLsizei offset) {
     glEnableVertexAttribArray(location);
+    // TODO: check if location < 0
     glVertexAttribPointer(location, size, type, GL_FALSE, stride, reinterpret_cast<void*>(offset));
 
     const GLenum error { glGetError() };
