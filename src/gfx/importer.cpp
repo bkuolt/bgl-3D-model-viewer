@@ -155,18 +155,35 @@ void load_meshes(Model& model, const aiScene &scene, QOpenGLShaderProgram &progr
 }
 
 BoundingBox calculate_bounding_box(const aiScene &scene) noexcept {
+    struct Bound {
+        float min;
+        float max;
+    };
+    tvec3<Bound> bounds;
+
     BoundingBox boundingBox;
     for (auto i = 0u; i < scene.mNumMeshes; ++i) {
         const aiMesh &mesh{*scene.mMeshes[i]};
 
         for (auto vertex_index = 0u; vertex_index < mesh.mNumVertices; ++vertex_index) {
             for (auto c = 0; c < 3; ++c) {
-                boundingBox._bounds[c].min = std::min(boundingBox._bounds[c].min, mesh.mVertices[vertex_index][c]);
-                boundingBox._bounds[c].max = std::max(boundingBox._bounds[c].max, mesh.mVertices[vertex_index][c]);
+                bounds[c].min = std::min(bounds[c].min, mesh.mVertices[vertex_index][c]);
+                bounds[c].max = std::max(bounds[c].max, mesh.mVertices[vertex_index][c]);
             }
         }
     }
-    return boundingBox;
+
+    const vec3 size {
+        bounds.x.max - bounds.x.min,
+        bounds.y.max - bounds.y.min,
+        bounds.z.max - bounds.z.min
+    };
+    const vec3 center {
+        bounds.x.min + (size.x / 2),
+        bounds.y.min + (size.y / 2),
+        bounds.z.min + (size.z / 2)
+    };
+    return BoundingBox { center, size };
 }
 
 /*********************************************************
