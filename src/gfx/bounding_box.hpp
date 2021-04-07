@@ -8,7 +8,6 @@ namespace bgl {
 
 class BoundingBox {
  public:
-
 	BoundingBox(const vec3 &center, const vec3 &size)
 		: _center(center), _size(size) {
 	}
