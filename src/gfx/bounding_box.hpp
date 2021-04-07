@@ -6,26 +6,21 @@
 
 namespace bgl {
 
-struct Bound {
-	float min;
-	float max;
-};
+class BoundingBox {
+ public:
+	explicit BoundingBox(float size = 1.0f);
+	BoundingBox(const vec3 &center, const vec3 &size);
 
-struct BoundingBox {
-	const vec3& getSize() const noexcept {
-		return _dimensions = {
-			_bounds.x.max -  _bounds.x.min,
-			_bounds.y.max -  _bounds.y.min,
-			_bounds.z.max -  _bounds.z.min
-			};
-	}
+	vec3 getSize() const noexcept;
+	void resize(const vec3 &size);
+	// TODO: getCenter()
+	// TODO: setCenter()
+	// TODO: translate()
+	// TODO: collides()
 
-	void resize(const vec3 &dimensions) {
-		_dimensions = dimensions;  // TODO
-	}
-
-	mutable vec3 _dimensions;  // TODO
-	tvec3<Bound> _bounds;
+ private:
+	vec3 _center;
+	vec3 _size;
 };
 
 }  // namespace bgl

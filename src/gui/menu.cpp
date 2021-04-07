@@ -27,7 +27,7 @@ void load3DModel() {
     std::optional<std::filesystem::path> path { chooseFile() };
     if (!path.has_value()) {
         QMessageBox::information(nullptr, "Warning", "No file chosen.");
-        return {};
+        return;
     }
 
     QProgressBar progressBar;
@@ -42,7 +42,7 @@ void load3DModel() {
         QMessageBox::critical(nullptr, "Error", exception.what());
         progressBar.reset();
         progressBar.hide();
-        return {};
+        return;
     }
 
     // TODO: update model statistics panel

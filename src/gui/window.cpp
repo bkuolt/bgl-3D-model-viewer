@@ -2,6 +2,7 @@
 #include <QGuiApplication>
 #include <QScreen>
 #include <QStatusBar>
+#include <QGroupBox>
 
 #include <future>    // std::call_once()
 #include <memory>
@@ -39,8 +40,8 @@ QMenuBar* get_dummy_menu_bar(QMainWindow &window) {
     return menuBar;
 }
 
-QPanel* get_dummy_panel() {
-    return {};  // TODO
+QGroupBox* get_dummy_panel() {
+    return nullptr;  // TODO
 }
 
 }  // anonymous namespace

@@ -23,13 +23,13 @@ namespace {
 struct {
 	std::shared_ptr<Model> model;
 	std::shared_ptr<Grid> grid;
-	Camera camera;
+	ArcBall camera;
 	std::shared_ptr<Box> box;
 } Scene;
 
 void set_up_scene(const std::filesystem::path &path) {
 	Scene.model = LoadModel(path);
-	Scene.camera.setViewCenter({ 0.0, 0.0, 0.0 });
+	Scene.camera.setFocus({ 0.0, 0.0, 0.0 });
 	Scene.camera.setPosition({ 0.0, 1.0, 2.0 });
 
 	Scene.box = std::make_shared<Box>(Scene.model->getBoundingBox());
@@ -75,7 +75,7 @@ void GLViewport::on_render(float delta) {
     }
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    const mat4 PV { Scene.camera.getMatrix() };
+    const mat4 PV { Scene.camera.matrix() };
     Scene.grid->render(PV);
     Scene.box->render(PV);
 
@@ -105,23 +105,23 @@ bool SimpleWindow::event(QEvent *event) {
 }
 
 bool SimpleWindow::keyEvent(QKeyEvent *event) {
-    const auto rotation = 0.5;
+    const auto rotation = 5;
 
     switch (event->key()) {
         case Qt::Key_Escape:
             close();
             return true;
         case Qt::Key_Left:
-            Scene.camera.rotate(-rotation, Camera::RotationAxis::Y);
+            Scene.camera.rotate(-rotation, 0);
             break;
         case Qt::Key_Right:
-            Scene.camera.rotate(rotation, Camera::RotationAxis::Y);
+            Scene.camera.rotate(rotation, 0);
             break;
         case Qt::Key_Up:
-            Scene.camera.rotate(-rotation, Camera::RotationAxis::Z);
+            Scene.camera.rotate(0, -rotation);
             break;
         case Qt::Key_Down:
-            Scene.camera.rotate(rotation, Camera::RotationAxis::Z);
+            Scene.camera.rotate(0, rotation);
             break;
     default:
         return QMainWindow::event(event);
