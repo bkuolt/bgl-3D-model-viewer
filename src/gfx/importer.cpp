@@ -159,7 +159,7 @@ BoundingBox calculate_bounding_box(const aiScene &scene) noexcept {
         float min;
         float max;
     };
-    tvec3<Bound> bounds;
+    tvec3<Bound> bounds;  // TODO: simplifiy code
 
     BoundingBox boundingBox;
     for (auto i = 0u; i < scene.mNumMeshes; ++i) {

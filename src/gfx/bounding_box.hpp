@@ -8,21 +8,15 @@ namespace bgl {
 
 class BoundingBox {
  public:
-	BoundingBox(const vec3 &center, const vec3 &size)
-		: _center(center), _size(size) {
-	}
+	explicit BoundingBox(float size = 1.0f);
+	BoundingBox(const vec3 &center, const vec3 &size);
 
-	explicit BoundingBox(float size = 1.0f)
-		: BoundingBox({}, vec3 { 1.0f } ) {
-	}
-
-	vec3 getSize() const noexcept {
-		return _size;
-	}
-
-	void resize(const vec3 &size) {
-		_size = size;
-	}
+	vec3 getSize() const noexcept;
+	void resize(const vec3 &size);
+	// TODO: getCenter()
+	// TODO: setCenter()
+	// TODO: translate()
+	// TODO: collides()
 
  private:
 	vec3 _center;
