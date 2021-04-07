@@ -3,12 +3,13 @@
  * @brief A simple OpenGL Qt Viewport
  */
 #include "../gfx/gl.hpp"
-#include "viewport.hpp"
 
 #include <QOpenGLWidget>
+
 #include <iostream>
 #include <ctime>     // std::clock()
 
+#include "viewport.hpp"
 
 
 namespace bgl {
@@ -53,21 +54,8 @@ class frame_counter final {
 
 }  // anonymous namespace
 
-
-
-
 Viewport::Viewport(QWidget *parent)
-    : QOpenGLWidget( parent)
-{
-
-
-
-	//QGLContext context(glFormat);
-		
-	//this->context()->setFormat(glFormat);
-//	this->update();
-
-
+    : QOpenGLWidget( parent) {
 }
 
 void Viewport::initializeGL() {

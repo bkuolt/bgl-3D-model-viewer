@@ -3,13 +3,13 @@
 #include <QScreen>
 #include <QStatusBar>
 
-#include <iostream>
 #include <future>    // std::call_once()
 #include <memory>
 #include <string>
 
 #include "window.hpp"
 #include "menu.hpp"
+#include "panel.hpp"
 
 
 namespace bgl {
@@ -37,6 +37,10 @@ QStatusBar* get_dummy_status_bar() {
 QMenuBar* get_dummy_menu_bar(QMainWindow &window) {
     static QMenuBar * menuBar { new MenuBar(window) };
     return menuBar;
+}
+
+QPanel* get_dummy_panel() {
+    return {};  // TODO
 }
 
 }  // anonymous namespace
