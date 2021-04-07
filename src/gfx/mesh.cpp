@@ -31,7 +31,7 @@ void Mesh::render(GLenum mode, GLuint count) {
 
 void Mesh::render(GLenum mode) {
     _ibo.bind();  // for each @p _ibo.size()
-    render(mode, _ibo.size() / sizeof(GLuint));
+    render(mode, static_cast<GLuint>(_ibo.size()) / sizeof(GLuint));
 }
 
 void Mesh::bind() {

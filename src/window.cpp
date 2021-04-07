@@ -1,6 +1,12 @@
+#include "gfx/gfx.hpp"
 
-#include <memory>
-#include <iostream>
+#include <QApplication>
+#include <QKeyEvent>
+#include <QWheelEvent>
+#include <QOpenGLFramebufferObject>  // QOpenGLFramebufferObjectFormat
+
+#include <algorithm>  // std::max()
+#include <memory>     // std::shared_ptr
 
 #include "window.hpp"
 
@@ -8,11 +14,6 @@
 #include "gfx/box.hpp"
 #include "gfx/grid.hpp"
 #include "gfx/camera.hpp"
-
-#include <QApplication>               // NOLINT
-#include <QKeyEvent>                  // NOLINT
-#include <QWheelEvent>
-#include <QOpenGLFramebufferObject>   // NOLINT
 
 
 namespace bgl {
@@ -22,15 +23,13 @@ namespace {
 struct {
 	std::shared_ptr<Model> model;
 	std::shared_ptr<Grid> grid;
-	Camera camera;
+	ArcBall camera;
 	std::shared_ptr<Box> box;
 } Scene;
 
 void set_up_scene(const std::filesystem::path &path) {
-	std::cout << "\nLoading " << path << " ..." << std::endl;
-
 	Scene.model = LoadModel(path);
-	Scene.camera.setViewCenter({ 0.0, 0.0, 0.0 });
+	Scene.camera.setFocus({ 0.0, 0.0, 0.0 });
 	Scene.camera.setPosition({ 0.0, 1.0, 2.0 });
 
 	Scene.box = std::make_shared<Box>(Scene.model->getBoundingBox());
@@ -56,14 +55,13 @@ void set_up_scene(const std::filesystem::path &path) {
 
 }  // anonymous namespace
 
+/* ------------------------------------ GLViewport ------------------------------------ */
 
 GLViewport::GLViewport(QWidget *parent)
     : Viewport(parent)
 {}
 
 void GLViewport::on_render(float delta) {
-    static QSize size { 1280, 720 };
-
     QOpenGLFramebufferObjectFormat format;
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
     format.setMipmap(false);
@@ -77,7 +75,7 @@ void GLViewport::on_render(float delta) {
     }
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    const mat4 PV { Scene.camera.getMatrix() };
+    const mat4 PV { Scene.camera.matrix() };
     Scene.grid->render(PV);
     Scene.box->render(PV);
 
@@ -90,6 +88,7 @@ void GLViewport::on_render(float delta) {
     Scene.model->render(PV, light);
 }
 
+/* ------------------------------------ SimpleWindow ------------------------------------ */
 
 SimpleWindow::SimpleWindow(const std::string &title)
     : bgl::Window(title), _viewport(this) {
@@ -106,23 +105,23 @@ bool SimpleWindow::event(QEvent *event) {
 }
 
 bool SimpleWindow::keyEvent(QKeyEvent *event) {
-    const auto rotation = 0.5;
+    const auto rotation = 5;
 
     switch (event->key()) {
         case Qt::Key_Escape:
             close();
             return true;
         case Qt::Key_Left:
-            Scene.camera.rotate(-rotation, Camera::RotationAxis::Y);
+            Scene.camera.rotate(-rotation, 0);
             break;
         case Qt::Key_Right:
-            Scene.camera.rotate(rotation, Camera::RotationAxis::Y);
+            Scene.camera.rotate(rotation, 0);
             break;
         case Qt::Key_Up:
-            Scene.camera.rotate(-rotation, Camera::RotationAxis::Z);
+            Scene.camera.rotate(0, -rotation);
             break;
         case Qt::Key_Down:
-            Scene.camera.rotate(rotation, Camera::RotationAxis::Z);
+            Scene.camera.rotate(0, rotation);
             break;
     default:
         return QMainWindow::event(event);

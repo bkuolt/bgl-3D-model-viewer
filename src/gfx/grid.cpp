@@ -20,7 +20,7 @@ Grid::Grid(GLfloat size, std::size_t num_cells)
 }
 
 void Grid::create_vbo() {
-    auto get_index = [&](int x, int z) -> GLuint { return (_num_cells * z) + x; };
+    auto get_index = [&](unsigned x, unsigned z) { return (_num_cells * z) + x; };
 
     const float size = _num_cells * _cell_size;
     const vec3 T { size / 2.0f, 0.0f, size / 2.0f };
@@ -42,16 +42,16 @@ void Grid::create_vbo() {
 }
 
 void Grid::create_ibo() {
-    auto get_index = [&](int x, int z) { return (_num_cells * z) + x; };
+    auto get_index = [&](unsigned x, unsigned z) { return (_num_cells * z) + x; };
 
     const size_t num_triangles { 2 * _num_cells * _num_cells + 4 };
     _meshes[0]._ibo.bind();
     _meshes[0]._ibo.allocate(num_triangles * 3 * sizeof(GLuint) /* vertices */);
 
     using uvec2 = glm::tvec2<GLuint>;
-    uvec2 *buffer = reinterpret_cast<uvec2*>(_meshes[0]._ibo.map(QOpenGLBuffer::WriteOnly));
-    if (buffer == 0) {
-        throw std::runtime_error { "!!!" };
+    uvec2 *buffer { reinterpret_cast<uvec2*>(_meshes[0]._ibo.map(QOpenGLBuffer::WriteOnly)) };
+    if (buffer == nullptr) {
+        throw std::runtime_error { "could not create QOpenGLBuffer" };
     }
 
     for (auto z = 0u; z < _num_cells - 1; ++z) {

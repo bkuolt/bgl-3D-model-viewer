@@ -1,11 +1,11 @@
+#include <QApplication>
+#include <QMessageBox>
+
 #include <csignal>
 #include <cstdlib>
 #include <stdexcept>
 
 #include "window.hpp"
-
-#include <QApplication>  // NOLINT
-#include <QMessageBox>   // NOLINT
 
 
 static void signal_handler(int signal) {

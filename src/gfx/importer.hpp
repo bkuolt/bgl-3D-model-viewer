@@ -13,7 +13,7 @@
 namespace bgl {
 
 /**
- * @brief Loads and creates an OpenGL texture from an image file
+ * @brief Loads and creates an OpenGL texture from an image file.
  */
 std::shared_ptr<QOpenGLTexture> LoadTexture(const std::filesystem::path &path);
 
