@@ -67,7 +67,9 @@ uvec2 Window::getSize() const noexcept {
     return { size().width(), size().height() };
 }
 
-void Window::render() {
+void Window::render() 
+{
+    //_viewport->on_render(0);
 	// TODO(bkuolt)
 }
 

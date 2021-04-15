@@ -53,6 +53,7 @@ uvec2 Window::getSize() const noexcept {
 }
 
 void Window::render() {
+   _viewport->show();
 	// TODO(bkuolt)
 }
 

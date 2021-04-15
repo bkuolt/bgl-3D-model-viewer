@@ -59,7 +59,7 @@ demo: libbgl.so main.o window.o
 run: demo
 	export LD_LIBRARY_PATH=./;   \
 	echo $(LD_LIBRARY_PATH);     \
-	./demo assets/models/housemedieval.obj
+	./demo ./assets/models/housemedieval.obj
 
 install: libbgl.so demo
 	sudo cp libbgl.so /usr/lib/libbgl.so ;  \

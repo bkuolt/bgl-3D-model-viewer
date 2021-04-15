@@ -21,14 +21,15 @@ class Viewport : public QOpenGLWidget {
 
 	virtual ~Viewport() noexcept = default;
 
+	virtual void on_render(float delta);
+	virtual void onDraw(float delta);
+
  protected:
 	void initializeGL() override;
 	void resizeGL(int width, int height) override;
 	void paintGL() override;
 
- private:
-	virtual void on_render(float delta);
-	virtual void onDraw(float delta);
+
 };
 
 }  // namespace bgl

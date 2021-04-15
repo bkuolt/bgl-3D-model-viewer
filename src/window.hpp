@@ -47,9 +47,11 @@ class SimpleWindow final : public Window {
 	bool event(QEvent *event) override;
 	void wheelEvent(QWheelEvent *event) override;
 
-    GLViewport _viewport;  // TODO
- private:
 	bool keyEvent(QKeyEvent *event);
+
+    GLViewport _viewport;  // TODO
+ protected:
+
 };
 
 }  // namespace bgl

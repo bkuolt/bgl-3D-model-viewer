@@ -15,6 +15,7 @@
 #include "gfx/grid.hpp"
 #include "gfx/camera.hpp"
 
+#include <iostream>
 
 namespace bgl {
 
@@ -97,14 +98,25 @@ SimpleWindow::SimpleWindow(const std::string &title)
 }
 
 bool SimpleWindow::event(QEvent *event) {
+std::cout << "SimpleWindow::event" << std::endl;
+    _viewport.makeCurrent();
+    _viewport.update();
+
+
     if (event->type()  == QEvent::KeyPress) {
+        std::cout << "key press" << std::endl;
+
         return keyEvent(reinterpret_cast<QKeyEvent*>(event));
     }
+
+        std::cout << "other press" << std::endl;
+
 
     return QMainWindow::event(event);
 }
 
 bool SimpleWindow::keyEvent(QKeyEvent *event) {
+    std::cout << "SimpleWindow::keyEvent" << std::endl;
     const auto rotation = 5;
 
     switch (event->key()) {
@@ -124,21 +136,21 @@ bool SimpleWindow::keyEvent(QKeyEvent *event) {
             Scene.camera.rotate(0, rotation);
             break;
     default:
-        return QMainWindow::event(event);
+        return true; ///QMainWindow::event(event);
     }
 
-    _viewport.makeCurrent();
-    _viewport.update();
     return true;
 }
 
 void SimpleWindow::wheelEvent(QWheelEvent *event) {
+    std::cout << "wheelEvent()" << std::endl;
     const float delta { (-event->angleDelta().y() / 120.0f) / 10.0f };  // TODO
     const float zoom { std::max(Scene.camera.getZoom() + delta, 1.0f) };
     Scene.camera.setZoom(zoom);
 
     _viewport.makeCurrent();
     _viewport.update();
+    _viewport.on_render(0);
 }
 
 }  // namespace bgl

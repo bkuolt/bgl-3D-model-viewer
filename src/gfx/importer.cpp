@@ -253,6 +253,8 @@ std::shared_ptr<Model> LoadModel(const std::filesystem::path &path){
     load_meshes(*model, scene, *model->getProgram());
     model->setMaterials(load_materials(scene, path.parent_path()));
     model->setBoundingBox(calculate_bounding_box(scene));
+
+    std::cout << "loaded Model" << std::endl;
     return model;
 }
 
