@@ -24,6 +24,7 @@ void Mesh::render(GLenum mode, GLuint count) {
     bind();
     glDrawElements(mode, count, GL_UNSIGNED_INT, nullptr);
     if (glGetError() != GL_NO_ERROR) {
+        release();
         throw std::runtime_error { "glDrawElements() failed" };
     }
     release();

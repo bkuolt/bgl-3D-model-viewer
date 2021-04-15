@@ -10,13 +10,28 @@ on:
       branches: [ master ]
 jobs:
   build:
+<<<<<<< HEAD:.github/workflows/test.yml
     runs-on: ubuntu-latest
+=======
+    runs-on: ubuntu-20.04.2
+>>>>>>> experimental:.github/workflows/ccpp.yml
 
     steps:
     - uses: actions/checkout@v2
 
     - name: Installation Test
       run: ./install.sh
+<<<<<<< HEAD:.github/workflows/test.yml
+=======
+    - name: Build Test
+      run: cd src; make demo
+
+  run:
+    runs-on: ubuntu-20.04.2
+    
+    steps:
+    - uses: actions/checkout@v2
+>>>>>>> experimental:.github/workflows/ccpp.yml
 
     # gfx/gl.hpp: fatal error: GL/glew.h: No such file or director
     #- name: Build Test

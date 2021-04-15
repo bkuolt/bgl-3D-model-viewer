@@ -1,11 +1,11 @@
-#include <QApplication>
-#include <QMessageBox>
+#include "window.hpp"
 
 #include <csignal>
 #include <cstdlib>
 #include <stdexcept>
 
-#include "window.hpp"
+#include <QApplication>
+#include <QMessageBox>
 
 
 static void signal_handler(int signal) {
@@ -24,11 +24,12 @@ int main(int argc, char *argv[]) {
 	std::signal(SIGHUP, signal_handler);
 
 	try {
-		bgl::SimpleWindow window { "BGL Model Viewer" };
+		QApplication app(argc, argv);
+		bgl::SimpleWindow window { "BGL 3D Model Viewer" };
 		window.show();
 		return app.exec();
-	} catch (const std::exception &exception) {
-		QMessageBox::critical(nullptr, "Error", exception.what() );
+	} catch (const std::exception &error) {
+		QMessageBox::critical(nullptr, "Error", error.what());
 		return EXIT_FAILURE;
 	}
 

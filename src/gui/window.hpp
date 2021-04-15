@@ -28,7 +28,7 @@ class Window : public QMainWindow {
     void render();
     void setViewport(Viewport *p);
 
- protected:
+ protected: public:
 	Viewport *_viewport { nullptr };
 };
 

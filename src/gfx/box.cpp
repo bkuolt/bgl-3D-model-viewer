@@ -89,7 +89,6 @@ void Box::render(const mat4 &VP) {
 
     const vec3 color { 1.0, 0.0, 0.0 }; /* red */
     _program->setUniformValue("color", color.x, color.y, color.z);
-
     _meshes[0].render(GL_LINES);
 }
 

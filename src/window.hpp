@@ -53,3 +53,5 @@ class SimpleWindow final : public Window {
 };
 
 }  // namespace bgl
+
+// #endif  // WINDOW_HPP_

@@ -17,15 +17,6 @@ make
 ```
 or run `./demo <path-to-your model>` to view your custom models.
 
-# Features
-- Model loading and rendering
-  - static meshes
-  - support for **1** difuse map
--  Lighting
-   - up to **5** directional lights
-- Motion Blurring
-- FSAA
-
 # Controls
 
 ## Keyboard
@@ -40,4 +31,4 @@ or run `./demo <path-to-your model>` to view your custom models.
  - [GLEW](http://glew.sourceforge.net/)
  - [Qt 5]()
  - [Assimp](http://www.assimp.org/)
- - [glm](https://glm.g-truc.net/0.9.9/index.html) 
+ - [glm](https://glm.g-truc.net/0.9.9/index.html)

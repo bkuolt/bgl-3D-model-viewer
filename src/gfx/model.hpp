@@ -1,4 +1,3 @@
-
 #ifndef GFX_MODEL_HPP_
 #define GFX_MODEL_HPP_
 
@@ -36,6 +35,7 @@ class Model {
 
 	void resize(const vec3 &dimensions);
 	const BoundingBox& getBoundingBox() const;
+	// TODO: non const version
 
 	void setMaterials(std::vector<Material> materials) {
 		_materials = materials;
@@ -70,7 +70,10 @@ class Model {
 };
 
 /**
- * @brief Loads a 3D model file.
+ * @brief 
+ * 
+ * @param path 
+ * @return std::shared_ptr<Model> 
  */
 std::shared_ptr<Model> LoadModel(const std::filesystem::path &path);  // TODO defined in importer.cpp
 
