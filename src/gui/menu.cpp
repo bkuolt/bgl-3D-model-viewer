@@ -13,6 +13,8 @@
 #include "../gfx/model.hpp"  // TODO
 
 
+namespace bgl {
+
 namespace {
 
 inline std::optional<std::filesystem::path> chooseFile() {
@@ -57,7 +59,7 @@ inline void showAboutBox() {
 
 }  // anonymous namespace
 
-namespace bgl {
+namespace gui {
 
 MenuBar::MenuBar(QMainWindow &window)
     : _window { window } {
@@ -73,4 +75,5 @@ void MenuBar::onLoadModel(const std::filesystem::path &path) {
     QMessageBox::warning(nullptr, "Warning,", "Not implemented yet.");
 }
 
+}  // namespace gui
 }  // namespace bgl

@@ -8,6 +8,7 @@
 
 
 namespace bgl {
+namespace gui {
 
 class MenuBar : public QMenuBar {
  public:
@@ -30,6 +31,7 @@ class MenuBar : public QMenuBar {
 	QMainWindow &_window;
 };
 
+}  // namespace gui
 }  // namespace bgl
 
 #endif  // GUI_MENU_BAR_HPP

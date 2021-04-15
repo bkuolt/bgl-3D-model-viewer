@@ -14,6 +14,7 @@
 
 
 namespace bgl {
+namespace gui {
 
 namespace {
 
@@ -48,8 +49,8 @@ QGroupBox* get_dummy_panel() {
 
 Window::Window(const std::string &title) {
     this->setWindowTitle("BGL Demo");
-   // this->setMenuBar(get_dummy_menu_bar(*this));
-   // this->setStatusBar(get_dummy_status_bar());
+    this->setMenuBar(get_dummy_menu_bar(*this));
+    this->setStatusBar(get_dummy_status_bar());
 
     const QSize size { get_desktop_size() };
     this->setFixedSize(size.width() * 0.75, size.height() * 0.75);
@@ -67,10 +68,5 @@ uvec2 Window::getSize() const noexcept {
     return { size().width(), size().height() };
 }
 
-void Window::render() 
-{
-    _viewport->on_render(0);
-	// TODO(bkuolt)
-}
-
+}  // namespace gui
 }  // namespace bgl

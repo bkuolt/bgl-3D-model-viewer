@@ -9,6 +9,7 @@
 
 
 namespace bgl {
+namespace gui {
 
 /**
  * @brief A simple non-copyable, but moveable Window class
@@ -25,13 +26,15 @@ class Window : public QMainWindow {
     virtual ~Window() noexcept = default;
 
     uvec2 getSize() const noexcept;
-    void render();
-    void setViewport(Viewport *p);
 
- protected: public:
+
+    void setViewport(Viewport *p);
+    // TODO: get viewport
+ protected:
 	Viewport *_viewport { nullptr };
 };
 
+}  // namespace gui
 }  // namespace bgl
 
 #endif  // GUI_WINDOW_HPP_

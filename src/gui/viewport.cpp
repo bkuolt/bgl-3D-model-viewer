@@ -11,9 +11,6 @@
 
 #include "viewport.hpp"
 
-
-namespace bgl {
-
 namespace {
 
 inline clock_t SDL_GetTicks()  {  // TODO(bkuolt)
@@ -54,6 +51,11 @@ class frame_counter final {
 
 }  // anonymous namespace
 
+namespace bgl {
+namespace gui {
+
+
+
 Viewport::Viewport(QWidget *parent)
     : QOpenGLWidget( parent) {
 }
@@ -80,20 +82,17 @@ void Viewport::paintGL() {
     const bool changed { frame_counter.count() };
     if (changed) {
         // TODO(bkuolt): add TTF font rendering support
-          //std::cout << "\r" << frame_counter.fps() << " FPS" << std::flush;
+        // std::cout << "\r" << frame_counter.fps() << " FPS" << std::flush;
     }
 
     makeCurrent();
-    on_render(frame_counter.delta());
+    draw(frame_counter.delta());
     // std::cout << "paintedGL()" << std::endl;
 }
 
-void Viewport::on_render(float delta) {
-    onDraw(delta);  // TODO
-}
-
-void Viewport::onDraw(float delta) {
+void Viewport::draw(float delta) {
     // nothing to do yet
 }
 
+}  // namespace gui
 }  // namespace bgl
