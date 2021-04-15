@@ -6,54 +6,54 @@
 
 #include <string>
 
-#include "gui/gui.hpp"  // bgl::Window, bgl::Viewport
+#include "gui/gui.hpp" // bgl::Window, bgl::Viewport
 
+namespace bgl
+{
 
-namespace bgl {
-
-/**
+	/**
  * @brief 
  */
-class GLViewport final : public Viewport {
- public:
-	explicit GLViewport(QWidget *parent);
+	class GLViewport final : public Viewport
+	{
+	public:
+		explicit GLViewport(QWidget *parent);
 
-	GLViewport(const GLViewport&) = delete;
-	GLViewport& operator=(const GLViewport&) = delete;
+		GLViewport(const GLViewport &) = delete;
+		GLViewport &operator=(const GLViewport &) = delete;
 
-	GLViewport(GLViewport&&) = default;
-	GLViewport& operator=(GLViewport&&) = default;
+		GLViewport(GLViewport &&) = default;
+		GLViewport &operator=(GLViewport &&) = default;
 
-    virtual ~GLViewport() = default;
+		virtual ~GLViewport() = default;
 
-	void on_render(float delta) override;
-};
+		void on_render(float delta) override;
+	};
 
-/**
+	/**
  * @brief 
  */
-class SimpleWindow final : public Window {
- public:
-	SimpleWindow() noexcept = default;
-	explicit SimpleWindow(const std::string &title);
-	SimpleWindow(SimpleWindow&&) = default;
+	class SimpleWindow final : public Window
+	{
+	public:
+		SimpleWindow() noexcept = default;
+		explicit SimpleWindow(const std::string &title);
+		SimpleWindow(SimpleWindow &&) = default;
 
-	SimpleWindow(const SimpleWindow&) = delete;
-	SimpleWindow& operator=(const SimpleWindow&) = delete;
-	SimpleWindow& operator=(SimpleWindow&&) = default;
+		SimpleWindow(const SimpleWindow &) = delete;
+		SimpleWindow &operator=(const SimpleWindow &) = delete;
+		SimpleWindow &operator=(SimpleWindow &&) = default;
 
-	virtual ~SimpleWindow() noexcept = default;
+		virtual ~SimpleWindow() noexcept = default;
 
-	bool event(QEvent *event) override;
-	void wheelEvent(QWheelEvent *event) override;
+		bool event(QEvent *event) override;
+		void wheelEvent(QWheelEvent *event) override;
 
-	bool keyEvent(QKeyEvent *event);
+		GLViewport _viewport; // TODO
+	protected:
+		bool keyEvent(QKeyEvent *event);
+	};
 
-    GLViewport _viewport;  // TODO
- protected:
-
-};
-
-}  // namespace bgl
+} // namespace bgl
 
 // #endif  // WINDOW_HPP_

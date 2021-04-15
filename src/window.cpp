@@ -93,29 +93,33 @@ void GLViewport::on_render(float delta) {
 
 SimpleWindow::SimpleWindow(const std::string &title)
     : bgl::Window(title), _viewport(this) {
+
+    this->setFocusPolicy(Qt::StrongFocus);
     this->setViewport(&_viewport);
     this->show();
+
 }
 
 bool SimpleWindow::event(QEvent *event) {
 std::cout << "SimpleWindow::event" << std::endl;
-    _viewport.makeCurrent();
-    _viewport.update();
-
-
+       // _viewport.makeCurrent();
+     //   _viewport.update();
     if (event->type()  == QEvent::KeyPress) {
         std::cout << "key press" << std::endl;
 
-        return keyEvent(reinterpret_cast<QKeyEvent*>(event));
+        keyEvent(reinterpret_cast<QKeyEvent*>(event));
+
+        return true;
     }
 
         std::cout << "other press" << std::endl;
 
 
-    return QMainWindow::event(event);
+    return Window::event(event);
 }
 
 bool SimpleWindow::keyEvent(QKeyEvent *event) {
+
     std::cout << "SimpleWindow::keyEvent" << std::endl;
     const auto rotation = 5;
 
@@ -136,7 +140,7 @@ bool SimpleWindow::keyEvent(QKeyEvent *event) {
             Scene.camera.rotate(0, rotation);
             break;
     default:
-        return true; ///QMainWindow::event(event);
+        return Window::event(event);
     }
 
     return true;
