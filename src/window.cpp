@@ -61,7 +61,7 @@ void set_up_scene(const std::filesystem::path &path) {
 GLViewport::GLViewport(QWidget *parent)
     : Viewport(parent)
 {
-    // assert parent != NULL
+    assert(parent != nullptr);
 }
 
 void GLViewport::draw(float delta) {
@@ -72,6 +72,8 @@ void GLViewport::draw(float delta) {
         set_up_scene(path);
         initialized = true;
     }
+
+    Scene.camera.rotate(2, 0);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     const mat4 PV { Scene.camera.matrix() };
@@ -92,17 +94,27 @@ void GLViewport::draw(float delta) {
 
 SimpleWindow::SimpleWindow(const std::string &title)
     : gui::Window(title) {
-
-        auto viewport = new GLViewport(this);
+    auto viewport = new GLViewport(this);
     this->setViewport(viewport /* QMainWindow takes ownership */);
 
-    // viewport->updateGL();
+    this->repaint();
     std::cout << "this update" << std::endl;
-    this->update();
+    this->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
+    this->setFocus();
 }
 
+#if 0
+bool SimpleWindow::event(QEvent *event) {
+    std::cout << event->type() << std::endl;
+
+ //       this->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
+   // this->setFocus();
+    return gui::Window::event(event);
+}
+#endif  // 0
+
+
 void SimpleWindow::keyPressEvent(QKeyEvent *event) {
-    //
     std::cout << "PRESSED" << std::endl;
 
     const float rotation  { 5 };
@@ -121,6 +133,9 @@ void SimpleWindow::keyPressEvent(QKeyEvent *event) {
             break;
         case Qt::Key_Down:
             Scene.camera.rotate(0, rotation);
+            break;
+        default:
+            Window::keyPressEvent(event);
             break;
     }
 }

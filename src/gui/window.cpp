@@ -1,11 +1,9 @@
-#include <QEvent>          // QEvent::KeyPress
 #include <QGuiApplication>
 #include <QScreen>
 #include <QStatusBar>
 #include <QGroupBox>
 
-#include <future>    // std::call_once()
-#include <memory>
+#include <cassert>
 #include <string>
 
 #include "window.hpp"
@@ -45,6 +43,7 @@ inline QGroupBox* create_panel() {
 }
 
 }  // anonymous namespace
+
 
 Window::Window(const std::string &title) {
     QMenuBar * const menuBar { create_menu_bar(*this) };

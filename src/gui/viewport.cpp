@@ -4,13 +4,16 @@
  */
 #include "../gfx/gl.hpp"
 
-#include <QOpenGLWidget>
-
-#include <iostream>
+#include <cassert>
 #include <ctime>     // std::clock()
+#include <iostream>
+
+#include <QOpenGLWidget>
 
 #include "viewport.hpp"
 
+
+#if 0
 namespace {
 
 inline clock_t SDL_GetTicks()  {  // TODO(bkuolt)
@@ -50,14 +53,14 @@ class frame_counter final {
 };
 
 }  // anonymous namespace
+#endif  // 0
 
 namespace bgl {
 namespace gui {
 
-
-
 Viewport::Viewport(QWidget *parent)
-    : QOpenGLWidget( parent) {
+    : QOpenGLWidget{ parent } {
+	assert(parent != nullptr);
 }
 
 void Viewport::initializeGL() {
@@ -77,18 +80,7 @@ void Viewport::resizeGL(int width, int height) {
 
 void Viewport::paintGL() {
 	std::cout << "Viewport::paintGL()" << std::endl;
-
-#if 0
-	static frame_counter frame_counter;
-    const bool changed { frame_counter.count() };
-    if (changed) {
-        // TODO(bkuolt): add TTF font rendering support
-        // std::cout << "\r" << frame_counter.fps() << " FPS" << std::flush;
-    }
-#endif  // 0
-   // makeCurrent();
     draw(0);
-    // std::cout << "paintedGL()" << std::endl;
 }
 
 void Viewport::draw(float delta) {

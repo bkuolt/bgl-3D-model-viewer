@@ -33,6 +33,7 @@ class Viewport : public QOpenGLWidget {
 	void paintGL() override;
 };
 
+
 }  // namespace gui
 }  // namespace bgl
 

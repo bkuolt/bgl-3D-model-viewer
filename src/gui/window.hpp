@@ -8,7 +8,6 @@
 #include "../gfx/gl.hpp"    // TODO(bkuolt): fix this
 #include "viewport.hpp"
 
-
 namespace bgl {
 namespace gui {
 
