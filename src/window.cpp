@@ -101,6 +101,9 @@ SimpleWindow::SimpleWindow(const std::string &title)
     std::cout << "this update" << std::endl;
     this->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
     this->setFocus();
+
+   // this->grabKeyboard();
+   // this->grabMouse();
 }
 
 #if 0
