@@ -27,11 +27,9 @@ class Window : public QMainWindow {
 
     uvec2 getSize() const noexcept;
 
-
     void setViewport(Viewport *p);
     // TODO: get viewport
- protected:
-	Viewport *_viewport { nullptr };
+
 };
 
 }  // namespace gui

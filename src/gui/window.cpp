@@ -30,27 +30,29 @@ QSize get_desktop_size() {
     return { screenGeometry.width(), screenGeometry.height() };
 }
 
-QStatusBar* get_dummy_status_bar() {
+inline QStatusBar* create_status_bar() {
     static QStatusBar * statusBar { new QStatusBar };
     statusBar->showMessage("TODO");
     return statusBar;
 }
 
-QMenuBar* get_dummy_menu_bar(QMainWindow &window) {
-    static QMenuBar * menuBar { new MenuBar(window) };
-    return menuBar;
+inline QMenuBar* create_menu_bar(QMainWindow &window) {
+    return new MenuBar { window };  // TODO
 }
 
-QGroupBox* get_dummy_panel() {
+inline QGroupBox* create_panel() {
     return nullptr;  // TODO
 }
 
 }  // anonymous namespace
 
 Window::Window(const std::string &title) {
-    this->setWindowTitle("BGL Demo");
-    this->setMenuBar(get_dummy_menu_bar(*this));
-    this->setStatusBar(get_dummy_status_bar());
+    QMenuBar * const menuBar { create_menu_bar(*this) };
+    QStatusBar * const statusBar { create_status_bar() };
+
+    this->setMenuBar(menuBar /* takes ownership */);
+    this->setStatusBar(statusBar /* takes ownership */);
+    this->setWindowTitle("3D Model Viewer Prototype");
 
     const QSize size { get_desktop_size() };
     this->setFixedSize(size.width() * 0.75, size.height() * 0.75);
@@ -58,10 +60,9 @@ Window::Window(const std::string &title) {
 }
 
 void Window::setViewport(Viewport *viewport) {
-    _viewport = viewport;
-    _viewport->resize(get_desktop_size());
-    _viewport->show();
-    this->setCentralWidget(_viewport);
+    this->setCentralWidget(viewport);
+    viewport->resize(get_desktop_size());
+    viewport->show();
 }
 
 uvec2 Window::getSize() const noexcept {

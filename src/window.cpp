@@ -60,7 +60,9 @@ void set_up_scene(const std::filesystem::path &path) {
 
 GLViewport::GLViewport(QWidget *parent)
     : Viewport(parent)
-{}
+{
+    // assert parent != NULL
+}
 
 void GLViewport::draw(float delta) {
     QOpenGLFramebufferObjectFormat format;
@@ -138,7 +140,7 @@ void SimpleWindow::wheelEvent(QWheelEvent *event) {
     const float delta { (-event->angleDelta().y() / 120.0f) / 10.0f };  // TODO
     const float zoom { std::max(Scene.camera.getZoom() + delta, 1.0f) };
     Scene.camera.setZoom(zoom);
-    _viewport->draw();
+    //_viewport->draw();
 }
 
 }  // namespace bgl
