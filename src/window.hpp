@@ -50,7 +50,8 @@ class SimpleWindow final : public gui::Window {
 
 	virtual ~SimpleWindow() noexcept = default;
 
-	bool event(QEvent *event) override;
+ protected:
+	void keyPressEvent(QKeyEvent *event) override;
 	void wheelEvent(QWheelEvent *event) override;
 };
 

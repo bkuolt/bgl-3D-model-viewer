@@ -60,7 +60,8 @@ Window::Window(const std::string &title) {
 }
 
 void Window::setViewport(Viewport *viewport) {
-    this->setCentralWidget(viewport);
+    assert(viewport != nullptr);
+    this->setCentralWidget(viewport /* takes ownership */);
     viewport->resize(get_desktop_size());
     viewport->show();
 }

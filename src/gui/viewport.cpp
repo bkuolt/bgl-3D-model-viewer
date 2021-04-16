@@ -78,15 +78,16 @@ void Viewport::resizeGL(int width, int height) {
 void Viewport::paintGL() {
 	std::cout << "Viewport::paintGL()" << std::endl;
 
+#if 0
 	static frame_counter frame_counter;
     const bool changed { frame_counter.count() };
     if (changed) {
         // TODO(bkuolt): add TTF font rendering support
         // std::cout << "\r" << frame_counter.fps() << " FPS" << std::flush;
     }
-
-    makeCurrent();
-    draw(frame_counter.delta());
+#endif  // 0
+   // makeCurrent();
+    draw(0);
     // std::cout << "paintedGL()" << std::endl;
 }
 

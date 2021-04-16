@@ -2,6 +2,7 @@
 #define GUI_WINDOW_HPP_
 
 #include <string>
+#include <iostream>
 #include <QMainWindow>  // NOLINT
 
 #include "../gfx/gl.hpp"    // TODO(bkuolt): fix this
@@ -26,10 +27,7 @@ class Window : public QMainWindow {
     virtual ~Window() noexcept = default;
 
     uvec2 getSize() const noexcept;
-
-    void setViewport(Viewport *p);
-    // TODO: get viewport
-
+    void setViewport(Viewport *viewport);
 };
 
 }  // namespace gui
