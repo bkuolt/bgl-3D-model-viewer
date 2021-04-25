@@ -8,6 +8,7 @@ INCLUDES_QT =  -I/usr/include -isystem /usr/include/x86_64-linux-gnu/qt5  \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore           \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL         \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui
+
 WARNINGS = -pedantic -Wall -Wextra -Wcast-align -Wcast-qual  \
            -Wctor-dtor-privacy -Wdisabled-optimization       \
 		   -Wformat=2 -Winit-self -Wlogical-op               \
@@ -38,22 +39,22 @@ window.o: window.cpp window.hpp
 
 gfx/libgfx.a:
 	@$(MAKE) -C gfx
-gui/libgui.a:
+gui/libgui.la:
 	@$(MAKE) -C gui
 
-libbgl.so: gfx/libgfx.a gui/libgui.a
+libbgl.so: gfx/libgfx.a gui/libgui.la
 	$(CC) -shared $(LD_FLAGS)  \
 	$(LIBS)                    \
 	-Wl,--whole-archive        \
-	-Lgui -l:libgui.a          \
 	-Lgfx -l:libgfx.a          \
+	-Lgui -l:libgui.la         \
 	-Wl,--no-whole-archive     \
 	-o libbgl.so
 
-demo: libbgl.so main.o window.o
-	$(CC) $(FLAGS) main.o window.o  \
-	-Wl,-Bdynamic -L./ -lbgl        \
-	-lstdc++ -ldl $(LIBS)           \
+demo: libbgl.so main.o
+	$(CC) $(FLAGS) main.o      \
+	-Wl,-Bdynamic -L./ -lbgl   \
+	-lstdc++ -ldl $(LIBS)      \
     -o demo   
 
 run: demo

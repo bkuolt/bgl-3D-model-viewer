@@ -1,42 +1,50 @@
-.DEFAULT_GOAL = libgui.a
-.PHONY = libgui.a clean
+.DEFAULT_GOAL = all
+.PHONY = all run clean
+
+OBJ_FILES = Window.o moc_Window.o                  \
+            StatusBar.o moc_StatusBar.o            \
+            MenuBar.o moc_MenuBar.o                \
+            OpenGLViewport.o moc_OpenGLViewport.o  \
+			Scene.o moc_Scene.o
 
 INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
 	          -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets  \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore     \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL   \
-			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui
+			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui      \
+	          -isystem /usr/include/x86_64-linux-gnu/qt5/QtConcurrent
 
-WARNINGS = -pedantic -Wall -Wextra -Wcast-align -Wcast-qual  \
-           -Wctor-dtor-privacy -Wdisabled-optimization       \
-		   -Wformat=2 -Winit-self -Wlogical-op               \
-		   -Wmissing-declarations -Wmissing-include-dirs     \
-		   -Wnoexcept -Wold-style-cast -Woverloaded-virtual  \
-		   -Wredundant-decls -Wshadow -Wsign-conversion      \
-		   -Wsign-promo -Wstrict-null-sentinel               \
-		   -Wstrict-overflow=5 -Wswitch-default              \
-		   -Wundef -Wno-unused
+LIBS_QT =  -lGL -lQt5Widgets -lQt5Core -lQt5Gui
+CPPFLAGS = -std=c++17 -fPIC $(INCLUDES_QT) -fPIC -o3
+LDFLAGS = -fPIC  \
+	      -lstdc++fs -lstdc++ -lpthread -lGLEW $(LIBS_QT)
 
-FLAGS = -std=c++17 -Wno-endif-labels     \
-        -Wall                            \
-		$(INCLUDES_QT) -DQT_NO_KEYWORDS  \
-		-fPIC -o3
+moc_%.cpp: %.hpp
+	moc $< -o $@
 
-viewport.o: viewport.hpp viewport.cpp
-	@$(CC) $(FLAGS) -c viewport.cpp -o viewport.o
+%.o: %.cpp  \
+     %.cpp %.hpp
+	g++ $(CPPFLAGS) -c  $< -o $@
 
-window.o: window.hpp window.cpp
-	@$(CC) $(FLAGS) -c window.cpp -o window.o
+main.o: main.cpp
+	g++ $(CPPFLAGS) -c main.cpp -o main.o
 
-panel.o: panel.hpp panel.cpp
-	@$(CC) $(FLAGS) -c panel.cpp -o panel.o
+libgui.la: $(OBJ_FILES)
+	ar rcs libgui.la *.o
 
-menu.o: menu.hpp menu.cpp
-	@$(CC) $(FLAGS) -c menu.cpp -o menu.o
+all: main.o libgui.la
 
-libgui.a: window.o viewport.o menu.o panel.o
-	ar rcs libgui.a *.o
+
+qt-demo: all
+	g++ -o qt-demo                 \
+	    main.o -L./ -l:libgui.la   \
+		$(LDFLAGS)
+
+run: qt-demo
+	@./qt-demo example.jpg
 
 clean:
-	rm -f *.o
-	rm -f *.a
+	@rm -f *.o
+	@rm -f *.la
+	@rm -f moc_*.cpp
+	@rm -f qt-demo
