@@ -7,15 +7,15 @@ int main(int argc, char **argv) {
 
         auto scene = std::make_shared<bgl::Scene>();  // TODO
 
-        window.viewport()->makeCurrent();
+ //       window.viewport()->makeCurrent();
         scene->load("/home/bastian/code/bgl-demo/src/assets/models/housemedieval.obj");  // TODO
         window.setScene(scene);
 
         switch (argc) {
-        case 1:
+        case 1:  //
             window.loadModel();
             break;
-        case 2:
+        case 2:  //
             //  window.loadModel(argv[2]);  // TODO: fix reload problem
             break;
         default:
