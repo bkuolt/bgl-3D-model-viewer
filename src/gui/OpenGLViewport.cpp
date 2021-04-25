@@ -2,10 +2,8 @@
  * @file viewport.cpp
  * @brief A simple OpenGL Qt Viewport
  */
+#include "OpenGL.hpp"
 #include "OpenGLViewport.hpp"
-
-#include <GL/glew.h>
-#include <QOpenGLWidget>
 
 #include <iostream>
 
@@ -22,7 +20,7 @@ void OpenGLViewport::setScene(const std::shared_ptr<Scene> &scene) {
     // TODO: trigger repaint
 }
 
-std::shared_ptr<Scene> OpenGLViewport::getScene() {
+std::shared_ptr<Scene> OpenGLViewport::getScene() noexcept {
     return _scene;
 }
 

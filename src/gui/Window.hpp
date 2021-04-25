@@ -1,27 +1,30 @@
 /**
  * @file Window.hpp
  * @brief 
- * 
- *  
  */
 #ifndef WINDOW_HPP_
 #define WINDOW_HPP_
 
-// -----------------------------
-#define DEBUG  // TODO
-// -----------------------------
+/* --------------- Config --------------- */
+
+#define DEBUG           // TODO
+#undef USE_CONCURRENCY  // TODO: Cannot make QOpenGLContext current in a different thread
+
+/* ---------------------------------------*/
 
 #include <QMainWindow>
+#include <QFuture>
 
 #include <filesystem>
+#include <iostream>
 #include <memory>
 
-#include "Scene.hpp"
-
+class Scene;
 class QOpenGLWidget;
 
 
 namespace bgl {
+
 namespace gui {
 
 class Window : public QMainWindow {
@@ -35,15 +38,15 @@ class Window : public QMainWindow {
 	QOpenGLWidget* viewport() noexcept;
 
 	void setScene(const std::shared_ptr<Scene> &scene);
-	// TODO: get scene
+	std::shared_ptr<Scene> getScene() noexcept;
 
   // actions:
-#if DEBUG
-	void loadImage(const std::filesystem::path &path = "./example.png");
-	void loadImage();
+#ifdef DEBUG
+	void loadImage(const std::filesystem::path &path) noexcept;
+	void loadImage() noexcept;
 #else
-	void loadModel(const std::filesystem::path &path)  { /* TODO */ }
-	void loadModel() { /* TODO */ }
+	void loadModel(const std::filesystem::path &path) noexcept;
+	void loadModel() noexcept;
 #endif  // DEBUG
 
  protected:

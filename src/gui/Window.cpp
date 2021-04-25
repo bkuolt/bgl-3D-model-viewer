@@ -7,8 +7,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QMainWindow>
-
-#include <QFuture>
+#include <QKeyEvent>
 #include <QtConcurrent>
 #include <QImage>
 
@@ -55,14 +54,15 @@ inline std::optional<std::filesystem::path> ChooseFile() {
 }
 
 std::shared_ptr<QOpenGLTexture> LoadTexture(const std::filesystem::path &path) {
+	std::cout << "Loading Texture..." << std::endl;
     QImage image { path.string().c_str() };
     if (image.isNull()) {
-        throw std::runtime_error { "could not load QImage "s + path.string() };
+        throw std::runtime_error { "Could not load QImage "s + path.string() };
     }
 
     auto texture { std::make_shared<QOpenGLTexture>(image) };
     if (!texture->create()) {
-        throw std::runtime_error { "could not create QOpenGLTexture " };
+        throw std::runtime_error { "Could not create QOpenGLTexture " };
     }
     return texture;
 }
@@ -98,48 +98,79 @@ void Window::setViewport(QOpenGLWidget *viewport) {
 }
 
 void Window::setScene(const std::shared_ptr<Scene> &scene) {
-    _viewport()->setScene(scene);
+	dynamic_cast<OpenGLViewport*>(viewport())->setScene(scene);  // TODO
 }
 
-auto imageLoadTask = [] (Window *window) {
+std::shared_ptr<Scene> Window::getScene() noexcept {
+	return {};  // TODO
+}
+
+auto imageLoadTask = [] (Window *window, std::filesystem::path path) {
     MenuBar * const menuBar { dynamic_cast<MenuBar*>(window->menuBar()) };
 
     assert(menuBar != nullptr);
     menuBar->updateStatusBar(0);
 
     try {
+		window->viewport()->makeCurrent();  // QOpenGLTexture::setData() requires a valid current context
         const auto texture { LoadTexture(path) };
+#ifdef USE_CONCURRENCY
         std::this_thread::sleep_for(4s);  // TODO
         menuBar->updateStatusBar(75);
+#endif  // USE_CONCURRENCY
 
         auto scene { std::make_shared<Scene>() };
         scene->setBackground(texture);
-        setScene(scene);
-        std::this_thread::sleep_for(1);  // TODO
+        window->setScene(scene);
+
+#ifdef USE_CONCURRENCY
+        std::this_thread::sleep_for(1s);  // TODO
+#endif  // USE_CONCURRENCY
         menuBar->updateStatusBar(100);
     } catch (const std::exception &error) {
         QMessageBox::critical(nullptr, "Error", error.what());
     }
 };
 
-void Window::loadImage(const std::filesystem::path &path) {
+void Window::loadImage(const std::filesystem::path &path) noexcept {
+    std::cout << "loading image " << path << std::endl;
+#ifdef USE_CONCURRENCY
     if (_imageLoadingTask.isStarted()) {
         _imageLoadingTask.cancel();
     }
-    _imageLoadingTask = QtConcurrent::run(imageLoadTask, this);
+    _imageLoadingTask = QtConcurrent::run(imageLoadTask, this, path);
 	if (!_imageLoadingTask.isStarted()) {
 		QMessageBox::information(nullptr, "Error", "Could not start image loading thread.");
 	}
+#else
+	imageLoadTask(this, path);
+#endif  // USE_CONCURRENCY
 }
 
-void Window::loadImage() {
+void Window::loadImage() noexcept {
+#ifdef DEBUG
+	const std::filesystem::path path { "./example.jpg" };
+	const auto absolute_path { std::filesystem::absolute(path) };
+    this->loadImage(absolute_path);
+#else
     const std::optional<std::filesystem::path> path { ChooseFile() };
     if (path.has_value()) {
-        this->loadImage(path);
+        this->loadImage(path.value());
     } else {
         QMessageBox::information(nullptr, "Warning", "No file chosen.");
     }
+#endif  // DEBUG
 }
+
+#ifndef DEBUG
+void Window::loadModel(const std::filesystem::path &path) noexcept {
+	// TODO
+}
+
+void Window::loadModel() noexcept {
+	// TODO
+}
+#endif  // DEBUG
 
 QOpenGLWidget* Window::viewport() noexcept {
     return dynamic_cast<QOpenGLWidget*>(centralWidget());
@@ -158,7 +189,7 @@ void Window::keyPressEvent(QKeyEvent *event) {
 }
 
 void Window::closeEvent(QCloseEvent *event) {
-    std::cout << "closed" << std::endl;
+    std::cout << "closed window" << std::endl;
 }
 
 void Window::mouseMoveEvent(QMouseEvent *event) {

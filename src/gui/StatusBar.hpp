@@ -16,8 +16,8 @@ namespace gui {
 class StatusBar : public QStatusBar {
 	Q_OBJECT
  public:
-    explicit StatusBar(QWidget *parent);
-	virtual ~StatusBar() noexcept = default;
+   explicit StatusBar(QWidget *parent);
+	virtual ~StatusBar() noexcept;
 
     QProgressBar* getProgressBar() noexcept;
 

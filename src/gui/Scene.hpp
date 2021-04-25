@@ -7,6 +7,8 @@
 #ifndef SCENE_HPP_
 #define SCENE_HPP_
 
+#include <memory>  // std::shared_ptr
+
 #include <QImage>
 #include <QOpenGLTexture>
 
@@ -14,11 +16,12 @@ namespace bgl {
 
 class Scene {
  public:
-    Scene() = default;
-    virtual ~Scene() = default;
+   Scene() = default;
+   virtual ~Scene() = default;
 
-    void setBackground(const std::shared_ptr<QOpenGLTexture> &background);
-    std::shared_ptr<QOpenGLTexture> getBackground() noexcept;
+   // TODO: setBackground overload for color
+   void setBackground(const std::shared_ptr<QOpenGLTexture> &background);
+   std::shared_ptr<QOpenGLTexture> getBackground() noexcept;
 
     virtual void render();
 

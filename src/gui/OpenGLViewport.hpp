@@ -5,11 +5,9 @@
 #ifndef BGL_GL_VIEWPORT_HPP_
 #define BGL_GL_VIEWPORT_HPP_
 
-#include <GL/glew.h>
-#include <QOpenGLWidget>
-
 #include <memory>
 
+#include "OpenGL.hpp"
 #include "Scene.hpp"
 
 
