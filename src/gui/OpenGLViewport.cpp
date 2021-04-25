@@ -40,10 +40,10 @@ void OpenGLViewport::resizeGL(int width, int height) {
 
 void OpenGLViewport::paintGL() {
     if (_scene) {
-        _scene->render();
+        _scene->draw();
         this->update();  // triggers repaint()
     }
-    // std::cout << "paintedGL()" << std::endl;
+     std::cout << "paintedGL()" << std::endl;
 }
 
 void OpenGLViewport::paintEvent(QPaintEvent *event) {

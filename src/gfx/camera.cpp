@@ -113,6 +113,7 @@ void ArcBall::rotate(float theta  /* θ [°]*/,
     };  // https://en.wikipedia.org/wiki/Spherical_coordinate_system
 
     setPosition(getFocus() + (v * radius));
+    std::cout << "rotated " << theta << ". " << phi << std::endl;
 }
 
 vec2 ArcBall::getAngles() const noexcept {

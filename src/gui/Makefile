@@ -32,13 +32,7 @@ main.o: main.cpp
 libgui.la: $(OBJ_FILES)
 	ar rcs libgui.la *.o
 
-all: main.o libgui.la
-
-
-qt-demo: all
-	g++ -o qt-demo                 \
-	    main.o -L./ -l:libgui.la   \
-		$(LDFLAGS)
+all: libgui.la
 
 run: qt-demo
 	@./qt-demo example.jpg

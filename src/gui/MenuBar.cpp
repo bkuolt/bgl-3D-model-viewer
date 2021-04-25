@@ -32,7 +32,7 @@ inline void ShowAboutBox() noexcept {
 MenuBar::MenuBar(Window *mainWindow)
     : QMenuBar { reinterpret_cast<QWidget*>(mainWindow) } {
     QMenu * const fileMenu { this->addMenu("&File") };
-    fileMenu->addAction("Load", [this, mainWindow] () { mainWindow->loadImage(); });
+    fileMenu->addAction("Load", [this, mainWindow] () { mainWindow->loadModel(); });
     fileMenu->addAction("Exit", [this] () { QCoreApplication::quit(); });
 
     QMenu * const helpMenu { this->addMenu("&Help") };

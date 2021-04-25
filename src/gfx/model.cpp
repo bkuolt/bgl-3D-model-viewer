@@ -77,6 +77,8 @@ void Model::render(const mat4 &MVP, const DirectionalLight &light) {
         }
         _meshes[i].render(GL_TRIANGLES);
     }
+
+    _program->release();
 }
 
 void Model::render(const mat4 &MVP) {

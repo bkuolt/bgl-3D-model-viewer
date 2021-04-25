@@ -1,32 +1,70 @@
-#include "Scene.hpp"
+#include <cassert>
+#include <iostream>
+
 #include <QVector2D>
+#include <QCoreApplication>
+
+#include "Scene.hpp"
+#include "../gfx/model.hpp"  // TODO
+#include "../gfx/box.hpp"
+#include "../gfx/grid.hpp"
+#include "../gfx/camera.hpp"
+
 
 namespace bgl {
 
-namespace {
+void Scene::add(const std::shared_ptr<Model> &model) {
+    assert(model != nullptr);
 
-void DrawImage(QOpenGLTexture *texture,
-               const QVector2D &position, const QVector2D &size) {
+    _model = model;
+	_box = std::make_shared<Box>(_model->getBoundingBox());
+
+	_camera.setFocus({ 0.0, 0.0, 0.0 });
+	_camera.setPosition({ 0.0, 1.0, 2.0 });
+
+	_grid = std::make_shared<Grid>(0.125, 40);
+	const vec3 v { 0.0, -_model->getBoundingBox().getSize().y / 2.0, 0.0 };
+	_grid->translate(v);
+
+	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+	glEnable(GL_LINE_SMOOTH);
+	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+	glEnable(GL_POLYGON_SMOOTH);
+	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+	glEnable(GL_MULTISAMPLE);
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);
+}
+
+void Scene::load(const std::filesystem::path &path) {
+    auto model { LoadModel(path) };
+    add(model);
     // TODO
 }
 
-}  // anyonmous namespace
-
-void Scene::setBackground(const std::shared_ptr<QOpenGLTexture> &background) {
-    _background = background;  // TODO: get OpenGL texture from QImage
+ArcBall& Scene::camera() noexcept {
+    return _camera;
 }
 
-std::shared_ptr<QOpenGLTexture> Scene::getBackground() noexcept {
-	return _background;  // TODO
-}
-
-void Scene::render() {
+void Scene::draw() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    if (_background) {
-        DrawImage(_background.get(), { 0.0f, 0.0f }, { 1.0f, 1.0f });
-    } else {
-        // TODO: use clear color
-    }
+
+    const mat4 PV { _camera.matrix() };
+    // TODO: _grid->render(PV);
+    _box->render(PV);
+
+    static DirectionalLight light {
+        .direction = vec3 { -1.0, -1.0, -1.0 },
+        .diffuse = vec3 { 0.0, 1.0, 1.0 },
+        .ambient = vec3 { 0.2f, 0.2f, 0.2f }
+    };
+
+    _model->render(PV, light);
+    std::cout << "rendered scene" << std::endl;
 }
 
 }  // namespace bgl
