@@ -1,42 +1,75 @@
-.DEFAULT_GOAL = libgui.a
-.PHONY = libgui.a clean
+.DEFAULT_GOAL = run
+.PHONY = run clean run
 
 INCLUDES_QT = -I/usr/include/x86_64-linux-gnu/qt5                   \
 	          -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets  \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore     \
 			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL   \
-			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui
+			  -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui      \
+	          -isystem /usr/include/x86_64-linux-gnu/qt5/QtConcurrent
 
-WARNINGS = -pedantic -Wall -Wextra -Wcast-align -Wcast-qual  \
-           -Wctor-dtor-privacy -Wdisabled-optimization       \
-		   -Wformat=2 -Winit-self -Wlogical-op               \
-		   -Wmissing-declarations -Wmissing-include-dirs     \
-		   -Wnoexcept -Wold-style-cast -Woverloaded-virtual  \
-		   -Wredundant-decls -Wshadow -Wsign-conversion      \
-		   -Wsign-promo -Wstrict-null-sentinel               \
-		   -Wstrict-overflow=5 -Wswitch-default              \
-		   -Wundef -Wno-unused
+LIBS_QT =  -lGL -lQt5Widgets -lQt5Core -lQt5Gui
+CPPFLAGS = -std=c++17 -fPIC $(INCLUDES_QT) -fPIC -o3  #  -DQT_NO_KEYWORDS
+LDFLAGS = -fPIC  \
+	      -lstdc++fs -lstdc++ -lpthread -lGLEW $(LIBS_QT)
 
-FLAGS = -std=c++17 -Wno-endif-labels     \
-        -Wall                            \
-		$(INCLUDES_QT) -DQT_NO_KEYWORDS  \
-		-fPIC -o3
+moc_%.cpp: %.hpp
+	moc $< -o $@ 
+	#; echo $< $@
+#Q_OBJECT
 
-viewport.o: viewport.hpp viewport.cpp
-	@$(CC) $(FLAGS) -c viewport.cpp -o viewport.o
 
-window.o: window.hpp window.cpp
-	@$(CC) $(FLAGS) -c window.cpp -o window.o
 
-panel.o: panel.hpp panel.cpp
-	@$(CC) $(FLAGS) -c panel.cpp -o panel.o
 
-menu.o: menu.hpp menu.cpp
-	@$(CC) $(FLAGS) -c menu.cpp -o menu.o
+main.o: main.cpp
+	g++ $(CPPFLAGS) -c main.cpp -o main.o
 
-libgui.a: window.o viewport.o menu.o panel.o
-	ar rcs libgui.a *.o
+OpenGLViewport.o: OpenGLViewport.hpp OpenGLViewport.cpp
+	g++ $(CPPFLAGS) -c OpenGLViewport.cpp -o OpenGLViewport.o
+
+Window.o: Window.hpp Window.cpp
+	g++ $(CPPFLAGS) -c Window.cpp -o Window.o
+
+MenuBar.o: MenuBar.hpp MenuBar.cpp
+	g++ $(CPPFLAGS) -c MenuBar.cpp -o MenuBar.o
+
+StatusBar.o: StatusBar.hpp StatusBar.cpp
+	g++ $(CPPFLAGS) -c StatusBar.cpp -o StatusBar.o
+
+# --------------------------------------------------------
+
+moc_StatusBar.o: moc_StatusBar.cpp
+	g++ $(CPPFLAGS) -c moc_StatusBar.cpp -o moc_StatusBar.o
+
+moc_MenuBar.o: moc_MenuBar.cpp
+	g++ $(CPPFLAGS) -c moc_MenuBar.cpp -o moc_MenuBar.o
+
+moc_Window.o: moc_Window.cpp
+	g++ $(CPPFLAGS) -c moc_Window.cpp -o moc_Window.o
+
+moc_OpenGLViewport.o: moc_OpenGLViewport.cpp
+	g++ $(CPPFLAGS) -c moc_OpenGLViewport.cpp -o moc_OpenGLViewport.o
+
+# TODO Scene
+# TODO
+
+qt-demo: main.o                                 \
+		 Window.o moc_Window.o                  \
+         StatusBar.o moc_StatusBar.o            \
+		 MenuBar.o moc_MenuBar.o                \
+		 OpenGLViewport.o moc_OpenGLViewport.o 
+	g++ -o qt-demo                              \
+	    main.o                                  \
+		Window.o moc_Window.o                   \
+		MenuBar.o moc_MenuBar.o               \
+		StatusBar.o moc_StatusBar.o             \
+		OpenGLViewport.o moc_OpenGLViewport.o   \
+		$(LDFLAGS) 
+
+run: qt-demo
+	@./qt-demo
 
 clean:
-	rm -f *.o
-	rm -f *.a
+	@rm -f *.o
+	@rm -f moc_*.cpp
+	@rm -f qt-demo
