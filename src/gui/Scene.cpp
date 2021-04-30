@@ -4,7 +4,11 @@
 #include <QVector2D>
 #include <QCoreApplication>
 
+
 #include "Scene.hpp"
+
+#include <QOpenGLFramebufferObject>
+
 #include "../gfx/model.hpp"  // TODO
 #include "../gfx/box.hpp"
 #include "../gfx/grid.hpp"
@@ -54,17 +58,50 @@ void Scene::draw() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     const mat4 PV { _camera.matrix() };
-    // TODO: _grid->render(PV);
-    _box->render(PV);
 
     static DirectionalLight light {
         .direction = vec3 { -1.0, -1.0, -1.0 },
         .diffuse = vec3 { 0.0, 1.0, 1.0 },
         .ambient = vec3 { 0.2f, 0.2f, 0.2f }
     };
-
+    // TODO: _grid->render(PV);
+    _box->render(PV);
     _model->render(PV, light);
-    std::cout << "rendered scene" << std::endl;
+
+
+    // =================================================================================
+    // =================================================================================
+    // =================================================================================
+    
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    const QSize size { viewport[2], viewport[3] };
+
+#if 0
+    QGLFramebufferObjectFormat format;
+    format.setSamples(4);
+    format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+#endif
+    QOpenGLFramebufferObject fbo { size };
+
+    fbo.bind();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    std::cout << "is valid: " << fbo.isValid() << std::endl;
+
+    // TODO: _grid->render(PV);
+    _model->render(PV, light);
+    _box->render(PV);
+
+    fbo.release();
+
+    QImage image = fbo.toImage();
+    image.save("test_scr.png");
+    std::cout << "FBO released" << std::endl;
+// =================================================================================
+// =================================================================================
+// =================================================================================
+        
 }
 
 }  // namespace bgl

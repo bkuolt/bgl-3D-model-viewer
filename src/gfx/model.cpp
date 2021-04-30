@@ -32,10 +32,14 @@ void setupLight(QOpenGLShaderProgram &program /* NOLINT */, const DirectionalLig
 }
 
 void setupTexture(QOpenGLShaderProgram &program /* NOLINT */, QOpenGLTexture &texture,
-                  const std::string &name, GLuint textureUnit = 0) {
+                  const std::string &name, GLuint textureUnit) {
     glActiveTexture(GL_TEXTURE0 + textureUnit);
-    texture.bind();
+    texture.bind(textureUnit);
     program.setUniformValue(name.c_str(), textureUnit);
+
+    int unit;
+    glGetIntegerv(GL_ACTIVE_TEXTURE, &unit);
+    std::cout << "texture=" <<  unit - GL_TEXTURE0 << std::endl;
 }
 
 void setupMaterial(QOpenGLShaderProgram &program /* NOLINT */, const Material &material) {
@@ -50,7 +54,9 @@ void setupMaterial(QOpenGLShaderProgram &program /* NOLINT */, const Material &m
     const GLuint isTextured { material.textures.diffuse != nullptr };
     program.setUniformValue("material.isTextured", isTextured);
     if (isTextured) {
-        setupTexture(program, *material.textures.diffuse, "material.texture");
+        std::cout << "model is textured " <<std::endl;
+        static int unit =4;
+        setupTexture(program, *material.textures.diffuse, "material.texture", unit++);
     }
 }
 
@@ -66,16 +72,20 @@ void Model::render(const mat4 &MVP, const DirectionalLight &light) {
     const QMatrix4x4 matrix { glm::value_ptr(MVP) };
     _program->setUniformValue("MVP", matrix.transposed());
 
+    // TODO: get texture_list
+    
     /**
      * @brief Render a mesh for each material as there is is one VBO per material
      * @details http://assimp.sourceforge.net/lib_html/materials.html
      */
     for (auto i = 0u; i < _meshes.size(); ++i) {
+        _meshes[i].bind();
         if (_meshes[i]._materialIndex.has_value()) {
             const unsigned int material_index { _meshes[i]._materialIndex.value() };
             setupMaterial(*_program, _materials[material_index]);
         }
         _meshes[i].render(GL_TRIANGLES);
+        // TODO: release textures
     }
 
     _program->release();

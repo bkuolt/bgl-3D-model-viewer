@@ -21,6 +21,7 @@ Mesh::Mesh()
 }
 
 void Mesh::render(GLenum mode, GLuint count) {
+    std::cout << "Wrendering "<<count << std::endl;
     bind();
     glDrawElements(mode, count, GL_UNSIGNED_INT, nullptr);
     if (glGetError() != GL_NO_ERROR) {
@@ -31,14 +32,19 @@ void Mesh::render(GLenum mode, GLuint count) {
 }
 
 void Mesh::render(GLenum mode) {
-    _ibo.bind();  // for each @p _ibo.size()
-    render(mode, static_cast<GLuint>(_ibo.size()) / sizeof(GLuint));
+    _ibo.bind();
+    const auto size { _ibo.size() };
+    _ibo.release();
+    std::cout << "VBO size: " << size << std::endl;
+
+    render(mode, static_cast<GLuint>(size) / sizeof(GLuint));
 }
 
 void Mesh::bind() {
     _vao.bind();
     _vbo.bind();
     _ibo.bind();
+
 }
 
 void Mesh::release() {
