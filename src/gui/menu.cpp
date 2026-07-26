@@ -1,32 +1,32 @@
+#include "gui/menu.hpp"
+
 #include <QFileDialog>
 #include <QMainWindow>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QProgressBar>
-
-#include <optional>
 #include <filesystem>
 #include <memory>
+#include <optional>
 
-#include "menu.hpp"
-#include "../gfx/model.hpp"  // TODO
-
+#include "gfx/gl.hpp"
+#include "gfx/importer.hpp"
+#include "gfx/model.hpp"
 
 namespace {
 
 inline std::optional<std::filesystem::path> chooseFile() {
-    const QString fileName { QFileDialog::getOpenFileName(nullptr, "Load 3D Model", "", "All Files (*)") };
-    return fileName.isEmpty() ? std::filesystem::path{} : std::filesystem::path { fileName.toStdString() };
+    const QString fileName{QFileDialog::getOpenFileName(
+        nullptr, "Load 3D Model", "", "3D Models (*.obj *.ply *.fbx);;All Files (*)")};
+    return fileName.isEmpty() ? std::nullopt
+                              : std::make_optional(std::filesystem::path{fileName.toStdString()});
 }
 
-/**
- * @brief Selects and loads a 3D model.
- */
 void load3DModel() {
-    std::optional<std::filesystem::path> path { chooseFile() };
+    std::optional<std::filesystem::path> path{chooseFile()};
     if (!path.has_value()) {
-        QMessageBox::information(nullptr, "Warning", "No file chosen.");
+        QMessageBox::information(nullptr, "Notice", "No 3D model file selected.");
         return;
     }
 
@@ -37,40 +37,41 @@ void load3DModel() {
     std::shared_ptr<bgl::Model> model;
     try {
         model = bgl::LoadModel(path.value());
-        // TODO: update progress bar
-    } catch (std::exception &exception) {
-        QMessageBox::critical(nullptr, "Error", exception.what());
+    } catch (const std::exception& exception) {
+        QMessageBox::critical(nullptr, "Error Loading Model", exception.what());
         progressBar.reset();
         progressBar.hide();
         return;
     }
 
-    // TODO: update model statistics panel
     progressBar.setValue(100);
     progressBar.hide();
-    // TODO: update model in viewport
 }
 
 inline void showAboutBox() {
-    QMessageBox::about(nullptr, "About,", "A simple Qt OpenGL demo.");
+    QMessageBox::about(nullptr, "About BGL 3D Model Viewer",
+                       "BGL 3D Model Viewer\nA modern C++23 & OpenGL 3D Model Viewer.");
 }
 
 }  // anonymous namespace
 
 namespace bgl {
 
-MenuBar::MenuBar(QMainWindow &window)
-    : _window { window } {
-    QMenu * const fileMenu { this->addMenu("&File") };
-    fileMenu->addAction("Load", this, &load3DModel);
-    fileMenu->addAction("Exit", [this] () { _window.close(); });
+MenuBar::MenuBar(QMainWindow& window) : _window{window} {
+    QMenu* const fileMenu{this->addMenu("&File")};
+    fileMenu->addAction("Load Model...", &load3DModel);
+    fileMenu->addAction("Exit", [this]() { _window.close(); });
 
-    QMenu * const helpMenu { this->addMenu("&Help") };
+    QMenu* const helpMenu{this->addMenu("&Help")};
     helpMenu->addAction("About", &showAboutBox);
 }
 
-void MenuBar::onLoadModel(const std::filesystem::path &path) {
-    QMessageBox::warning(nullptr, "Warning,", "Not implemented yet.");
+void MenuBar::loadModel() noexcept {
+    load3DModel();
+}
+
+void MenuBar::onLoadModel(const std::filesystem::path& /*path*/) {
+    QMessageBox::warning(nullptr, "Warning", "Feature not implemented yet.");
 }
 
 }  // namespace bgl

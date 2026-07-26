@@ -1,16 +1,16 @@
+#pragma once
+
 /**
  * @file gl.hpp
- * @brief Handles OpenGL support
+ * @brief OpenGL header includes and configuration for the bgl rendering engine.
  */
-#ifndef GFX_GL_GL_HPP_
-#define GFX_GL_GL_HPP_
 
+#ifndef GLEW_STATIC
 #define GLEW_STATIC
-#include <GL/glew.h>
+#endif
 
+#include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-#include "math.hpp"
-
-#endif  // GFX_GL_GL_HPP_
+#include "gfx/math.hpp"

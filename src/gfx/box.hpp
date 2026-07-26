@@ -1,24 +1,24 @@
-#ifndef GFX_BOX_HPP_
-#define GFX_BOX_HPP_
+#pragma once
 
-#include "gl.hpp"
-#include "model.hpp"
+/**
+ * @file box.hpp
+ * @brief OpenGL wireframe bounding box renderable object.
+ */
 
+#include "gfx/gl.hpp"
+#include "gfx/model.hpp"
 
 namespace bgl {
 
 /**
- * @brief OpenGL renderable 3D box.
+ * @brief Represents a renderable 3D wireframe bounding box.
  */
 class Box final : public Model {
- public:
-	Box();
-	explicit Box(const BoundingBox &boundingBox);
-	// TODO
+  public:
+    Box();
+    explicit Box(const BoundingBox& boundingBox);
 
-	void render(const mat4 &VP) override;
+    void render(const mat4& VP) override;
 };
 
 }  // namespace bgl
-
-#endif  // GFX_BOX_HPP_

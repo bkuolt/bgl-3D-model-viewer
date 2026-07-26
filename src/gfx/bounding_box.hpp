@@ -1,28 +1,28 @@
-#ifndef GFX_BOUNDING_BOX_HPP
-#define GFX_BOUNDING_BOX_HPP
+#pragma once
 
-#include "math.hpp"
+/**
+ * @file bounding_box.hpp
+ * @brief Axis-aligned bounding box representation for 3D objects.
+ */
 
+#include "gfx/math.hpp"
 
 namespace bgl {
 
 class BoundingBox {
- public:
-	explicit BoundingBox(float size = 1.0f);
-	BoundingBox(const vec3 &center, const vec3 &size);
+  public:
+    explicit BoundingBox(float size = 1.0f);
+    BoundingBox(const vec3& center, const vec3& size);
 
-	vec3 getSize() const noexcept;
-	void resize(const vec3 &size);
-	// TODO: getCenter()
-	// TODO: setCenter()
-	// TODO: translate()
-	// TODO: collides()
+    [[nodiscard]] vec3 getSize() const noexcept;
+    [[nodiscard]] vec3 getCenter() const noexcept;
 
- private:
-	vec3 _center;
-	vec3 _size;
+    void resize(const vec3& size) noexcept;
+    void setCenter(const vec3& center) noexcept;
+
+  private:
+    vec3 _center{0.0f};
+    vec3 _size{1.0f};
 };
 
 }  // namespace bgl
-
-#endif  // GFX_BOUNDING_BOX_HPP

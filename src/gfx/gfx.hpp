@@ -1,23 +1,27 @@
-#ifndef GFX_GFX_HPP_
-#define GFX_GFX_HPP_
+#pragma once
 
-#include <filesystem>   // std::filesystem::path
-#include <memory>       // std::shared_ptr
+/**
+ * @file gfx.hpp
+ * @brief Core OpenGL helper functions and shader program loading facilities.
+ */
 
-#include "gl.hpp"
-#include "mesh.hpp"
-#include "model.hpp"
-// #include "gui/window.hpp"
+#include <QOpenGLShaderProgram>
+#include <filesystem>
+#include <initializer_list>
+#include <memory>
 
-#include <QOpenGLShaderProgram>  // NOLINT (glew issue)
-
+#include "gfx/gl.hpp"
+#include "gfx/mesh.hpp"
+#include "gfx/model.hpp"
 
 namespace bgl {
 
 void set_va_attribute(GLint location, GLsizei size, GLenum type, GLsizei stride, GLsizei offset);
-std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::path &vs, const std::filesystem::path &fs);
-std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::initializer_list<std::filesystem::path> &shaders);
+
+std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::path& vs,
+                                                  const std::filesystem::path& fs);
+
+std::shared_ptr<QOpenGLShaderProgram>
+LoadProgram(const std::initializer_list<std::filesystem::path>& shaders);
 
 }  // namespace bgl
-
-#endif  // GFX_GFX_HPP_

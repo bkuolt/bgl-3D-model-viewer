@@ -1,0 +1,38 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task: build
+
+  conan:
+    desc: Install dependencies via Conan 2.x
+    cmds:
+      - conan install . --output-folder=build --build=missing -s build_type=Release
+
+  configure:
+    desc: Configure CMake build directory
+    deps: [conan]
+    cmds:
+      - cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=build/conan_toolchain.cmake -DCMAKE_PREFIX_PATH={{.USER_WORKING_DIR}}/deps/qt6/usr/lib/x86_64-linux-gnu/cmake
+
+  build:
+    desc: Build the application using CMake
+    deps: [configure]
+    cmds:
+      - cmake --build build --config Release -j
+
+  run:
+    desc: Run the 3D model viewer with sample medieval house model
+    cmds:
+      - ./build/bgl_demo src/assets/models/housemedieval.obj
+
+  format:
+    desc: Format code using clang-format
+    cmds:
+      - find src -type f \( -name "*.cpp" -o -name "*.hpp" \) -exec clang-format -i {} +
+
+  clean:
+    desc: Clean build artifacts
+    cmds:
+      - rm -rf build

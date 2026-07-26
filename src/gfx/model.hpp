@@ -1,79 +1,74 @@
+#pragma once
 
-#ifndef GFX_MODEL_HPP_
-#define GFX_MODEL_HPP_
+/**
+ * @file model.hpp
+ * @brief Base 3D Model class managing mesh collections, materials, and shaders.
+ */
 
+#include "gfx/gl.hpp"
+
+#include <QOpenGLShaderProgram>
 #include <filesystem>
-#include <memory>  // std::shared_ptr
+#include <memory>
 #include <vector>
 
-#include "gl.hpp"
-#include "mesh.hpp"
-#include "material.hpp"
-#include "bounding_box.hpp"
-#include "scene.hpp"
-
-#include <QOpenGLShaderProgram>  // NOLINT
-
+#include "gfx/bounding_box.hpp"
+#include "gfx/material.hpp"
+#include "gfx/mesh.hpp"
+#include "gfx/scene.hpp"
 
 namespace bgl {
 
 /**
- * @brief An OpenGL renderable mesh.
+ * @brief High-level renderable 3D model object.
  */
 class Model {
- public:
-	Model() = default;
-	Model(Model&&) = default;
-	Model& operator=(Model&&) = default;
+  public:
+    Model() = default;
+    virtual ~Model() noexcept = default;
 
-	Model(const Model&) = delete;
-	Model& operator=(const Model&) = delete;
+    Model(Model&&) noexcept = default;
+    Model& operator=(Model&&) noexcept = default;
 
-	virtual ~Model() noexcept = default;
+    Model(const Model&) = delete;
+    Model& operator=(const Model&) = delete;
 
-	virtual void render(const mat4 &MVP);
-	virtual void render(const mat4 &MVP, const DirectionalLight &light);
+    virtual void render(const mat4& MVP);
+    virtual void render(const mat4& MVP, const DirectionalLight& light);
 
-	void resize(const vec3 &dimensions);
-	const BoundingBox& getBoundingBox() const;
+    void resize(const vec3& dimensions);
+    [[nodiscard]] const BoundingBox& getBoundingBox() const noexcept;
 
-	void setMaterials(std::vector<Material> materials) {
-		_materials = materials;
-	}
+    void setMaterials(std::vector<Material> materials) {
+        _materials = std::move(materials);
+    }
 
-	void setProgram(std::shared_ptr<QOpenGLShaderProgram> program) {
-		_program = program;
-	}
+    void setProgram(std::shared_ptr<QOpenGLShaderProgram> program) {
+        _program = std::move(program);
+    }
 
-	void setBoundingBox(const BoundingBox &boundingBox) {
-		_boundingBox = boundingBox;
-	}
+    void setBoundingBox(const BoundingBox& boundingBox) noexcept {
+        _boundingBox = boundingBox;
+    }
 
-	const std::vector<Mesh>& getMeshes() const noexcept {
-		return _meshes;
-	}
+    [[nodiscard]] const std::vector<Mesh>& getMeshes() const noexcept {
+        return _meshes;
+    }
 
-	std::vector<Mesh>& getMeshes() noexcept {
-		return _meshes;
-	}
+    [[nodiscard]] std::vector<Mesh>& getMeshes() noexcept {
+        return _meshes;
+    }
 
-	const std::shared_ptr<QOpenGLShaderProgram> getProgram() const noexcept {
-		return _program;
-	}
+    [[nodiscard]] std::shared_ptr<QOpenGLShaderProgram> getProgram() const noexcept {
+        return _program;
+    }
 
- protected:
-	std::vector<Mesh> _meshes;
-	std::vector<Material> _materials;
+  protected:
+    std::vector<Mesh> _meshes;
+    std::vector<Material> _materials;
 
-	std::shared_ptr<QOpenGLShaderProgram> _program;
-	BoundingBox _boundingBox;
+    std::shared_ptr<QOpenGLShaderProgram> _program;
+    BoundingBox _boundingBox;
 };
 
-/**
- * @brief Loads a 3D model file.
- */
-std::shared_ptr<Model> LoadModel(const std::filesystem::path &path);  // TODO defined in importer.cpp
-
 }  // namespace bgl
-
-#endif  // GFX_MODEL_HPP_

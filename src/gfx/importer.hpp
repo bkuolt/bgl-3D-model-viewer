@@ -1,27 +1,31 @@
+#pragma once
+
 /**
  * @file importer.hpp
- * @brief All 3D model and image import features.
- * 
+ * @brief Asset loader for 3D mesh files (via Assimp) and image textures.
  */
-#ifndef GFX_IMPORTER_HPP_
-#define GFX_IMPORTER_HPP_
 
-#include <memory>
 #include <filesystem>
+#include <memory>
 
+class QOpenGLTexture;
 
 namespace bgl {
 
-/**
- * @brief Loads and creates an OpenGL texture from an image file.
- */
-std::shared_ptr<QOpenGLTexture> LoadTexture(const std::filesystem::path &path);
+class Model;
 
 /**
- * @brief Loads a 3D model from a given path.
+ * @brief Loads and constructs an OpenGL texture from an image file.
+ * @param path File path to the texture image.
+ * @return Shared pointer to the allocated QOpenGLTexture.
  */
-std::shared_ptr<Model> LoadModel(const std::filesystem::path &path);
+std::shared_ptr<QOpenGLTexture> LoadTexture(const std::filesystem::path& path);
 
-}
+/**
+ * @brief Loads a 3D model from a supported model file format (OBJ, etc.).
+ * @param path File path to the 3D model asset.
+ * @return Shared pointer to the constructed Model.
+ */
+std::shared_ptr<Model> LoadModel(const std::filesystem::path& path);
 
-#endif  // GFX_IMPORTER_HPP_
+}  // namespace bgl

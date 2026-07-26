@@ -1,35 +1,37 @@
-#ifndef GUI_MENU_BAR_HPP
-#define GUI_MENU_BAR_HPP
+#pragma once
+
+/**
+ * @file menu.hpp
+ * @brief Custom MenuBar for model viewer actions.
+ */
 
 #include <QMainWindow>
 #include <QMenuBar>
-
 #include <filesystem>
 
+#include "gfx/gl.hpp"
 
 namespace bgl {
 
 class MenuBar : public QMenuBar {
- public:
-	explicit MenuBar(QMainWindow &window);  // NOLINT
+  public:
+    explicit MenuBar(QMainWindow& window);
 
-	MenuBar(MenuBar&&) = default;
-	MenuBar& operator=(MenuBar&&) = default;
+    MenuBar(MenuBar&&) noexcept = default;
+    MenuBar& operator=(MenuBar&&) noexcept = default;
 
-	MenuBar(const MenuBar&) = delete;
-	MenuBar& operator=(const MenuBar&) = delete;
+    MenuBar(const MenuBar&) = delete;
+    MenuBar& operator=(const MenuBar&) = delete;
 
-	virtual ~MenuBar() noexcept = default;
+    ~MenuBar() noexcept override = default;
 
- protected:
-	virtual void onLoadModel(const std::filesystem::path &path);
+  protected:
+    virtual void onLoadModel(const std::filesystem::path& path);
 
-	private:
-	void loadModel() noexcept;
+  private:
+    void loadModel() noexcept;
 
-	QMainWindow &_window;
+    QMainWindow& _window;
 };
 
 }  // namespace bgl
-
-#endif  // GUI_MENU_BAR_HPP

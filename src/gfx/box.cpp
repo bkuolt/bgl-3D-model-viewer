@@ -1,96 +1,105 @@
-#include "box.hpp"
-#include "gfx.hpp"
-
-#include <algorithm>
-#include <iostream>
-#include <list>
-#include <string>
-#include <filesystem>
+#include "gfx/gl.hpp"
+#include "gfx/box.hpp"
 
 #include <QMatrix4x4>
+#include <QOpenGLBuffer>
+#include <algorithm>
+#include <array>
+#include <iostream>
 
+#include "gfx/gfx.hpp"
 
 namespace bgl {
 
 namespace {
 
 constexpr std::array<vec3, 8> box_vertices{{
-    {-0.5, -0.5, 0.5}, {-0.5, 0.5, 0.5}, // front, left handside
-    {0.5, 0.5, 0.5},
-    {0.5, -0.5, 0.5}, // front, right handside
-    {-0.5, -0.5, -0.5},
-    {-0.5, 0.5, -0.5}, // back, left handside
-    {0.5, 0.5, -0.5},
-    {0.5, -0.5, -0.5} // back, right handside
+    {-0.5f, -0.5f, 0.5f},
+    {-0.5f, 0.5f, 0.5f},
+    {0.5f, 0.5f, 0.5f},
+    {0.5f, -0.5f, 0.5f},
+    {-0.5f, -0.5f, -0.5f},
+    {-0.5f, 0.5f, -0.5f},
+    {0.5f, 0.5f, -0.5f},
+    {0.5f, -0.5f, -0.5f},
 }};
 
-    /* 
-front: back:
-1--2   5--6 
-|  |   |  |
-0--3   4--7
-*/
-static constexpr std::array<uvec2, 12> box_indices{{
-    {0, 3}, {1, 2}, {0, 1}, {2, 3},  // frontside
+constexpr std::array<uvec2, 12> box_indices{{
+    {0, 3},
+    {1, 2},
+    {0, 1},
+    {2, 3},  // front face
     {4, 7},
     {5, 6},
     {4, 5},
-    {6, 7},  // backside
+    {6, 7},  // back face
     {0, 4},
     {1, 5},
     {3, 7},
-    {2, 6}  // left and right sides
+    {2, 6}  // side connections
 }};
 
 }  // anonymous namespace
 
-/* ------------------------------------------------------------------------------- */
-
 Box::Box() {
-    _meshes = std::vector<Mesh>(1);  // TODO
+    _meshes = std::vector<Mesh>(1);
 
-    // create vbo
+    // Create VBO
     _meshes[0]._vbo.bind();
     _meshes[0]._vbo.allocate(box_vertices.size() * sizeof(vec3));
-    std::copy(box_vertices.begin(), box_vertices.end(),
-              reinterpret_cast<vec3 *>(_meshes[0]._vbo.map(QOpenGLBuffer::WriteOnly)));
-    _meshes[0]._vbo.unmap();
+    auto* vertex_ptr =
+        reinterpret_cast<vec3*>(_meshes[0]._vbo.map(QOpenGLBuffer::Access::WriteOnly));
+    if (vertex_ptr != nullptr) {
+        std::copy(box_vertices.begin(), box_vertices.end(), vertex_ptr);
+        _meshes[0]._vbo.unmap();
+    }
+    _meshes[0]._vbo.release();
 
-    // create ibo
+    // Create IBO
     _meshes[0]._ibo.bind();
     _meshes[0]._ibo.allocate(box_indices.size() * 2 * sizeof(GLuint));
-    uvec2 *buffer { reinterpret_cast<uvec2 *>(_meshes[0]._ibo.map(QOpenGLBuffer::WriteOnly)) };
-    std::copy(box_indices.begin(), box_indices.end(), buffer);
-    _meshes[0]._ibo.unmap();
+    auto* index_ptr =
+        reinterpret_cast<uvec2*>(_meshes[0]._ibo.map(QOpenGLBuffer::Access::WriteOnly));
+    if (index_ptr != nullptr) {
+        std::copy(box_indices.begin(), box_indices.end(), index_ptr);
+        _meshes[0]._ibo.unmap();
+    }
+    _meshes[0]._ibo.release();
 
-    // create vao
+    // Create VAO
+    _program = LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs");
+    _program->bind();
     _meshes[0]._vao.bind();
     _meshes[0].bind();
 
-    _program = LoadProgram("./assets/shaders/wireframe.vs", "./assets/shaders/wireframe.fs");
-    _program->bind();
     set_va_attribute(_program->attributeLocation("position"), 3, GL_FLOAT, 0, 0);
+
+    _meshes[0].release();
+    _meshes[0]._vao.release();
     _program->release();
 }
 
-Box::Box(const BoundingBox &boundingBox)
-    : Box() {
+Box::Box(const BoundingBox& boundingBox) : Box() {
     _boundingBox = boundingBox;
 }
 
-void Box::render(const mat4 &VP) {
-    std::cout << "Box::render()" << std::endl;
-    _program->bind();
-    glLineWidth(3);
+void Box::render(const mat4& VP) {
+    if (!_program) {
+        return;
+    }
 
-    mat4 M = glm::scale(_boundingBox.getSize());
-    QMatrix4x4 matrix(glm::value_ptr(VP * M));
+    _program->bind();
+    glLineWidth(3.0f);
+
+    const mat4 M = glm::scale(_boundingBox.getSize());
+    const QMatrix4x4 matrix(glm::value_ptr(VP * M));
     _program->setUniformValue("MVP", matrix.transposed());
 
-    const vec3 color { 1.0, 0.0, 0.0 }; /* red */
+    constexpr vec3 color{1.0f, 0.0f, 0.0f};  // Red bounding box
     _program->setUniformValue("color", color.x, color.y, color.z);
 
     _meshes[0].render(GL_LINES);
+    _program->release();
 }
 
-} // namespace bgl
+}  // namespace bgl

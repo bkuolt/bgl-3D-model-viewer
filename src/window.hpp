@@ -1,55 +1,58 @@
+#pragma once
+
 /**
  * @file window.hpp
- * @brief 
+ * @brief Application specific main window and OpenGL viewport implementations.
  */
-#include <QKeyEvent>
 
+#include "gfx/gl.hpp"
+
+#include <QKeyEvent>
+#include <QWheelEvent>
 #include <string>
 
-#include "gui/gui.hpp"  // bgl::Window, bgl::Viewport
-
+#include "gui/gui.hpp"
 
 namespace bgl {
 
-/**
- * @brief 
- */
 class GLViewport final : public Viewport {
- public:
-	explicit GLViewport(QWidget *parent);
+    Q_OBJECT
 
-	GLViewport(const GLViewport&) = delete;
-	GLViewport& operator=(const GLViewport&) = delete;
+  public:
+    explicit GLViewport(QWidget* parent = nullptr);
+    ~GLViewport() override = default;
 
-	GLViewport(GLViewport&&) = default;
-	GLViewport& operator=(GLViewport&&) = default;
+    GLViewport(const GLViewport&) = delete;
+    GLViewport& operator=(const GLViewport&) = delete;
 
-    virtual ~GLViewport() = default;
+    GLViewport(GLViewport&&) noexcept = default;
+    GLViewport& operator=(GLViewport&&) noexcept = default;
 
-	void on_render(float delta) override;
+    void initializeGL() override;
+    void on_render(float delta) override;
 };
 
-/**
- * @brief 
- */
 class SimpleWindow final : public Window {
- public:
-	SimpleWindow() noexcept = default;
-	explicit SimpleWindow(const std::string &title);
-	SimpleWindow(SimpleWindow&&) = default;
+    Q_OBJECT
 
-	SimpleWindow(const SimpleWindow&) = delete;
-	SimpleWindow& operator=(const SimpleWindow&) = delete;
-	SimpleWindow& operator=(SimpleWindow&&) = default;
+  public:
+    SimpleWindow() noexcept = default;
+    explicit SimpleWindow(const std::string& title);
+    ~SimpleWindow() noexcept override = default;
 
-	virtual ~SimpleWindow() noexcept = default;
+    SimpleWindow(SimpleWindow&&) noexcept = default;
+    SimpleWindow& operator=(SimpleWindow&&) noexcept = default;
 
-	bool event(QEvent *event) override;
-	void wheelEvent(QWheelEvent *event) override;
+    SimpleWindow(const SimpleWindow&) = delete;
+    SimpleWindow& operator=(const SimpleWindow&) = delete;
 
-    GLViewport _viewport;  // TODO
- private:
-	bool keyEvent(QKeyEvent *event);
+    bool event(QEvent* event) override;
+    void wheelEvent(QWheelEvent* event) override;
+
+    GLViewport _viewport;
+
+  private:
+    bool keyEvent(QKeyEvent* event);
 };
 
 }  // namespace bgl

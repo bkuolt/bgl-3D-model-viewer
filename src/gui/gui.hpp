@@ -1,4 +1,9 @@
+#pragma once
 
-#include "window.hpp"
-#include "viewport.hpp"
+/**
+ * @file gui.hpp
+ * @brief Master header for GUI components.
+ */
 
+#include "gui/viewport.hpp"
+#include "gui/window.hpp"

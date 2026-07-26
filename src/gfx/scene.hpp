@@ -1,17 +1,21 @@
-#ifndef GFX_SCENE_HPP_
-#define GFX_SCENE_HPP_
+#pragma once
 
-#include "math.hpp"
+/**
+ * @file scene.hpp
+ * @brief Lighting and scene environment representations.
+ */
 
+#include "gfx/math.hpp"
 
 namespace bgl {
 
+/**
+ * @brief Directional light source definition.
+ */
 struct DirectionalLight {
-    vec3 direction;
-    vec3 diffuse;
-    vec3 ambient;
+    vec3 direction{0.0f, -1.0f, 0.0f};
+    vec3 diffuse{1.0f};
+    vec3 ambient{0.2f};
 };
 
-}  // namepace bgl
-
-#endif  // GFX_SCENE_HPP_
+}  // namespace bgl

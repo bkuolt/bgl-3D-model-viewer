@@ -1,37 +1,41 @@
-#ifndef GUI_WINDOW_HPP_
-#define GUI_WINDOW_HPP_
+#pragma once
 
+/**
+ * @file window.hpp
+ * @brief Base main application window for the GUI.
+ */
+
+#include <QMainWindow>
 #include <string>
-#include <QMainWindow>  // NOLINT
 
-#include "../gfx/gl.hpp"    // TODO(bkuolt): fix this
-#include "viewport.hpp"
-
+#include "gfx/gl.hpp"
+#include "gfx/math.hpp"
+#include "gui/viewport.hpp"
 
 namespace bgl {
 
 /**
- * @brief A simple non-copyable, but moveable Window class
+ * @brief Main application window managing menu bar, status bar, and central viewport.
  */
 class Window : public QMainWindow {
- public:
-    explicit Window(const std::string &title);
-    Window(Window &&rhs) = default;
-    Window& operator=(Window &&rhs) = default;
+    Q_OBJECT
 
-    Window(const Window &rhs) = delete;
-    Window& operator=(const Window &rhs) = delete;
+  public:
+    explicit Window(const std::string& title);
+    ~Window() noexcept override = default;
 
-    virtual ~Window() noexcept = default;
+    Window(Window&&) noexcept = default;
+    Window& operator=(Window&&) noexcept = default;
 
-    uvec2 getSize() const noexcept;
+    Window(const Window&) = delete;
+    Window& operator=(const Window&) = delete;
+
+    [[nodiscard]] uvec2 getSize() const noexcept;
     void render();
-    void setViewport(Viewport *p);
+    void setViewport(Viewport* p);
 
- protected:
-	Viewport *_viewport { nullptr };
+  protected:
+    Viewport* _viewport{nullptr};
 };
 
 }  // namespace bgl
-
-#endif  // GUI_WINDOW_HPP_

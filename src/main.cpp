@@ -1,36 +1,39 @@
 #include <QApplication>
 #include <QMessageBox>
-
 #include <csignal>
 #include <cstdlib>
-#include <stdexcept>
+#include <exception>
 
+#include "gfx/gl.hpp"
 #include "window.hpp"
 
+namespace {
 
-static void signal_handler(int signal) {
-	std::exit(EXIT_FAILURE);
+void signal_handler(int /*signal*/) {
+    std::exit(EXIT_FAILURE);
 }
 
-int main(int argc, char *argv[]) {
-	QApplication app(argc, argv);
+}  // anonymous namespace
 
-	if (argc != 2) {
-		QMessageBox::critical(nullptr, "Error", "usage: bgl <path-to-model>");
-		return EXIT_FAILURE;
-	}
+int main(int argc, char* argv[]) {
+    QApplication app(argc, argv);
 
-	std::signal(SIGINT, signal_handler);
-	std::signal(SIGHUP, signal_handler);
+    if (argc != 2) {
+        QMessageBox::critical(nullptr, "Usage Error", "Usage: bgl_demo <path-to-model>");
+        return EXIT_FAILURE;
+    }
 
-	try {
-		bgl::SimpleWindow window { "BGL Model Viewer" };
-		window.show();
-		return app.exec();
-	} catch (const std::exception &exception) {
-		QMessageBox::critical(nullptr, "Error", exception.what() );
-		return EXIT_FAILURE;
-	}
+    std::signal(SIGINT, signal_handler);
+    std::signal(SIGHUP, signal_handler);
 
-	return EXIT_SUCCESS;
+    try {
+        bgl::SimpleWindow window{"BGL 3D Model Viewer"};
+        window.show();
+        return app.exec();
+    } catch (const std::exception& exception) {
+        QMessageBox::critical(nullptr, "Fatal Error", exception.what());
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
 }

@@ -1,22 +1,19 @@
+#include "gfx/mesh.hpp"
+
 #include <iostream>
 #include <stdexcept>
 
-#include "mesh.hpp"
-
-
 namespace bgl {
 
-Mesh::Mesh()
-    : _vbo { QOpenGLBuffer::VertexBuffer },
-      _ibo { QOpenGLBuffer::IndexBuffer } {
+Mesh::Mesh() : _vbo{QOpenGLBuffer::VertexBuffer}, _ibo{QOpenGLBuffer::IndexBuffer} {
     if (!_vbo.create()) {
-        throw std::runtime_error { "could not create VBO" };
+        throw std::runtime_error{"could not create VBO"};
     }
     if (!_ibo.create()) {
-        throw std::runtime_error { "could not create IBO" };
+        throw std::runtime_error{"could not create IBO"};
     }
     if (!_vao.create()) {
-        throw std::runtime_error { "could not create VAO" };
+        throw std::runtime_error{"could not create VAO"};
     }
 }
 
@@ -24,13 +21,13 @@ void Mesh::render(GLenum mode, GLuint count) {
     bind();
     glDrawElements(mode, count, GL_UNSIGNED_INT, nullptr);
     if (glGetError() != GL_NO_ERROR) {
-        throw std::runtime_error { "glDrawElements() failed" };
+        throw std::runtime_error{"glDrawElements() failed"};
     }
     release();
 }
 
 void Mesh::render(GLenum mode) {
-    _ibo.bind();  // for each @p _ibo.size()
+    _ibo.bind();
     render(mode, static_cast<GLuint>(_ibo.size()) / sizeof(GLuint));
 }
 

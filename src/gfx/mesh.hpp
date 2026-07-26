@@ -1,51 +1,50 @@
-#ifndef GFX_MESH_HPP_
-#define GFX_MESH_HPP_
+#pragma once
 
+/**
+ * @file mesh.hpp
+ * @brief OpenGL Mesh data structures and buffer management.
+ */
+
+#include "gfx/gl.hpp"
+
+#include <QOpenGLBuffer>
+#include <QOpenGLVertexArrayObject>
 #include <optional>
-
-#include "gl.hpp"
-
-#include <QOpenGLBuffer>             // NOLINT
-#include <QOpenGLVertexArrayObject>  // NOLINT
-
 
 namespace bgl {
 
 /**
- * @brief OpenGL VBO vertex format.
+ * @brief Vertex layout for VBO memory allocations.
  */
 struct Vertex {
-    vec3 position;
-    vec3 normal;
-    vec2 texcoords;
+    vec3 position{0.0f};
+    vec3 normal{0.0f};
+    vec2 texcoords{0.0f};
 };
 
 /**
- * @brief Contains and manages all OpenGL resources (VBOs, IBOs, VAOs,
- *        shaders and textures) for a mesh.
+ * @brief Manages OpenGL buffer objects (VBO, IBO, VAO) for a single mesh chunk.
  */
 struct Mesh {
-	Mesh();
-	Mesh(Mesh&&) = default;
-	Mesh& operator=(Mesh&&) = default;
+    Mesh();
+    ~Mesh() noexcept = default;
 
-	Mesh(const Mesh&) = delete;
-	Mesh& operator=(const Mesh&) = delete;
+    Mesh(Mesh&&) noexcept = default;
+    Mesh& operator=(Mesh&&) noexcept = default;
 
-	virtual ~Mesh() noexcept = default;
+    Mesh(const Mesh&) = delete;
+    Mesh& operator=(const Mesh&) = delete;
 
-	void bind();
-	void release();
+    void bind();
+    void release();
 
-	void render(GLenum mode, GLuint count);
-	void render(GLenum mode);
+    void render(GLenum mode, GLuint count);
+    void render(GLenum mode);
 
-	QOpenGLBuffer _vbo;
-	QOpenGLBuffer _ibo;
-	QOpenGLVertexArrayObject _vao;
-	std::optional<unsigned int> _materialIndex;  // index to an Assimp material
+    QOpenGLBuffer _vbo;
+    QOpenGLBuffer _ibo;
+    QOpenGLVertexArrayObject _vao;
+    std::optional<unsigned int> _materialIndex;
 };
 
 }  // namespace bgl
-
-#endif  // GFX_MESH_HPP_

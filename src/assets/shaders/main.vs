@@ -1,22 +1,13 @@
-#version 450 core
-// Copyright 2020 Bastian Kuolt
+#version 330 core
+
 uniform mat4 MVP;
 
-uniform struct Light {
-    vec3 direction;
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-} light;
-
-in vec3 position;
-in vec3 normal;
-in vec2 texcoords;
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec3 normal;
+layout(location = 2) in vec2 texcoords;
 
 out vec3 pixelNormal;
 out vec2 pixelTexCoord;
-out gl_PerVertex { vec4 gl_Position; };
-
 
 void main() {
     gl_Position = MVP * vec4(position, 1.0);

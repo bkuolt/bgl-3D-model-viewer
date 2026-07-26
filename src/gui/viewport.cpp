@@ -1,93 +1,85 @@
-/**
- * @file viewport.cpp
- * @brief A simple OpenGL Qt Viewport
- */
-#include "../gfx/gl.hpp"
+#include "gui/viewport.hpp"
 
-#include <QOpenGLWidget>
-
+#include <chrono>
 #include <iostream>
-#include <ctime>     // std::clock()
 
-#include "viewport.hpp"
-
+#include "gfx/gl.hpp"
 
 namespace bgl {
 
 namespace {
 
-inline clock_t SDL_GetTicks()  {  // TODO(bkuolt)
-	return (std::clock() / static_cast<double>(CLOCKS_PER_SEC)) * 1000 *1000;
-}
+class FrameCounter final {
+  public:
+    FrameCounter()
+        : _lastFrameTime{std::chrono::steady_clock::now()}, _lastFpsTime{_lastFrameTime} {}
 
-class frame_counter final {
- public:
-	bool count() noexcept {
-		_delta = (SDL_GetTicks() - _timestamp_render) / 1000.0f;
-		_timestamp_render = SDL_GetTicks();
-		++_num_frames;
+    bool count() noexcept {
+        const auto now = std::chrono::steady_clock::now();
+        const std::chrono::duration<double> frameDuration = now - _lastFrameTime;
+        _delta = frameDuration.count();
+        _lastFrameTime = now;
+        ++_numFrames;
 
-		const bool is_new_second { SDL_GetTicks() - _timestamp_fps >= 1000 };
-		if (is_new_second) {
-			_timestamp_fps = SDL_GetTicks();
-			_fps = _num_frames;
-		}
+        const std::chrono::duration<double> fpsDuration = now - _lastFpsTime;
+        if (fpsDuration.count() >= 1.0) {
+            _fps = _numFrames;
+            _numFrames = 0;
+            _lastFpsTime = now;
+            return true;
+        }
 
-		return is_new_second;
-	}
+        return false;
+    }
 
-	size_t fps() const noexcept {
-		return  _fps;
-	}
+    [[nodiscard]] std::size_t fps() const noexcept {
+        return _fps;
+    }
 
-	double delta() const noexcept {
-		return _delta;
-	}
+    [[nodiscard]] double delta() const noexcept {
+        return _delta;
+    }
 
- private:
-	uint32_t _timestamp_fps { 0 };
-	uint32_t _timestamp_render { 0 };
-	size_t _num_frames { 0 };
-	size_t _fps { 0 };
-	double _delta { 0.0 };
+  private:
+    std::chrono::steady_clock::time_point _lastFrameTime;
+    std::chrono::steady_clock::time_point _lastFpsTime;
+    std::size_t _numFrames{0};
+    std::size_t _fps{0};
+    double _delta{0.0};
 };
 
 }  // anonymous namespace
 
-Viewport::Viewport(QWidget *parent)
-    : QOpenGLWidget( parent) {
-}
+Viewport::Viewport(QWidget* parent) : QOpenGLWidget(parent) {}
 
 void Viewport::initializeGL() {
-    const GLenum error { glewInit() };
+    glewExperimental = GL_TRUE;
+    const GLenum error{glewInit()};
     if (GLEW_OK != error) {
-        throw std::runtime_error { reinterpret_cast<const char*>(glewGetErrorString(error)) };
+        std::cerr << "[bgl] Error initializing GLEW: " << glewGetErrorString(error) << std::endl;
     }
 
-    glClearColor(0.3, 1.0, 0.3, 1.0f);
-    std::cout << "initialized OpenGL: " << glGetString(GL_VERSION) << std::endl;
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    std::cout << "[bgl] OpenGL Initialized: " << glGetString(GL_VERSION) << std::endl;
 }
 
 void Viewport::resizeGL(int width, int height) {
     glViewport(0, 0, width, height);
-    std::cout << "resized windget to " << width << "x" << height << std::endl;
 }
 
 void Viewport::paintGL() {
-	static frame_counter frame_counter;
-    const bool changed { frame_counter.count() };
-    if (changed) {
-        // TODO(bkuolt): add TTF font rendering support
-          std::cout << "\r" << frame_counter.fps() << " FPS" << std::flush;
+    static FrameCounter counter;
+    const bool fpsUpdated{counter.count()};
+    if (fpsUpdated) {
+        std::cout << "\r[bgl] Performance: " << counter.fps() << " FPS" << std::flush;
     }
 
     makeCurrent();
-    on_render(frame_counter.delta());
-    // std::cout << "paintedGL()" << std::endl;
+    on_render(static_cast<float>(counter.delta()));
 }
 
-void Viewport::on_render(float delta) {
-    // nothing to do yet
+void Viewport::on_render(float /*delta*/) {
+    // Virtual render callback implemented by derived Viewport classes
 }
 
 }  // namespace bgl

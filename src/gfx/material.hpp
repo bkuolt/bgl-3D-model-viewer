@@ -1,22 +1,24 @@
-#ifndef GFX_MATERIAL_HPP_
-#define GFX_MATERIAL_HPP_
+#pragma once
+
+/**
+ * @file material.hpp
+ * @brief Material and texture properties for rendered meshes.
+ */
 
 #include <memory>
-#include <glm/glm.hpp>
+
+#include "gfx/math.hpp"
 
 class QOpenGLTexture;
 
-
-namespace bgl  {
-
-using namespace glm;  // NOLINT
+namespace bgl {
 
 struct Material {
-    vec3 diffuse;
-    vec3 ambient;
-    vec3 specular;
-    vec3 emissive;
-	float shininess;
+    vec3 diffuse{0.0f};
+    vec3 ambient{0.0f};
+    vec3 specular{0.0f};
+    vec3 emissive{0.0f};
+    float shininess{0.0f};
 
     struct {
         std::shared_ptr<QOpenGLTexture> diffuse;
@@ -27,5 +29,3 @@ struct Material {
 };
 
 }  // namespace bgl
-
-#endif  // GFX_MATERIAL_HPP_

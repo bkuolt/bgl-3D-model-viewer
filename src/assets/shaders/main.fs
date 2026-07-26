@@ -1,46 +1,38 @@
 #version 330 core
-// Copyright 2020 Bastian Kuolt
-#extension GL_ARB_explicit_uniform_location : require
-#extension GL_ARB_separate_shader_objects : require
 
-uniform mat4 MVP;
-
-uniform struct Light {
+struct Light {
     vec3 direction;
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
-} light;
+};
 
-uniform struct Material {
+struct Material {
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
     float shininess;
-
     bool isTextured;
     sampler2D texture;
-} material;
+};
 
-in vec3 position;
-in vec3 normal;
-in vec2 texcoords;
+uniform Light light;
+uniform Material material;
 
 in vec3 pixelNormal;
 in vec2 pixelTexCoord;
 
-
-float calculateLightIntensity() {
-    return max(dot(light.direction, normalize(pixelNormal)), 0.0);
-}
-
-vec4 getLightColor() {
-    vec3 color = light.ambient;
-    color += light.diffuse * calculateLightIntensity() * 0.8;
-    return vec4(color, 0.0);
-}
+out vec4 FragColor;
 
 void main() {
-    gl_FragColor = getLightColor() *
-        ((material.isTextured) ? texture2D(material.texture, pixelTexCoord) : vec4(1.0, 1.0, 1.0, 1.0));
+    vec3 norm = normalize(pixelNormal);
+    vec3 lightDir = normalize(-light.direction);
+    float diff = max(dot(norm, lightDir), 0.0);
+
+    vec3 ambient = light.ambient;
+    vec3 diffuse = light.diffuse * diff;
+    vec3 lighting = ambient + diffuse;
+
+    vec4 baseColor = material.isTextured ? texture(material.texture, pixelTexCoord) : vec4(1.0);
+    FragColor = vec4(lighting, 1.0) * baseColor;
 }
