@@ -5,14 +5,13 @@
  * @brief Base 3D Model class managing mesh collections, materials, and shaders.
  */
 
-#include "gfx/gl.hpp"
-
 #include <QOpenGLShaderProgram>
 #include <filesystem>
 #include <memory>
 #include <vector>
 
 #include "gfx/bounding_box.hpp"
+#include "gfx/gl.hpp"
 #include "gfx/material.hpp"
 #include "gfx/mesh.hpp"
 #include "gfx/scene.hpp"

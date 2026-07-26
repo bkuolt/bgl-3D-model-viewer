@@ -1,4 +1,3 @@
-#include "gfx/gl.hpp"
 #include "gfx/box.hpp"
 
 #include <QMatrix4x4>
@@ -8,6 +7,7 @@
 #include <iostream>
 
 #include "gfx/gfx.hpp"
+#include "gfx/gl.hpp"
 
 namespace bgl {
 

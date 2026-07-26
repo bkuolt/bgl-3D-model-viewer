@@ -1,4 +1,3 @@
-#include "gfx/gl.hpp"
 #include "gui/window.hpp"
 
 #include <QEvent>
@@ -10,6 +9,7 @@
 #include <stdexcept>
 #include <string>
 
+#include "gfx/gl.hpp"
 #include "gui/menu.hpp"
 #include "gui/panel.hpp"
 

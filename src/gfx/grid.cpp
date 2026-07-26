@@ -1,4 +1,3 @@
-#include "gfx/gl.hpp"
 #include "gfx/grid.hpp"
 
 #include <QMatrix4x4>
@@ -6,6 +5,7 @@
 #include <stdexcept>
 
 #include "gfx/gfx.hpp"
+#include "gfx/gl.hpp"
 
 namespace bgl {
 
@@ -47,33 +47,21 @@ void Grid::create_ibo() {
         return static_cast<GLuint>((_num_cells * z) + x);
     };
 
-    const std::size_t num_triangles{2 * _num_cells * _num_cells + 4};
+    std::vector<GLuint> indices;
+    const auto num_cells_u = static_cast<unsigned>(_num_cells);
+    indices.reserve(num_cells_u * 4);
+
+    for (unsigned z = 0; z < num_cells_u; ++z) {
+        indices.push_back(get_index(0, z));
+        indices.push_back(get_index(num_cells_u - 1, z));
+    }
+    for (unsigned x = 0; x < num_cells_u; ++x) {
+        indices.push_back(get_index(x, 0));
+        indices.push_back(get_index(x, num_cells_u - 1));
+    }
+
     _meshes[0]._ibo.bind();
-    _meshes[0]._ibo.allocate(num_triangles * 3 * sizeof(GLuint));
-
-    using uvec2 = glm::tvec2<GLuint>;
-    auto* buffer = reinterpret_cast<uvec2*>(_meshes[0]._ibo.map(QOpenGLBuffer::Access::WriteOnly));
-    if (buffer == nullptr) {
-        throw std::runtime_error{"could not map IBO for grid creation"};
-    }
-
-    for (std::size_t z = 0; z < _num_cells - 1; ++z) {
-        for (std::size_t x = 0; x < _num_cells - 1; ++x) {
-            const auto ux = static_cast<unsigned>(x);
-            const auto uz = static_cast<unsigned>(z);
-            const auto num_cells_u = static_cast<unsigned>(_num_cells);
-            *buffer++ = uvec2{get_index(0, uz), get_index(num_cells_u - 1, uz)};
-            *buffer++ = uvec2{get_index(ux, 0), get_index(ux, num_cells_u - 1)};
-        }
-
-        const auto uz = static_cast<unsigned>(z);
-        const auto num_cells_u = static_cast<unsigned>(_num_cells);
-        *buffer++ =
-            uvec2{get_index(num_cells_u - 1, 0), get_index(num_cells_u - 1, num_cells_u - 1)};
-        *buffer++ =
-            uvec2{get_index(0, num_cells_u - 1), get_index(num_cells_u - 1, num_cells_u - 1)};
-    }
-    _meshes[0]._ibo.unmap();
+    _meshes[0]._ibo.allocate(indices.data(), static_cast<int>(indices.size() * sizeof(GLuint)));
     _meshes[0]._ibo.release();
 }
 

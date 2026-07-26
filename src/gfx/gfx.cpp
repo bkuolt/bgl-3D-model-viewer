@@ -1,10 +1,11 @@
-#include "gfx/gl.hpp"
 #include "gfx/gfx.hpp"
 
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+
+#include "gfx/gl.hpp"
 
 namespace bgl {
 
@@ -59,15 +60,18 @@ std::shared_ptr<QOpenGLShaderProgram> LoadProgram(const std::filesystem::path& v
     auto program = std::make_shared<QOpenGLShaderProgram>();
     if (!program->addShaderFromSourceFile(QOpenGLShader::Vertex,
                                           QString::fromStdString(resolvedVs.string()))) {
-        throw std::runtime_error{"could not load or compile vertex shader from " + resolvedVs.string() + ": " + program->log().toStdString()};
+        throw std::runtime_error{"could not load or compile vertex shader from " +
+                                 resolvedVs.string() + ": " + program->log().toStdString()};
     }
     if (!program->addShaderFromSourceFile(QOpenGLShader::Fragment,
                                           QString::fromStdString(resolvedFs.string()))) {
-        throw std::runtime_error{"could not load or compile fragment shader from " + resolvedFs.string() + ": " + program->log().toStdString()};
+        throw std::runtime_error{"could not load or compile fragment shader from " +
+                                 resolvedFs.string() + ": " + program->log().toStdString()};
     }
     if (!program->link()) {
-        throw std::runtime_error{"could not link shader program for " + resolvedVs.string() + " and " +
-                                 resolvedFs.string() + ": " + program->log().toStdString()};
+        throw std::runtime_error{"could not link shader program for " + resolvedVs.string() +
+                                 " and " + resolvedFs.string() + ": " +
+                                 program->log().toStdString()};
     }
     return program;
 }

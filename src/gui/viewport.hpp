@@ -5,9 +5,9 @@
  * @brief Qt 6 OpenGL Viewport Widget.
  */
 
-#include "gfx/gl.hpp"
-
 #include <QOpenGLWidget>
+
+#include "gfx/gl.hpp"
 
 namespace bgl {
 

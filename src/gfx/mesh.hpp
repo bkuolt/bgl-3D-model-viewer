@@ -5,11 +5,11 @@
  * @brief OpenGL Mesh data structures and buffer management.
  */
 
-#include "gfx/gl.hpp"
-
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
 #include <optional>
+
+#include "gfx/gl.hpp"
 
 namespace bgl {
 

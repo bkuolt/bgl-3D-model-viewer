@@ -9,8 +9,10 @@
 #define GLEW_STATIC
 #endif
 
+// clang-format off
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
+// clang-format on
 
 #include "gfx/math.hpp"

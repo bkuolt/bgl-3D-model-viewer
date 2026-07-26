@@ -56,7 +56,10 @@ void Viewport::initializeGL() {
     glewExperimental = GL_TRUE;
     const GLenum error{glewInit()};
     if (GLEW_OK != error) {
-        std::cerr << "[bgl] Error initializing GLEW: " << glewGetErrorString(error) << std::endl;
+        std::cerr << "[bgl] GLEW init note: " << glewGetErrorString(error) << std::endl;
+    }
+    // Flush initial glGetError triggered by glewExperimental in core context
+    while (glGetError() != GL_NO_ERROR) {
     }
 
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
